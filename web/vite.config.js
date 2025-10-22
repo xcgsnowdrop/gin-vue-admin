@@ -78,6 +78,11 @@ export default ({ mode }) => {
           changeOrigin: true,
           rewrite: (path) =>
             path.replace(new RegExp('^' + process.env.VITE_BASE_API), '')
+        },
+        // GM管理模块代理规则 - 代理到游戏服务器
+        '/gm': {
+          target: 'http://localhost:8300',
+          changeOrigin: true
         }
       }
     },
