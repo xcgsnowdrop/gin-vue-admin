@@ -132,22 +132,7 @@ export const useGMUserStore = defineStore('gmUser', () => {
     }
   }
 
-  // 删除用户
-  const removeUser = async (id) => {
-    try {
-      const response = await deleteGMUser({ id })
-      if (response.code === 0) {
-        // 刷新列表
-        await fetchUserList()
-        return true
-      } else {
-        throw new Error(response.msg || '删除用户失败')
-      }
-    } catch (error) {
-      console.error('删除用户失败:', error)
-      throw error
-    }
-  }
+
 
   // 设置用户状态
   const setUserStatus = async (id, status) => {
@@ -273,7 +258,6 @@ export const useGMUserStore = defineStore('gmUser', () => {
     fetchUser,
     createUser,
     updateUser,
-    removeUser,
     setUserStatus,
     batchOperate,
     exportUsers,

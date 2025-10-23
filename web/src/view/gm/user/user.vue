@@ -122,81 +122,6 @@
         />
       </div>
     </div>
-    
-    <el-drawer
-      v-model="addUserDialog"
-      :size="appStore.drawerSize"
-      :show-close="false"
-      :close-on-press-escape="false"
-      :close-on-click-modal="false"
-    >
-      <template #header>
-        <div class="flex justify-between items-center">
-          <span class="text-lg">用户</span>
-          <div>
-            <el-button @click="closeAddUserDialog">取 消</el-button>
-            <el-button type="primary" @click="enterAddUserDialog"
-              >确 定</el-button
-            >
-          </div>
-        </div>
-      </template>
-
-      <el-form
-        ref="userForm"
-        :rules="rules"
-        :model="userInfo"
-        label-width="80px"
-      >
-        <el-form-item
-          v-if="dialogFlag === 'add'"
-          label="用户名"
-          prop="userName"
-        >
-          <el-input v-model="userInfo.userName" />
-        </el-form-item>
-        <el-form-item v-if="dialogFlag === 'add'" label="密码" prop="password">
-          <el-input v-model="userInfo.password" />
-        </el-form-item>
-        <el-form-item label="昵称" prop="nickName">
-          <el-input v-model="userInfo.nickName" />
-        </el-form-item>
-        <el-form-item label="手机号" prop="phone">
-          <el-input v-model="userInfo.phone" />
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="userInfo.email" />
-        </el-form-item>
-        <el-form-item label="用户角色" prop="authorityId">
-          <el-cascader
-            v-model="userInfo.authorityIds"
-            style="width: 100%"
-            :options="authOptions"
-            :show-all-levels="false"
-            :props="{
-              multiple: true,
-              checkStrictly: true,
-              label: 'authorityName',
-              value: 'authorityId',
-              disabled: 'disabled',
-              emitPath: false
-            }"
-            :clearable="false"
-          />
-        </el-form-item>
-        <el-form-item label="启用" prop="disabled">
-          <el-switch
-            v-model="userInfo.enable"
-            inline-prompt
-            :active-value="1"
-            :inactive-value="2"
-          />
-        </el-form-item>
-        <el-form-item label="头像" label-width="80px">
-          <SelectImage v-model="userInfo.headerImg" />
-        </el-form-item>
-      </el-form>
-    </el-drawer>
   </div>
 </template>
 
@@ -207,7 +132,6 @@
 
   import { ref, watch, onMounted } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
-  import SelectImage from '@/components/selectImage/selectImage.vue'
   import { useAppStore } from "@/pinia";
   import { storeToRefs } from 'pinia'
 
@@ -230,8 +154,6 @@
   // 方法直接解构
   const {
     fetchUserList,
-    createUser,
-    updateUser,
     resetSearchInfo,
     setPage,
     setPageSize
@@ -365,77 +287,6 @@
       }
     })
   }
-
-  // 弹窗相关
-  const userInfo = ref({
-    userName: '',
-    password: '',
-    nickName: '',
-    headerImg: '',
-    authorityId: '',
-    authorityIds: [],
-    enable: 1
-  })
-
-  const rules = ref({
-    userName: [
-      { required: true, message: '请输入用户名', trigger: 'blur' },
-      { min: 5, message: '最低5位字符', trigger: 'blur' }
-    ],
-    password: [
-      { required: true, message: '请输入用户密码', trigger: 'blur' },
-      { min: 6, message: '最低6位字符', trigger: 'blur' }
-    ],
-    nickName: [{ required: true, message: '请输入用户昵称', trigger: 'blur' }],
-    phone: [
-      {
-        pattern: /^1([38][0-9]|4[014-9]|[59][0-35-9]|6[2567]|7[0-8])\d{8}$/,
-        message: '请输入合法手机号',
-        trigger: 'blur'
-      }
-    ],
-    email: [
-      {
-        pattern: /^([0-9A-Za-z\-_.]+)@([0-9a-z]+\.[a-z]{2,3}(\.[a-z]{2})?)$/g,
-        message: '请输入正确的邮箱',
-        trigger: 'blur'
-      }
-    ],
-    authorityId: [
-      { required: true, message: '请选择用户角色', trigger: 'blur' }
-    ]
-  })
-  const userForm = ref(null)
-  const enterAddUserDialog = async () => {
-    userInfo.value.authorityId = userInfo.value.authorityIds[0]
-    userForm.value.validate(async (valid) => {
-      if (valid) {
-        try {
-          if (dialogFlag.value === 'add') {
-            await createUser(userInfo.value)
-            ElMessage({ type: 'success', message: '创建成功' })
-          }
-          if (dialogFlag.value === 'edit') {
-            await updateUser(userInfo.value)
-            ElMessage({ type: 'success', message: '编辑成功' })
-          }
-          closeAddUserDialog()
-        } catch (error) {
-          ElMessage.error(error.message || '操作失败')
-        }
-      }
-    })
-  }
-
-  const addUserDialog = ref(false)
-  const closeAddUserDialog = () => {
-    userForm.value.resetFields()
-    userInfo.value.headerImg = ''
-    userInfo.value.authorityIds = []
-    addUserDialog.value = false
-  }
-
-  const dialogFlag = ref('add')
 
 </script>
 
