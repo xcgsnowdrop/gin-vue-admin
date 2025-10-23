@@ -4,11 +4,10 @@ package request
 type SearchUserParams struct {
 	Page     int    `json:"page" form:"page"`         // 页码
 	PageSize int    `json:"pageSize" form:"pageSize"` // 每页数量
-	UserId   string `json:"userId" form:"userId"`     // 游戏用户ID
-	UserName string `json:"userName" form:"userName"` // 用户名
-	NickName string `json:"nickName" form:"nickName"` // 昵称
-	Phone    string `json:"phone" form:"phone"`       // 手机号
-	Email    string `json:"email" form:"email"`       // 邮箱
+	UserId   string `json:"userId" form:"userId"`     // 游戏用户UserID
+	PlayerId string `json:"playerId" form:"playerId"` // 玩家PlayerID
+	UniqueId string `json:"uniqueId" form:"uniqueId"` // 玩家唯一ID
+	NickName string `json:"nickname" form:"nickname"` // 昵称
 }
 
 // CreateUserRequest 创建游戏用户请求

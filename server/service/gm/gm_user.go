@@ -17,38 +17,6 @@ import (
 
 type UserService struct{}
 
-// GetUserList 获取游戏用户列表
-func (userService *UserService) GetUserList(info gmReq.SearchUserParams) (list []gm.GMUser, total int64, err error) {
-	limit := info.PageSize
-	offset := info.PageSize * (info.Page - 1)
-	db := global.GVA_DB.Model(&gm.GMUser{})
-
-	// 构建查询条件
-	if info.UserId != "" {
-		db = db.Where("game_user_id LIKE ?", "%"+info.UserId+"%")
-	}
-	if info.UserName != "" {
-		db = db.Where("user_name LIKE ?", "%"+info.UserName+"%")
-	}
-	if info.NickName != "" {
-		db = db.Where("nick_name LIKE ?", "%"+info.NickName+"%")
-	}
-	if info.Phone != "" {
-		db = db.Where("phone LIKE ?", "%"+info.Phone+"%")
-	}
-	if info.Email != "" {
-		db = db.Where("email LIKE ?", "%"+info.Email+"%")
-	}
-
-	err = db.Count(&total).Error
-	if err != nil {
-		return
-	}
-
-	err = db.Limit(limit).Offset(offset).Order("created_at desc").Find(&list).Error
-	return list, total, err
-}
-
 // GetUser 获取游戏用户详情
 func (userService *UserService) GetUser(id string) (user gm.GMUser, err error) {
 	var userId uint64
@@ -266,6 +234,12 @@ func (userService *UserService) GetPlayerListFromMongo(info gmReq.SearchUserPara
 	filter := bson.M{}
 	if info.UserId != "" {
 		filter["user_id"] = info.UserId
+	}
+	if info.PlayerId != "" {
+		filter["player_id"] = info.PlayerId
+	}
+	if info.UniqueId != "" {
+		filter["unique_id"] = info.UniqueId
 	}
 	if info.NickName != "" {
 		filter["nickname"] = info.NickName
