@@ -25,7 +25,7 @@
     </div>
     <div class="gva-table-box">
       <el-table :data="tableData" row-key="user_id">
-        <el-table-column align="left" label="UserID" min-width="200" prop="user_id" />
+        <el-table-column align="left" label="UserID" min-width="120" prop="user_id" />
         <el-table-column
           align="left"
           label="PlayerID"
@@ -59,7 +59,7 @@
         <el-table-column
           align="left"
           label="区服"
-          min-width="80"
+          min-width="60"
           prop="area_id"
         />
         <el-table-column align="left" label="注册时间" min-width="180" prop="register_time_formatted" />
@@ -127,10 +127,9 @@
 
 <script setup>
   import { useGMUserStore } from '@/pinia/gm/user'
-  import { getAuthorityList } from '@/api/authority'
   import WarningBar from '@/components/warningBar/warningBar.vue'
 
-  import { ref, watch, onMounted } from 'vue'
+  import { watch, onMounted } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import { useAppStore } from "@/pinia";
   import { storeToRefs } from 'pinia'
