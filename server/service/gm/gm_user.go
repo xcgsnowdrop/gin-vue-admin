@@ -1,6 +1,7 @@
 package gm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -9,6 +10,8 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/gm"
 	gmReq "github.com/flipped-aurora/gin-vue-admin/server/model/gm/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/utils/pagination"
+	"go.mongodb.org/mongo-driver/bson"
 	"gorm.io/gorm"
 )
 
@@ -253,4 +256,79 @@ func (userService *UserService) GetUserStats() (stats map[string]interface{}, er
 	}
 
 	return stats, nil
+}
+
+// GetPlayerListFromMongo 从 MongoDB 获取玩家列表（示例方法）
+func (userService *UserService) GetPlayerListFromMongo(info gmReq.SearchUserParams) (list []*gm.PlayerInfo, total int64, err error) {
+	ctx := context.Background()
+
+	// 构建查询条件
+	filter := bson.M{}
+	if info.UserId != "" {
+		filter["user_id"] = info.UserId
+	}
+	if info.NickName != "" {
+		filter["nickname"] = info.NickName
+	}
+
+	// 构建分页参数
+	page := pagination.PageParam{
+		PageNum:  int64(info.Page),
+		PageSize: int64(info.PageSize),
+	}
+
+	// 构建查询选项
+	options := &pagination.FindOptions{
+		Sort: bson.D{}, // 排序条件
+		Projection: bson.M{
+			"_id":           0, // 排除 _id 字段
+			"user_id":       1,
+			"player_id":     1,
+			"nickname":      1,
+			"lv":            1,
+			"power":         1,
+			"area_id":       1,
+			"unique_id":     1,
+			"login_time":    1,
+			"register_time": 1,
+		},
+	}
+
+	// 执行分页查询（使用新的方法）
+	pageRes, err := pagination.FindWithPageOptions(ctx, global.GVA_MONGO_PLAYER_INFO, filter, page, func() *gm.PlayerInfo { return &gm.PlayerInfo{} }, options)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return pageRes.List, pageRes.Total, nil
+}
+
+// CreatePlayerInMongo 在 MongoDB 中创建玩家（示例方法）
+func (userService *UserService) CreatePlayerInMongo(player gm.GMUser) error {
+	ctx := context.Background()
+
+	// 检查游戏用户ID是否已存在
+	filter := bson.M{"game_user_id": player.GameUserId}
+	count, err := global.GVA_MONGO_PLAYER_INFO.CountDocuments(ctx, filter)
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return errors.New("游戏用户ID已存在")
+	}
+
+	// 检查用户名是否已存在
+	filter = bson.M{"user_name": player.UserName}
+	count, err = global.GVA_MONGO_PLAYER_INFO.CountDocuments(ctx, filter)
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return errors.New("用户名已存在")
+	}
+
+	// 创建新玩家
+	_, err = global.GVA_MONGO_PLAYER_INFO.InsertOne(ctx, player)
+	return err
 }

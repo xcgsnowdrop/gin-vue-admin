@@ -2,11 +2,12 @@ package core
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/initialize"
 	"github.com/flipped-aurora/gin-vue-admin/server/service/system"
 	"go.uber.org/zap"
-	"time"
 )
 
 func RunServer() {
@@ -19,7 +20,7 @@ func RunServer() {
 	}
 
 	if global.GVA_CONFIG.System.UseMongo {
-		err := initialize.Mongo.Initialization()
+		err := initialize.InitMongo()
 		if err != nil {
 			zap.L().Error(fmt.Sprintf("%+v", err))
 		}

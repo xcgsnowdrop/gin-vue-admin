@@ -26,7 +26,7 @@ func (u *UserApi) GetUserList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if list, total, err := gmUserService.GetUserList(pageInfo); err != nil {
+	if list, total, err := gmUserService.GetPlayerListFromMongo(pageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)
 	} else {
