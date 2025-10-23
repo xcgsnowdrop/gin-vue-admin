@@ -25,7 +25,7 @@
     </div>
     <div class="gva-table-box">
       <el-table :data="tableData" row-key="user_id">
-        <el-table-column align="left" label="UserID" min-width="180" prop="user_id" />
+        <el-table-column align="left" label="UserID" min-width="200" prop="user_id" />
         <el-table-column
           align="left"
           label="PlayerID"
@@ -64,22 +64,49 @@
         />
         <el-table-column align="left" label="注册时间" min-width="180" prop="register_time_formatted" />
         <el-table-column align="left" label="最后登录时间" min-width="180" prop="login_time_formatted" />
+        <el-table-column align="left" label="玩家状态" min-width="200">
+          <template #default="scope">
+            <div class="status-container">
+              <el-tag :type="scope.row.online ? 'success' : 'info'" size="small">
+                {{ scope.row.online ? '在线' : '离线' }}
+              </el-tag>
+              <el-tag 
+                v-if="scope.row.ban_chat" 
+                type="warning" 
+                size="small" 
+                style="margin-left: 4px;"
+              >
+                已禁言
+              </el-tag>
+              <el-tag 
+                v-if="scope.row.ban_login" 
+                type="danger" 
+                size="small" 
+                style="margin-left: 4px;"
+              >
+                已封号
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" :min-width="appStore.operateMinWith" fixed="right">
           <template #default="scope">
             <el-button
-              type="primary"
+              :type="scope.row.ban_chat ? 'success' : 'warning'"
               link
-              icon="delete"
-              @click="deleteUserFunc(scope.row)"
-              >删除</el-button
+              :icon="scope.row.ban_chat ? 'unlock' : 'lock'"
+              @click="toggleBanChat(scope.row)"
             >
+              {{ scope.row.ban_chat ? '解除禁言' : '禁言' }}
+            </el-button>
             <el-button
-              type="primary"
+              :type="scope.row.ban_login ? 'success' : 'danger'"
               link
-              icon="edit"
-              @click="openEdit(scope.row)"
-              >编辑</el-button
+              :icon="scope.row.ban_login ? 'unlock' : 'lock'"
+              @click="toggleBanLogin(scope.row)"
             >
+              {{ scope.row.ban_login ? '解除封号' : '封号' }}
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -205,7 +232,6 @@
     fetchUserList,
     createUser,
     updateUser,
-    removeUser,
     resetSearchInfo,
     setPage,
     setPageSize
@@ -292,17 +318,50 @@
     setAuthorityOptions(authData, authOptions.value)
   }
 
-  const deleteUserFunc = async (row) => {
-    ElMessageBox.confirm('确定要删除吗?', '提示', {
+  // 切换禁言状态
+  const toggleBanChat = async (row) => {
+    const action = row.ban_chat ? '解除禁言' : '禁言'
+    const confirmText = row.ban_chat ? '确定要解除该玩家的禁言吗？' : '确定要禁言该玩家吗？'
+    
+    ElMessageBox.confirm(confirmText, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     }).then(async () => {
       try {
-        await removeUser(row.user_id)
-        ElMessage.success('删除成功')
+        // 调用 API 切换禁言状态
+        await gmUserStore.setUserStatus(row.user_id, {
+          ban_chat: !row.ban_chat
+        })
+        ElMessage.success(`${action}成功`)
+        // 刷新列表
+        await fetchUserList()
       } catch (error) {
-        ElMessage.error(error.message || '删除失败')
+        ElMessage.error(error.message || `${action}失败`)
+      }
+    })
+  }
+
+  // 切换封号状态
+  const toggleBanLogin = async (row) => {
+    const action = row.ban_login ? '解除封号' : '封号'
+    const confirmText = row.ban_login ? '确定要解除该玩家的封号吗？' : '确定要封号该玩家吗？'
+    
+    ElMessageBox.confirm(confirmText, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(async () => {
+      try {
+        // 调用 API 切换封号状态
+        await gmUserStore.setUserStatus(row.user_id, {
+          ban_login: !row.ban_login
+        })
+        ElMessage.success(`${action}成功`)
+        // 刷新列表
+        await fetchUserList()
+      } catch (error) {
+        ElMessage.error(error.message || `${action}失败`)
       }
     })
   }
@@ -378,16 +437,17 @@
 
   const dialogFlag = ref('add')
 
-  const openEdit = (row) => {
-    dialogFlag.value = 'edit'
-    userInfo.value = JSON.parse(JSON.stringify(row))
-    addUserDialog.value = true
-  }
-
 </script>
 
-<!-- <style lang="scss">
-  .header-img-box {
-    @apply w-52 h-52 border border-solid border-gray-300 rounded-xl flex justify-center items-center cursor-pointer;
+<style lang="scss">
+  .status-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
   }
-</style> -->
+  
+  .status-container .el-tag {
+    margin: 0;
+  }
+</style>
