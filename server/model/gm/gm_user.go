@@ -53,7 +53,7 @@ type EquipInfo struct {
 type EquipsInfo struct {
 	SlotInfo map[int32]EquipInfo  `json:"slot_info" bson:"slot_info"`
 	EquipMap map[string]EquipInfo `json:"equip_map" bson:"equip_map"`
-	Attrs    map[string]int64     `bson:"attrs" bson:"attrs"`
+	Attrs    map[string]int64     `json:"attrs" bson:"attrs"`
 }
 
 type AuraInfo struct {
@@ -694,4 +694,22 @@ type PlayerInfo struct {
 	PlayerFashionInfo     PlayerFashionInfo               `json:"player_fashion_info" bson:"player_fashion_info"`
 	PlayerGTInfo          PlayerGTInfo                    `json:"player_gt_info" bson:"player_gt_info"`
 	DailyResourceExpireAt int32                           `json:"daily_resource_expire_at" bson:"daily_resource_expire_at"`
+}
+
+// PlayerInfoWithStatus 带状态的玩家信息（用于API返回）
+type PlayerInfoWithStatus struct {
+	*PlayerInfo
+	Online   bool `json:"online"`    // 在线状态
+	BanLogin bool `json:"ban_login"` // 封号状态
+	BanChat  bool `json:"ban_chat"`  // 禁言状态
+}
+
+// ToPlayerInfoWithStatus 将PlayerInfo转换为带状态的结构体
+func (p *PlayerInfo) ToPlayerInfoWithStatus() *PlayerInfoWithStatus {
+	return &PlayerInfoWithStatus{
+		PlayerInfo: p,
+		Online:     false, // 默认值，需要从外部设置
+		BanLogin:   false,
+		BanChat:    false,
+	}
 }

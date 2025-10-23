@@ -227,7 +227,7 @@ func (userService *UserService) GetUserStats() (stats map[string]interface{}, er
 }
 
 // GetPlayerListFromMongo 从 MongoDB 获取玩家列表（示例方法）
-func (userService *UserService) GetPlayerListFromMongo(info gmReq.SearchUserParams) (list []*gm.PlayerInfo, total int64, err error) {
+func (userService *UserService) GetPlayerListFromMongo(info gmReq.SearchUserParams) (list []*gm.PlayerInfoWithStatus, total int64, err error) {
 	ctx := context.Background()
 
 	// 构建查询条件
@@ -270,12 +270,91 @@ func (userService *UserService) GetPlayerListFromMongo(info gmReq.SearchUserPara
 
 	// 执行分页查询（使用新的方法）
 	pageRes, err := pagination.FindWithPageOptions(ctx, global.GVA_MONGO_PLAYER_INFO, filter, page, func() *gm.PlayerInfo { return &gm.PlayerInfo{} }, options)
-
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return pageRes.List, pageRes.Total, nil
+	// 批量获取状态（性能优化）
+	playerIds := make([]string, 0, len(pageRes.List))
+	for _, item := range pageRes.List {
+		playerIds = append(playerIds, item.PlayerId)
+	}
+
+	onlineMap, banLoginMap, banChatMap := userService.getPlayersStatusBatch(playerIds)
+
+	// 转换为带状态的结构体并设置状态
+	resultList := make([]*gm.PlayerInfoWithStatus, 0, len(pageRes.List))
+	for _, item := range pageRes.List {
+		playerWithStatus := item.ToPlayerInfoWithStatus()
+
+		// 从批量获取的map中设置状态
+		playerWithStatus.Online = onlineMap[item.PlayerId]
+		playerWithStatus.BanLogin = banLoginMap[item.PlayerId]
+		playerWithStatus.BanChat = banChatMap[item.PlayerId]
+
+		resultList = append(resultList, playerWithStatus)
+	}
+
+	return resultList, pageRes.Total, nil
+}
+
+// getPlayerOnlineStatus 获取玩家在线状态
+func (userService *UserService) getPlayerOnlineStatus(playerId string) bool {
+	// TODO: 从Redis或在线用户列表获取在线状态
+	// 示例实现：
+	// return global.GVA_REDIS.SIsMember(ctx, "online_players", playerId).Val()
+	return false // 默认离线
+}
+
+// getPlayerBanLoginStatus 获取玩家封号状态
+func (userService *UserService) getPlayerBanLoginStatus(playerId string) bool {
+	// TODO: 从封号列表获取封号状态
+	// 示例实现：
+	// return global.GVA_REDIS.SIsMember(ctx, "ban_login_players", playerId).Val()
+	return false // 默认未封号
+}
+
+// getPlayerBanChatStatus 获取玩家禁言状态
+func (userService *UserService) getPlayerBanChatStatus(playerId string) bool {
+	// TODO: 从禁言列表获取禁言状态
+	// 示例实现：
+	// return global.GVA_REDIS.SIsMember(ctx, "ban_chat_players", playerId).Val()
+	return false // 默认未禁言
+}
+
+// getPlayersStatusBatch 批量获取玩家状态（性能优化）
+func (userService *UserService) getPlayersStatusBatch(playerIds []string) (onlineMap, banLoginMap, banChatMap map[string]bool) {
+
+	// 初始化结果map
+	onlineMap = make(map[string]bool)
+	banLoginMap = make(map[string]bool)
+	banChatMap = make(map[string]bool)
+
+	// TODO: 批量从Redis获取状态
+	// 示例实现：
+	// onlinePlayers := global.GVA_REDIS.SMembers(ctx, "online_players").Val()
+	// banLoginPlayers := global.GVA_REDIS.SMembers(ctx, "ban_login_players").Val()
+	// banChatPlayers := global.GVA_REDIS.SMembers(ctx, "ban_chat_players").Val()
+
+	// 构建状态map
+	// for _, playerId := range onlinePlayers {
+	//     onlineMap[playerId] = true
+	// }
+	// for _, playerId := range banLoginPlayers {
+	//     banLoginMap[playerId] = true
+	// }
+	// for _, playerId := range banChatPlayers {
+	//     banChatMap[playerId] = true
+	// }
+
+	// 设置默认值
+	for _, playerId := range playerIds {
+		onlineMap[playerId] = false
+		banLoginMap[playerId] = false
+		banChatMap[playerId] = false
+	}
+
+	return onlineMap, banLoginMap, banChatMap
 }
 
 // CreatePlayerInMongo 在 MongoDB 中创建玩家（示例方法）
