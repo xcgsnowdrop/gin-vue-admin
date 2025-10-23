@@ -170,27 +170,6 @@
     setPage(1)
     fetchUserList()
   }
-  // 初始化相关
-  const setAuthorityOptions = (AuthorityData, optionsData) => {
-    AuthorityData &&
-      AuthorityData.forEach((item) => {
-        if (item.children && item.children.length) {
-          const option = {
-            authorityId: item.authorityId,
-            authorityName: item.authorityName,
-            children: []
-          }
-          setAuthorityOptions(item.children, option.children)
-          optionsData.push(option)
-        } else {
-          const option = {
-            authorityId: item.authorityId,
-            authorityName: item.authorityName
-          }
-          optionsData.push(option)
-        }
-      })
-  }
 
   // 分页
   const handleSizeChange = (val) => {
@@ -209,36 +188,17 @@
       console.log('tableData 变化了')
       console.log('新值:', newValue)
       console.log('旧值:', oldValue)
-      setAuthorityIds()
     }
   )
 
   const initPage = async () => {
     await fetchUserList()
-    const res = await getAuthorityList()
-    setOptions(res.data)
   }
 
   onMounted(() => {
     initPage()
   })
 
-  const setAuthorityIds = () => {
-    tableData.value &&
-      tableData.value.forEach((user) => {
-        user.authorityIds =
-          user.authorities &&
-          user.authorities.map((i) => {
-            return i.authorityId
-          })
-      })
-  }
-
-  const authOptions = ref([])
-  const setOptions = (authData) => {
-    authOptions.value = []
-    setAuthorityOptions(authData, authOptions.value)
-  }
 
   // 切换禁言状态
   const toggleBanChat = async (row) => {
