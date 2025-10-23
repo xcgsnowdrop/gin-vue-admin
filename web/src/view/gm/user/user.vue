@@ -67,6 +67,8 @@
           min-width="80"
           prop="area_id"
         />
+        <el-table-column align="left" label="注册时间" min-width="180" prop="register_time_formatted" />
+        <el-table-column align="left" label="最后登录时间" min-width="180" prop="login_time_formatted" />
         <el-table-column label="操作" :min-width="appStore.operateMinWith" fixed="right">
           <template #default="scope">
             <el-button
@@ -83,13 +85,6 @@
               @click="openEdit(scope.row)"
               >编辑</el-button
             >
-            <el-button
-              type="primary"
-              link
-              icon="magic-stick"
-              @click="resetPasswordFunc(scope.row)"
-              >重置密码</el-button
-            >
           </template>
         </el-table-column>
       </el-table>
@@ -105,37 +100,6 @@
         />
       </div>
     </div>
-    <!-- 重置密码对话框 -->
-    <el-dialog
-      v-model="resetPwdDialog"
-      title="重置密码"
-      width="500px"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-    >
-      <el-form :model="resetPwdInfo" ref="resetPwdForm" label-width="100px">
-        <el-form-item label="用户账号">
-          <el-input v-model="resetPwdInfo.userName" disabled />
-        </el-form-item>
-        <el-form-item label="用户昵称">
-          <el-input v-model="resetPwdInfo.nickName" disabled />
-        </el-form-item>
-        <el-form-item label="新密码">
-          <div class="flex w-full">
-            <el-input class="flex-1" v-model="resetPwdInfo.password" placeholder="请输入新密码" show-password />
-            <el-button type="primary" @click="generateRandomPassword" style="margin-left: 10px">
-              生成随机密码
-            </el-button>
-          </div>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="closeResetPwdDialog">取 消</el-button>
-          <el-button type="primary" @click="confirmResetPassword">确 定</el-button>
-        </div>
-      </template>
-    </el-dialog>
     
     <el-drawer
       v-model="addUserDialog"
@@ -217,7 +181,6 @@
 <script setup>
   import { useGMUserStore } from '@/pinia/gm/user'
   import { getAuthorityList } from '@/api/authority'
-  import CustomPic from '@/components/customPic/index.vue'
   import WarningBar from '@/components/warningBar/warningBar.vue'
 
   import { ref, watch, onMounted } from 'vue'
@@ -243,7 +206,6 @@
     createUser,
     updateUser,
     removeUser,
-    resetPassword: resetUserPassword,
     resetSearchInfo,
     setPage,
     setPageSize
@@ -323,77 +285,6 @@
     initPage()
   })
 
-  // 重置密码对话框相关
-  const resetPwdDialog = ref(false)
-  const resetPwdForm = ref(null)
-  const resetPwdInfo = ref({
-    ID: '',
-    userName: '',
-    nickName: '',
-    password: ''
-  })
-  
-  // 生成随机密码
-  const generateRandomPassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
-    let password = ''
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    resetPwdInfo.value.password = password
-    // 复制到剪贴板
-    navigator.clipboard.writeText(password).then(() => {
-      ElMessage({
-        type: 'success',
-        message: '密码已复制到剪贴板'
-      })
-    }).catch(() => {
-      ElMessage({
-        type: 'error',
-        message: '复制失败，请手动复制'
-      })
-    })
-  }
-  
-  // 打开重置密码对话框
-  const resetPasswordFunc = (row) => {
-    resetPwdInfo.value.ID = row.user_id || row.ID
-    resetPwdInfo.value.userName = row.player_id || row.userName
-    resetPwdInfo.value.nickName = row.nickname || row.nickName
-    resetPwdInfo.value.password = ''
-    resetPwdDialog.value = true
-  }
-  
-  // 确认重置密码
-  const confirmResetPassword = async () => {
-    if (!resetPwdInfo.value.password) {
-      ElMessage({
-        type: 'warning',
-        message: '请输入或生成密码'
-      })
-      return
-    }
-    
-    try {
-      await resetUserPassword(resetPwdInfo.value.ID, resetPwdInfo.value.password)
-      ElMessage({
-        type: 'success',
-        message: '密码重置成功'
-      })
-      resetPwdDialog.value = false
-    } catch (error) {
-      ElMessage({
-        type: 'error',
-        message: error.message || '密码重置失败'
-      })
-    }
-  }
-  
-  // 关闭重置密码对话框
-  const closeResetPwdDialog = () => {
-    resetPwdInfo.value.password = ''
-    resetPwdDialog.value = false
-  }
   const setAuthorityIds = () => {
     tableData.value &&
       tableData.value.forEach((user) => {

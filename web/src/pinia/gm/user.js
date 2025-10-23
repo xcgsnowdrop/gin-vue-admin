@@ -6,7 +6,6 @@ import {
   updateGMUser,
   deleteGMUser,
   getGMUser,
-  resetGMUserPassword,
   setGMUserStatus,
   batchOperateGMUser,
   exportGMUser,
@@ -23,11 +22,9 @@ export const useGMUserStore = defineStore('gmUser', () => {
   const pageSize = ref(10)
   const searchInfo = ref({
     userId: '',
-    username: '',
+    playerId: '',
+    uniqueId: '',
     nickname: '',
-    phone: '',
-    email: '',
-    gameUserId: ''
   })
   const userStats = ref({
     totalUsers: 0,
@@ -61,6 +58,12 @@ export const useGMUserStore = defineStore('gmUser', () => {
         console.log('🔍 Player list data:', playerList)
         console.log('🔍 First player item:', playerList[0])
         
+        // 预处理数据，转换时间戳为日期时间对象
+        playerList.forEach(user => {
+          user.register_time_formatted = user.register_time ? new Date(user.register_time * 1000).toLocaleString() : '-'
+          user.login_time_formatted = user.login_time ? new Date(user.login_time * 1000).toLocaleString() : '-'
+        })
+
         userList.value = playerList
         total.value = response.data.total || 0
         page.value = response.data.page || 1
@@ -146,24 +149,6 @@ export const useGMUserStore = defineStore('gmUser', () => {
     }
   }
 
-  // 重置密码
-  const resetPassword = async (id, password) => {
-    try {
-      const response = await resetGMUserPassword({
-        id,
-        password
-      })
-      if (response.code === 0) {
-        return true
-      } else {
-        throw new Error(response.msg || '重置密码失败')
-      }
-    } catch (error) {
-      console.error('重置密码失败:', error)
-      throw error
-    }
-  }
-
   // 设置用户状态
   const setUserStatus = async (id, status) => {
     try {
@@ -243,11 +228,9 @@ export const useGMUserStore = defineStore('gmUser', () => {
   const resetSearchInfo = () => {
     searchInfo.value = {
       userId: '',
-      username: '',
+      playerId: '',
+      uniqueId: '',
       nickname: '',
-      phone: '',
-      email: '',
-      gameUserId: ''
     }
   }
 
@@ -291,7 +274,6 @@ export const useGMUserStore = defineStore('gmUser', () => {
     createUser,
     updateUser,
     removeUser,
-    resetPassword,
     setUserStatus,
     batchOperate,
     exportUsers,
