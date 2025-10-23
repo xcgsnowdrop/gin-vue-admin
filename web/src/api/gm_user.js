@@ -62,6 +62,24 @@ export const setGMUserStatus = (data) => {
   })
 }
 
+// 切换禁言状态
+export const toggleGMBanChat = (data) => {
+  return gmService({
+    url: '/gm/user/toggleBanChat',
+    method: 'post',
+    data
+  })
+}
+
+// 切换封号状态
+export const toggleGMBanLogin = (data) => {
+  return gmService({
+    url: '/gm/user/toggleBanLogin',
+    method: 'post',
+    data
+  })
+}
+
 // 批量操作游戏用户
 export const batchOperateGMUser = (data) => {
   return gmService({

@@ -211,9 +211,7 @@
     }).then(async () => {
       try {
         // 调用 API 切换禁言状态
-        await gmUserStore.setUserStatus(row.user_id, {
-          ban_chat: !row.ban_chat
-        })
+        await gmUserStore.toggleBanChat(row.player_id)
         ElMessage.success(`${action}成功`)
         // 刷新列表
         await fetchUserList()
@@ -235,9 +233,7 @@
     }).then(async () => {
       try {
         // 调用 API 切换封号状态
-        await gmUserStore.setUserStatus(row.user_id, {
-          ban_login: !row.ban_login
-        })
+        await gmUserStore.toggleBanLogin(row.player_id)
         ElMessage.success(`${action}成功`)
         // 刷新列表
         await fetchUserList()

@@ -4,9 +4,9 @@ import {
   getGMUserList,
   createGMUser,
   updateGMUser,
-  deleteGMUser,
   getGMUser,
-  setGMUserStatus,
+  toggleGMBanChat,
+  toggleGMBanLogin,
   batchOperateGMUser,
   exportGMUser,
   getGMUserStats
@@ -132,24 +132,36 @@ export const useGMUserStore = defineStore('gmUser', () => {
     }
   }
 
-
-
-  // 设置用户状态
-  const setUserStatus = async (id, status) => {
+  // 切换禁言状态
+  const toggleBanChat = async (player_id) => {
     try {
-      const response = await setGMUserStatus({
-        id,
-        status
-      })
-      if (response.code === 0) {
+      const response = await toggleGMBanChat({ player_id })
+      if (response.status === 0) {
         // 刷新列表
         await fetchUserList()
         return true
       } else {
-        throw new Error(response.msg || '设置用户状态失败')
+        throw new Error(response.msg || '切换禁言状态失败')
       }
     } catch (error) {
-      console.error('设置用户状态失败:', error)
+      console.error('切换禁言状态失败:', error)
+      throw error
+    }
+  }
+
+  // 切换封号状态
+  const toggleBanLogin = async (player_id) => {
+    try {
+      const response = await toggleGMBanLogin({ player_id })
+      if (response.status === 0) {
+        // 刷新列表
+        await fetchUserList()
+        return true
+      } else {
+        throw new Error(response.msg || '切换封号状态失败')
+      }
+    } catch (error) {
+      console.error('切换封号状态失败:', error)
       throw error
     }
   }
@@ -258,7 +270,8 @@ export const useGMUserStore = defineStore('gmUser', () => {
     fetchUser,
     createUser,
     updateUser,
-    setUserStatus,
+    toggleBanChat,
+    toggleBanLogin,
     batchOperate,
     exportUsers,
     fetchUserStats,
