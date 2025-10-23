@@ -24,11 +24,6 @@
       </el-form>
     </div>
     <div class="gva-table-box">
-      <div class="gva-btn-list">
-        <el-button type="primary" icon="plus" @click="addUser"
-          >新增游戏用户</el-button
-        >
-      </div>
       <el-table :data="tableData" row-key="user_id">
         <el-table-column align="left" label="UserID" min-width="180" prop="user_id" />
         <el-table-column
@@ -187,6 +182,7 @@
   import { ElMessage, ElMessageBox } from 'element-plus'
   import SelectImage from '@/components/selectImage/selectImage.vue'
   import { useAppStore } from "@/pinia";
+  import { storeToRefs } from 'pinia'
 
   defineOptions({
     name: 'GMUser'
@@ -195,13 +191,17 @@
   const appStore = useAppStore()
   const gmUserStore = useGMUserStore()
 
-  // 使用store中的状态
+  // 状态和getters使用storeToRefs响应式解构
   const { 
     userList: tableData, 
     total, 
     page, 
     pageSize, 
     searchInfo,
+  } = storeToRefs(gmUserStore)
+
+  // 方法直接解构
+  const {
     fetchUserList,
     createUser,
     updateUser,
@@ -211,19 +211,6 @@
     setPageSize
   } = gmUserStore
 
-  // 调试信息
-  watch(
-    () => tableData.value,
-    (newData) => {
-      console.log('🔍 Table data changed:', newData)
-      console.log('🔍 Table data length:', newData?.length)
-      if (newData && newData.length > 0) {
-        console.log('🔍 First table item:', newData[0])
-        console.log('🔍 First item keys:', Object.keys(newData[0]))
-      }
-    },
-    { immediate: true, deep: true }
-  )
 
   const onSubmit = () => {
     setPage(1)
@@ -270,7 +257,10 @@
 
   watch(
     () => tableData.value,
-    () => {
+    (newValue, oldValue) => {
+      console.log('tableData 变化了')
+      console.log('新值:', newValue)
+      console.log('旧值:', oldValue)
       setAuthorityIds()
     }
   )
@@ -388,12 +378,6 @@
 
   const dialogFlag = ref('add')
 
-  const addUser = () => {
-    dialogFlag.value = 'add'
-    addUserDialog.value = true
-  }
-
-
   const openEdit = (row) => {
     dialogFlag.value = 'edit'
     userInfo.value = JSON.parse(JSON.stringify(row))
@@ -402,8 +386,8 @@
 
 </script>
 
-<style lang="scss">
+<!-- <style lang="scss">
   .header-img-box {
     @apply w-52 h-52 border border-solid border-gray-300 rounded-xl flex justify-center items-center cursor-pointer;
   }
-</style>
+</style> -->
