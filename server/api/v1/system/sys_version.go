@@ -8,12 +8,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	systemReq "github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
-	systemRes "github.com/flipped-aurora/gin-vue-admin/server/model/system/response"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
+	"gmserver/global"
+	"gmserver/model/common/response"
+	"gmserver/model/system"
+	systemReq "gmserver/model/system/request"
+	systemRes "gmserver/model/system/response"
+	"gmserver/utils"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -302,7 +303,7 @@ func (sysVersionApi *SysVersionApi) ExportVersion(c *gin.Context) {
 			Status: dict.Status,
 			Desc:   dict.Desc,
 		}
-		
+
 		// 处理字典详情数据，清除ID和时间戳字段
 		cleanDetails := make([]system.SysDictionaryDetail, 0, len(dict.SysDictionaryDetails))
 		for _, detail := range dict.SysDictionaryDetails {
@@ -317,7 +318,7 @@ func (sysVersionApi *SysVersionApi) ExportVersion(c *gin.Context) {
 			cleanDetails = append(cleanDetails, cleanDetail)
 		}
 		cleanDict.SysDictionaryDetails = cleanDetails
-		
+
 		processedDicts = append(processedDicts, cleanDict)
 	}
 

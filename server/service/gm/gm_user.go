@@ -7,10 +7,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/gm"
-	gmReq "github.com/flipped-aurora/gin-vue-admin/server/model/gm/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils/pagination"
+	"gmserver/global"
+	"gmserver/model/gm"
+	gmReq "gmserver/model/gm/request"
+	"gmserver/utils/pagination"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"gorm.io/gorm"
 )

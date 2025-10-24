@@ -1,8 +1,7 @@
 package ast
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/pkg/errors"
+	"gmserver/global"
 	"go/ast"
 	"go/format"
 	"go/parser"
@@ -12,6 +11,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type Base struct{}

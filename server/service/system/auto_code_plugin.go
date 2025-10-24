@@ -4,15 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils/ast"
-	"github.com/mholt/archives"
-	cp "github.com/otiai10/copy"
-	"github.com/pkg/errors"
-	"go.uber.org/zap"
+	"gmserver/global"
+	"gmserver/model/system"
+	"gmserver/model/system/request"
+	"gmserver/utils"
+	"gmserver/utils/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
@@ -21,6 +17,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/mholt/archives"
+	cp "github.com/otiai10/copy"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 var AutoCodePlugin = new(autoCodePlugin)

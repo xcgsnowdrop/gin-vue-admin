@@ -3,7 +3,8 @@ package internal
 import (
 	"time"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/config"
+	"gmserver/config"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"

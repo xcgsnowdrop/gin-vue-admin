@@ -1,9 +1,9 @@
 package service
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/plugin/announcement/model"
-	"github.com/flipped-aurora/gin-vue-admin/server/plugin/announcement/model/request"
+	"gmserver/global"
+	"gmserver/plugin/announcement/model"
+	"gmserver/plugin/announcement/model/request"
 )
 
 var Info = new(info)

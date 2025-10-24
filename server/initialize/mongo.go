@@ -6,7 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"gmserver/global"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"

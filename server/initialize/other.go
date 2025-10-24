@@ -2,12 +2,13 @@ package initialize
 
 import (
 	"bufio"
-	"github.com/songzhibin97/gkit/cache/local_cache"
 	"os"
 	"strings"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
+	"github.com/songzhibin97/gkit/cache/local_cache"
+
+	"gmserver/global"
+	"gmserver/utils"
 )
 
 func OtherInit() {

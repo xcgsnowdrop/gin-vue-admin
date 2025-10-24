@@ -1,7 +1,8 @@
 package initialize
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"gmserver/global"
+
 	"go.uber.org/zap"
 )
 

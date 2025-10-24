@@ -1,9 +1,10 @@
 package gm
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
-	gmReq "github.com/flipped-aurora/gin-vue-admin/server/model/gm/request"
+	"gmserver/global"
+	"gmserver/model/common/response"
+	gmReq "gmserver/model/gm/request"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

@@ -1,10 +1,11 @@
 package initialize
 
 import (
+	"gmserver/config"
+	"gmserver/global"
+	"gmserver/initialize/internal"
+
 	oracle "github.com/dzwvip/gorm-oracle"
-	"github.com/flipped-aurora/gin-vue-admin/server/config"
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/initialize/internal"
 	"gorm.io/gorm"
 )
 

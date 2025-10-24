@@ -9,14 +9,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/utils/timer"
+	"gmserver/utils/timer"
+
 	"github.com/songzhibin97/gkit/cache/local_cache"
 
 	"golang.org/x/sync/singleflight"
 
 	"go.uber.org/zap"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/config"
+	"gmserver/config"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"

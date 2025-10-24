@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
+	"gmserver/global"
+	"gmserver/model/system"
+
 	"github.com/mark3labs/mcp-go/mcp"
 	"go.uber.org/zap"
 )

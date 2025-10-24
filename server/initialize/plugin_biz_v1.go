@@ -3,9 +3,10 @@ package initialize
 import (
 	"fmt"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/plugin/email"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils/plugin"
+	"gmserver/global"
+	"gmserver/plugin/email"
+	"gmserver/utils/plugin"
+
 	"github.com/gin-gonic/gin"
 )
 

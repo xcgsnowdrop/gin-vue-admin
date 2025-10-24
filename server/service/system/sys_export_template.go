@@ -11,11 +11,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
-	systemReq "github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
-	"github.com/flipped-aurora/gin-vue-admin/server/utils"
+	"gmserver/global"
+	"gmserver/model/common/request"
+	"gmserver/model/system"
+	systemReq "gmserver/model/system/request"
+	"gmserver/utils"
+
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 )
@@ -317,14 +318,14 @@ func (sysExportTemplateService *SysExportTemplateService) ExportExcel(templateID
 		for j, colCell := range row {
 			cell := fmt.Sprintf("%s%d", getColumnName(j+1), i+1)
 
- 			var sErr error
- 			if v, err := strconv.ParseFloat(colCell, 64); err == nil {
- 			    sErr = f.SetCellValue("Sheet1", cell, v)
- 			} else if v, err := strconv.ParseInt(colCell, 10, 64); err == nil {
- 			    sErr = f.SetCellValue("Sheet1", cell, v)
- 			} else {
- 			    sErr = f.SetCellValue("Sheet1", cell, colCell)
- 			}
+			var sErr error
+			if v, err := strconv.ParseFloat(colCell, 64); err == nil {
+				sErr = f.SetCellValue("Sheet1", cell, v)
+			} else if v, err := strconv.ParseInt(colCell, 10, 64); err == nil {
+				sErr = f.SetCellValue("Sheet1", cell, v)
+			} else {
+				sErr = f.SetCellValue("Sheet1", cell, colCell)
+			}
 
 			if sErr != nil {
 				return nil, "", sErr

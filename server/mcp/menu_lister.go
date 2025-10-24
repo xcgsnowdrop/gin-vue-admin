@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
+	"gmserver/global"
+	"gmserver/model/system"
+
 	"github.com/mark3labs/mcp-go/mcp"
 	"go.uber.org/zap"
 )
@@ -19,11 +20,11 @@ func init() {
 
 // MenuListResponse 菜单列表响应结构
 type MenuListResponse struct {
-	Success     bool                  `json:"success"`
-	Message     string                `json:"message"`
-	Menus       []system.SysBaseMenu  `json:"menus"`
-	TotalCount  int                   `json:"totalCount"`
-	Description string                `json:"description"`
+	Success     bool                 `json:"success"`
+	Message     string               `json:"message"`
+	Menus       []system.SysBaseMenu `json:"menus"`
+	TotalCount  int                  `json:"totalCount"`
+	Description string               `json:"description"`
 }
 
 // MenuLister 菜单列表工具
@@ -109,4 +110,3 @@ func (m *MenuLister) getAllMenus() ([]system.SysBaseMenu, error) {
 	}
 	return menus, nil
 }
-

@@ -1,7 +1,7 @@
 package system
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
+	"gmserver/global"
 )
 
 type SysAutoCodePackage struct {

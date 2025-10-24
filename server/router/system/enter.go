@@ -1,6 +1,6 @@
 package system
 
-import api "github.com/flipped-aurora/gin-vue-admin/server/api/v1"
+import api "gmserver/api/v1"
 
 type RouterGroup struct {
 	ApiRouter

@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/flipped-aurora/gin-vue-admin/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/gm"
-	gmReq "github.com/flipped-aurora/gin-vue-admin/server/model/gm/request"
+	"gmserver/global"
+	"gmserver/model/gm"
+	gmReq "gmserver/model/gm/request"
 )
 
 type ItemService struct{}

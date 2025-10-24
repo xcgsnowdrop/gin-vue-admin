@@ -3,8 +3,9 @@ package system
 import (
 	"context"
 
+	"gmserver/service/system"
+
 	adapter "github.com/casbin/gorm-adapter/v3"
-	"github.com/flipped-aurora/gin-vue-admin/server/service/system"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
