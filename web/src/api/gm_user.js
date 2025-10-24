@@ -1,8 +1,8 @@
-import gmService from '@/utils/gmRequest'
+import service from '@/utils/request'
 
 // 获取游戏用户列表
 export const getGMUserList = (data) => {
-  return gmService({
+  return service({
     url: '/gm/user/list',
     method: 'post',
     data
@@ -11,7 +11,7 @@ export const getGMUserList = (data) => {
 
 // 创建游戏用户
 export const createGMUser = (data) => {
-  return gmService({
+  return service({
     url: '/gm/user',
     method: 'post',
     data
@@ -20,7 +20,7 @@ export const createGMUser = (data) => {
 
 // 更新游戏用户信息
 export const updateGMUser = (data) => {
-  return gmService({
+  return service({
     url: '/gm/user',
     method: 'put',
     data
@@ -29,7 +29,7 @@ export const updateGMUser = (data) => {
 
 // 删除游戏用户
 export const deleteGMUser = (data) => {
-  return gmService({
+  return service({
     url: '/gm/user',
     method: 'delete',
     data
@@ -38,7 +38,7 @@ export const deleteGMUser = (data) => {
 
 // 获取游戏用户详情
 export const getGMUser = (id) => {
-  return gmService({
+  return service({
     url: `/gm/user/${id}`,
     method: 'get'
   })
@@ -46,7 +46,7 @@ export const getGMUser = (id) => {
 
 // 重置游戏用户密码
 export const resetGMUserPassword = (data) => {
-  return gmService({
+  return service({
     url: '/gm/user/resetPassword',
     method: 'post',
     data
@@ -55,7 +55,7 @@ export const resetGMUserPassword = (data) => {
 
 // 设置游戏用户状态
 export const setGMUserStatus = (data) => {
-  return gmService({
+  return service({
     url: '/gm/user/status',
     method: 'post',
     data
@@ -64,7 +64,7 @@ export const setGMUserStatus = (data) => {
 
 // 切换禁言状态
 export const toggleGMBanChat = (data) => {
-  return gmService({
+  return service({
     url: '/gm/user/toggleBanChat',
     method: 'post',
     data
@@ -73,7 +73,7 @@ export const toggleGMBanChat = (data) => {
 
 // 切换封号状态
 export const toggleGMBanLogin = (data) => {
-  return gmService({
+  return service({
     url: '/gm/user/toggleBanLogin',
     method: 'post',
     data
@@ -82,7 +82,7 @@ export const toggleGMBanLogin = (data) => {
 
 // 批量操作游戏用户
 export const batchOperateGMUser = (data) => {
-  return gmService({
+  return service({
     url: '/gm/user/batch',
     method: 'post',
     data
@@ -91,7 +91,7 @@ export const batchOperateGMUser = (data) => {
 
 // 导出游戏用户数据
 export const exportGMUser = (data) => {
-  return gmService({
+  return service({
     url: '/gm/user/export',
     method: 'post',
     data,
@@ -101,7 +101,7 @@ export const exportGMUser = (data) => {
 
 // 获取游戏用户统计信息
 export const getGMUserStats = () => {
-  return gmService({
+  return service({
     url: '/gm/user/stats',
     method: 'get'
   })

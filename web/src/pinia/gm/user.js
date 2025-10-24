@@ -53,7 +53,7 @@ export const useGMUserStore = defineStore('gmUser', () => {
       console.log('🔍 Response code:', response.code)
       console.log('🔍 Response data:', response.data)
       
-      if (response.status === 0) {
+      if (response.code === 0) {
         const playerList = response.data.player_list || response.data.list || []
         console.log('🔍 Player list data:', playerList)
         console.log('🔍 First player item:', playerList[0])
@@ -136,7 +136,7 @@ export const useGMUserStore = defineStore('gmUser', () => {
   const toggleBanChat = async (player_id) => {
     try {
       const response = await toggleGMBanChat({ player_id })
-      if (response.status === 0) {
+      if (response.code === 0) {
         // 刷新列表
         await fetchUserList()
         return true
