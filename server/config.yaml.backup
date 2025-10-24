@@ -9,7 +9,7 @@ autocode:
     web: web/src
     root: D:\xcg\workspace\gin-vue-admin
     server: server
-    module: github.com/flipped-aurora/gin-vue-admin/server
+    module: gmserver
     ai-path: ""
 aws-s3:
     bucket: xxxxx-10005608
@@ -18,7 +18,7 @@ aws-s3:
     secret-id: your-secret-id
     secret-key: your-secret-key
     base-url: https://gin.vue.admin
-    path-prefix: github.com/flipped-aurora/gin-vue-admin/server
+    path-prefix: gmserver
     s3-force-path-style: false
     disable-ssl: false
 captcha:
@@ -84,7 +84,7 @@ hua-wei-obs:
     access-key: you-access-key
     secret-key: you-secret-key
 jwt:
-    signing-key: e3ad29b7-c241-4bd3-a894-ef867165178d
+    signing-key: 05f2b0b4-6eed-412b-994a-105e1b29cf9b
     expires-time: 7d
     buffer-time: 1d
     issuer: qmPlus
@@ -108,7 +108,7 @@ minio:
 mongo:
     coll: ""
     options: ""
-    database: ""
+    database: "game"
     username: ""
     password: ""
     auth-source: ""
@@ -118,8 +118,8 @@ mongo:
     connect-timeout-ms: 0
     is-zap: false
     hosts:
-        - host: ""
-          port: ""
+        - host: "192.168.2.101"
+          port: "32102"
 mssql:
     prefix: ""
     port: ""
@@ -136,11 +136,13 @@ mssql:
     log-zap: false
 mysql:
     prefix: ""
+    # port: "32104"
     port: "3306"
     config: charset=utf8mb4&parseTime=True&loc=Local
     db-name: gva
     username: root
     password: toor
+    # path: 192.168.2.101
     path: 127.0.0.1
     engine: ""
     log-mode: error
@@ -227,6 +229,7 @@ system:
     iplimit-time: 3600
     use-multipoint: false
     use-redis: false
+    # use-mongo: true
     use-mongo: false
     use-strict-auth: false
 tencent-cos:
@@ -235,10 +238,10 @@ tencent-cos:
     secret-id: your-secret-id
     secret-key: your-secret-key
     base-url: https://gin.vue.admin
-    path-prefix: github.com/flipped-aurora/gin-vue-admin/server
+    path-prefix: gmserver
 zap:
     level: info
-    prefix: '[github.com/flipped-aurora/gin-vue-admin/server]'
+    prefix: '[gmserver]'
     format: console
     director: log
     encode-level: LowercaseColorLevelEncoder

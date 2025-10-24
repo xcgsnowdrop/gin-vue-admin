@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 type Server struct {
 	JWT       JWT     `mapstructure:"jwt" json:"jwt" yaml:"jwt"`
 	Zap       Zap     `mapstructure:"zap" json:"zap" yaml:"zap"`
@@ -37,4 +39,15 @@ type Server struct {
 
 	// MCP配置
 	MCP MCP `mapstructure:"mcp" json:"mcp" yaml:"mcp"`
+
+	// 游戏API配置
+	GameAPI GameAPI `mapstructure:"game-api" json:"game-api" yaml:"game-api"`
+}
+
+// GameAPI 游戏API配置
+type GameAPI struct {
+	Host       string        `mapstructure:"host" json:"host" yaml:"host"`
+	Port       int           `mapstructure:"port" json:"port" yaml:"port"`
+	Timeout    time.Duration `mapstructure:"timeout" json:"timeout" yaml:"timeout"`
+	RetryCount int           `mapstructure:"retry-count" json:"retry-count" yaml:"retry-count"`
 }

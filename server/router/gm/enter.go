@@ -7,6 +7,7 @@ import (
 type RouterGroup struct {
 	UserRouter
 	ItemRouter
+	GameApiProxyRouter
 }
 
 var (
