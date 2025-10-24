@@ -1,8 +1,8 @@
-import gmService from '@/utils/gmRequest'
+import service from '@/utils/request'
 
 // 获取游戏道具列表
 export const getGMItemList = (data) => {
-  return gmService({
+  return service({
     url: '/gm/item/list',
     method: 'get',
     params: data
@@ -11,7 +11,7 @@ export const getGMItemList = (data) => {
 
 // 创建游戏道具
 export const createGMItem = (data) => {
-  return gmService({
+  return service({
     url: '/gm/item',
     method: 'post',
     data
@@ -20,7 +20,7 @@ export const createGMItem = (data) => {
 
 // 更新游戏道具信息
 export const updateGMItem = (data) => {
-  return gmService({
+  return service({
     url: '/gm/item',
     method: 'put',
     data
@@ -29,7 +29,7 @@ export const updateGMItem = (data) => {
 
 // 删除游戏道具
 export const deleteGMItem = (data) => {
-  return gmService({
+  return service({
     url: '/gm/item',
     method: 'delete',
     data
@@ -38,7 +38,7 @@ export const deleteGMItem = (data) => {
 
 // 获取游戏道具详情
 export const getGMItem = (id) => {
-  return gmService({
+  return service({
     url: `/gm/item/${id}`,
     method: 'get'
   })
@@ -46,7 +46,7 @@ export const getGMItem = (id) => {
 
 // 批量操作游戏道具
 export const batchOperateGMItem = (data) => {
-  return gmService({
+  return service({
     url: '/gm/item/batch',
     method: 'post',
     data
@@ -55,7 +55,7 @@ export const batchOperateGMItem = (data) => {
 
 // 导出游戏道具数据
 export const exportGMItem = (data) => {
-  return gmService({
+  return service({
     url: '/gm/item/export',
     method: 'post',
     data,
@@ -65,7 +65,7 @@ export const exportGMItem = (data) => {
 
 // 获取游戏道具统计信息
 export const getGMItemStats = () => {
-  return gmService({
+  return service({
     url: '/gm/item/stats',
     method: 'get'
   })
