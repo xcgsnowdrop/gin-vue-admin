@@ -81,7 +81,8 @@ export default ({ mode }) => {
         },
         // GM管理模块代理规则 - 代理到游戏服务器
         '/gm': {
-          target: 'http://localhost:8300',
+          // target: 'http://localhost:8300',
+          target: `${process.env.VITE_BASE_PATH}:${process.env.VITE_SERVER_PORT}/`,
           changeOrigin: true
         }
       }
