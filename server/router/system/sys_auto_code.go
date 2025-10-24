@@ -19,11 +19,12 @@ func (s *AutoCodeRouter) InitAutoCodeRouter(Router *gin.RouterGroup, RouterPubli
 		autoCodeRouter.POST("createTemp", autoCodeTemplateApi.Create) // 创建自动化代码
 		autoCodeRouter.POST("addFunc", autoCodeTemplateApi.AddFunc)   // 为代码插入方法
 	}
-	{
-		autoCodeRouter.POST("mcp", autoCodeTemplateApi.MCP)         // 自动创建Mcp Tool模板
-		autoCodeRouter.POST("mcpList", autoCodeTemplateApi.MCPList) // 获取MCP ToolList
-		autoCodeRouter.POST("mcpTest", autoCodeTemplateApi.MCPTest) // MCP 工具测试
-	}
+	// MCP相关路由已禁用，因为不再使用MCP功能
+	// {
+	// 	autoCodeRouter.POST("mcp", autoCodeTemplateApi.MCP)         // 自动创建Mcp Tool模板
+	// 	autoCodeRouter.POST("mcpList", autoCodeTemplateApi.MCPList) // 获取MCP ToolList
+	// 	autoCodeRouter.POST("mcpTest", autoCodeTemplateApi.MCPTest) // MCP 工具测试
+	// }
 	{
 		autoCodeRouter.POST("getPackage", autoCodePackageApi.All)       // 获取package包
 		autoCodeRouter.POST("delPackage", autoCodePackageApi.Delete)    // 删除package包

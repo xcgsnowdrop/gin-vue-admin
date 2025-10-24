@@ -91,12 +91,13 @@ jwt:
 local:
     path: uploads/file
     store-path: uploads/file
-mcp:
-    name: GVA_MCP
-    version: v1.0.0
-    sse_path: /sse
-    message_path: /message
-    url_prefix: ""
+# MCP配置已移除，因为不再使用MCP功能
+# mcp:
+#     name: GVA_MCP
+#     version: v1.0.0
+#     sse_path: /sse
+#     message_path: /message
+#     url_prefix: ""
 minio:
     endpoint: yourEndpoint
     access-key-id: yourAccessKeyId
