@@ -17,9 +17,9 @@ type GameApiProxyRouter struct{}
 
 func (s *GameApiProxyRouter) InitGameApiProxyRouter(Router *gin.RouterGroup) {
 	// 创建一个通用的代理路由，匹配所有路径
+	// 注意：PrivateGroup已经应用了JWTAuth()和CasbinHandler()中间件
+	// 这里只需要添加操作记录中间件
 	Router.Group("gm").
-		Use(middleware.JWTAuth()).
-		Use(middleware.CasbinHandler()).
 		Use(middleware.OperationRecord()).
 		Any("/*path", s.gameApiProxy)
 }
