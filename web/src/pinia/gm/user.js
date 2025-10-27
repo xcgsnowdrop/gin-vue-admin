@@ -25,6 +25,8 @@ export const useGMUserStore = defineStore('gmUser', () => {
     playerId: '',
     uniqueId: '',
     nickname: '',
+    startLoginTime: null,  // 登录查询开始时间
+    endLoginTime: null,    // 登录查询结束时间
   })
   const userStats = ref({
     totalUsers: 0,
@@ -41,12 +43,25 @@ export const useGMUserStore = defineStore('gmUser', () => {
   const fetchUserList = async (params = {}) => {
     loading.value = true
     try {
-      const response = await getGMUserList({
+      // 准备查询参数，将日期转换为时间戳
+      const queryParams = {
         page: page.value,
         pageSize: pageSize.value,
-        ...searchInfo.value,
+        userId: searchInfo.value.userId,
+        playerId: searchInfo.value.playerId,
+        uniqueId: searchInfo.value.uniqueId,
+        nickname: searchInfo.value.nickname,
+        // 将 Date 对象转换为时间戳（秒）
+        startLoginTime: searchInfo.value.startLoginTime 
+          ? Math.floor(new Date(searchInfo.value.startLoginTime).getTime() / 1000) 
+          : null,
+        endLoginTime: searchInfo.value.endLoginTime 
+          ? Math.floor(new Date(searchInfo.value.endLoginTime).getTime() / 1000) 
+          : null,
         ...params
-      })
+      }
+      
+      const response = await getGMUserList(queryParams)
       
       // 调试信息 - 在Chrome开发工具中查看
       console.log('🔍 GM User API Response:', response)
@@ -228,6 +243,8 @@ export const useGMUserStore = defineStore('gmUser', () => {
       playerId: '',
       uniqueId: '',
       nickname: '',
+      startLoginTime: null,
+      endLoginTime: null,
     }
   }
 

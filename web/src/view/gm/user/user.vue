@@ -15,6 +15,43 @@
         <el-form-item label="昵称">
           <el-input v-model="searchInfo.nickname" placeholder="玩家昵称" />
         </el-form-item>
+        <el-form-item label="最后登录日期">
+          <template #label>
+            <span>
+              最后登录日期
+              <el-tooltip
+                content="搜索范围是开始日期（包含）至结束日期（包含），可以只选择开始日期或只选择结束日期"
+              >
+                <el-icon><QuestionFilled /></el-icon>
+              </el-tooltip>
+            </span>
+          </template>
+          <el-date-picker
+            v-model="searchInfo.startLoginTime"
+            type="datetime"
+            placeholder="登录开始时间"
+            :disabled-date="
+              (time) =>
+                searchInfo.endLoginTime
+                  ? time.getTime() > searchInfo.endLoginTime.getTime()
+                  : false
+            "
+            style="width: 200px"
+          />
+          <span style="margin: 0 8px; color: #606266;">—</span>
+          <el-date-picker
+            v-model="searchInfo.endLoginTime"
+            type="datetime"
+            placeholder="登录结束时间"
+            :disabled-date="
+              (time) =>
+                searchInfo.startLoginTime
+                  ? time.getTime() < searchInfo.startLoginTime.getTime()
+                  : false
+            "
+            style="width: 200px"
+          />
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="search" @click="onSubmit">
             查询
