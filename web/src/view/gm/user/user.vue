@@ -1,10 +1,10 @@
 <template>
   <div>
-    <warning-bar title="注：GM管理 - 游戏用户管理" />
+    <warning-bar title="注：GM管理 - 玩家管理" />
     <div class="gva-search-box">
       <el-form ref="searchForm" :inline="true" :model="searchInfo">
         <el-form-item label="UserID">
-          <el-input v-model="searchInfo.userId" placeholder="用户UserID" />
+          <el-input v-model="searchInfo.userId" placeholder="玩家UserID" />
         </el-form-item>
         <el-form-item label="PlayerID">
           <el-input v-model="searchInfo.playerId" placeholder="玩家PlayerID" />
