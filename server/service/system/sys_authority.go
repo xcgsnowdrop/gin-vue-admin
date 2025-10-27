@@ -11,6 +11,7 @@ import (
 	"gmserver/model/system"
 	"gmserver/model/system/response"
 
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -38,10 +39,29 @@ func (authorityService *AuthorityService) CreateAuthority(auth system.SysAuthori
 			return err
 		}
 
-		auth.SysBaseMenus = systemReq.DefaultMenu()
-		if err = tx.Model(&auth).Association("SysBaseMenus").Replace(&auth.SysBaseMenus); err != nil {
-			return err
+		// 获取默认菜单配置（不包含ID，仅作为查询依据）
+		defaultMenus := systemReq.DefaultMenu()
+
+		// 从数据库中查询实际的菜单记录，通过Name匹配
+		// 这样可以确保使用数据库中的真实菜单ID，而不是硬编码的ID
+		realMenus := []system.SysBaseMenu{}
+		for _, defaultMenu := range defaultMenus {
+			var realMenu system.SysBaseMenu
+			if err = tx.Where("name = ?", defaultMenu.Name).First(&realMenu).Error; err != nil {
+				// 如果找不到对应的菜单，记录警告并跳过
+				global.GVA_LOG.Error("默认菜单不存在，跳过分配", zap.String("name", defaultMenu.Name))
+				continue
+			}
+			realMenus = append(realMenus, realMenu)
 		}
+
+		// 将实际的菜单记录分配给新角色（只有在找到菜单时才执行）
+		if len(realMenus) > 0 {
+			if err = tx.Model(&auth).Association("SysBaseMenus").Replace(&realMenus); err != nil {
+				return err
+			}
+		}
+
 		casbinInfos := systemReq.DefaultCasbin()
 		authorityId := strconv.Itoa(int(auth.AuthorityId))
 		rules := [][]string{}

@@ -6,8 +6,23 @@
         >确 定</el-button
       >
     </div>
+    <!-- 菜单树内容区域 -->
     <div class="tree-content clear-both">
+      <!-- Element Plus 滚动条组件 -->
       <el-scrollbar>
+        <!-- Element Plus 树形组件：用于显示可选择的菜单树 -->
+        <!-- 
+          ref="menuTree" - 组件引用，用于获取 el-tree 实例调用方法（如 getCheckedNodes）
+          :data="menuTreeData" - 绑定菜单树数据源（从第96行 menuTreeData 中取值）
+          :default-checked-keys="menuTreeIds" - 默认选中的菜单ID数组（从第97行 menuTreeIds 中取值）
+          :props="menuDefaultProps" - 字段映射配置（从第99-107行 menuDefaultProps 中取值）
+          default-expand-all - 默认展开所有节点
+          highlight-current - 高亮当前选中节点
+          node-key="ID" - 节点的唯一标识字段为 "ID"
+          show-checkbox - 显示复选框用于选择
+          :filter-node-method="filterNode" - 节点过滤方法（从第216行 filterNode 函数中取值）
+          @check="nodeChange" - 勾选状态改变时触发（从第139行 nodeChange 函数中取值）
+        -->
         <el-tree
           ref="menuTree"
           :data="menuTreeData"
@@ -20,9 +35,39 @@
           :filter-node-method="filterNode"
           @check="nodeChange"
         >
+          <!-- 
+            自定义节点插槽：用于定制每个节点的显示内容
+            node - Element Plus 提供的节点对象，包含节点的状态信息
+              node.label: 节点的显示文本（通过第154-156行的 label 函数映射生成）
+              node.checked: 节点是否被选中（boolean）
+              node.expanded: 节点是否展开（boolean）
+              node.level: 节点的层级（数字）
+              node.data: 节点的原始数据（等同于下面的 data）
+            data - 当前节点的原始数据对象，来自 menuTreeData 数组
+              data.ID: 菜单ID（来自后端数据库）
+              data.name: 菜单名称（如 'dashboard', 'superAdmin'）
+              data.path: 菜单路由路径
+              data.component: 菜单对应的组件路径
+              data.meta: 菜单元信息对象
+                data.meta.title: 菜单标题（如 '仪表盘', '超级管理员'）
+                data.meta.icon: 菜单图标
+              data.menuBtn: 菜单对应的按钮权限数组
+              data.children: 子菜单数组
+            row - 从父组件传入的角色对象（从第85-92行的 props.row 中取值）
+              row.authorityId: 角色ID（如 888）
+              row.authorityName: 角色名称（如 '普通用户'）
+              row.defaultRouter: 默认路由（如 'dashboard'）
+              row.parentId: 父角色ID
+          -->
           <template #default="{ node, data }">
             <span class="custom-tree-node">
+              <!-- node.label - 显示菜单标题（由 label 函数映射，值为 data.meta.title） -->
               <span>{{ node.label }}</span>
+              <!-- 
+                node.checked - 菜单节点是否被选中
+                !data.name?.startsWith('http://') - 排除外部链接菜单（以 http 开头的）
+                条件：只有选中的菜单且不是外部链接，才显示"设为首页"按钮
+              -->
               <span v-if="node.checked && !data.name?.startsWith('http://') && !data.name?.startsWith('https://')">
                 <el-button
                   type="primary"
@@ -33,9 +78,17 @@
                   }"
                   @click.stop="() => setDefault(data)"
                 >
+                  <!-- 
+                    row.defaultRouter === data.name - 判断当前菜单是否是默认路由
+                    如果是：显示"首页"；如果不是：显示"设为首页"
+                  -->
                   {{ row.defaultRouter === data.name ? '首页' : '设为首页' }}
                 </el-button>
               </span>
+              <!-- 
+                data.menuBtn.length - 菜单是否有关联的按钮权限
+                条件：只有当菜单有按钮时，才显示"分配按钮"
+              -->
               <span v-if="data.menuBtn.length">
                 <el-button type="primary" link @click.stop="() => OpenBtn(data)">
                   分配按钮
@@ -98,7 +151,7 @@
   const needConfirm = ref(false)
   const menuDefaultProps = ref({
     children: 'children',
-    label: function (data) {
+    label: function (data) { 
       return data.meta.title
     },
     disabled: function (data) {
