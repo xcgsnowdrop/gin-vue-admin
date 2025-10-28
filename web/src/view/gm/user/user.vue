@@ -145,7 +145,7 @@
               :type="scope.row.ban_chat ? 'success' : 'warning'"
               link
               :icon="scope.row.ban_chat ? 'unlock' : 'lock'"
-              @click="toggleBanChat(scope.row)"
+              @click="handleBanChat(scope.row)"
             >
               {{ scope.row.ban_chat ? '解除禁言' : '禁言' }}
             </el-button>
@@ -179,6 +179,43 @@
       :player-id="selectedPlayerId"
       @close="handlePlayerDetailClose"
     />
+
+    <!-- 禁言时间选择对话框 -->
+    <el-dialog
+      v-model="banChatDialogVisible"
+      title="⏰ 设置禁言截止时间"
+      width="500px"
+      align-center
+      destroy-on-close
+    >
+      <div style="padding: 20px 0;">
+        <el-form :model="banChatData" label-width="120px">
+          <el-form-item label="禁言截止时间" required>
+            <el-date-picker
+              v-model="banChatData.expireTime"
+              type="datetime"
+              placeholder="请选择禁言截止时间"
+              style="width: 100%"
+              :disabled-date="(time) => time.getTime() <= Date.now()"
+            />
+          </el-form-item>
+        </el-form>
+      </div>
+      
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="banChatDialogVisible = false">取消</el-button>
+          <el-button 
+            type="warning" 
+            @click="submitBanChat"
+            :disabled="!banChatData.expireTime"
+          >
+            <el-icon><Lock /></el-icon>
+            确定禁言
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -189,6 +226,7 @@
 
   import { ref, watch, onMounted } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
+  import { Lock } from '@element-plus/icons-vue'
   import { useAppStore } from "@/pinia";
   import { storeToRefs } from 'pinia'
 
@@ -233,6 +271,13 @@
     selectedPlayerId.value = ''
   }
 
+  // 禁言相关
+  const banChatDialogVisible = ref(false)
+  const banChatData = ref({
+    expireTime: null,
+    currentRow: null  // 保存当前操作的行数据
+  })
+
   const onSubmit = () => {
     setPage(1)
     fetchUserList()
@@ -273,26 +318,67 @@
   })
 
 
-  // 切换禁言状态
-  const toggleBanChat = async (row) => {
+  // 处理禁言/解除禁言
+  const handleBanChat = (row) => {
+    if (row.ban_chat) {
+      // 解除禁言：直接确认
+      ElMessageBox.confirm(`确定要解除该玩家的禁言吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        executeBanChat(row, null)
+      }).catch(() => {})
+    } else {
+      // 禁言：打开对话框选择时间
+      banChatData.value = {
+        expireTime: null,
+        currentRow: row  // 保存完整的行数据
+      }
+      banChatDialogVisible.value = true
+    }
+  }
+
+  // 执行禁言/解除禁言操作
+  const executeBanChat = async (row, expireTime) => {
     const action = row.ban_chat ? '解除禁言' : '禁言'
-    const confirmText = row.ban_chat ? '确定要解除该玩家的禁言吗？' : '确定要禁言该玩家吗？'
     
-    ElMessageBox.confirm(confirmText, '提示', {
+    try {
+      const params = {
+        player_id: row.player_id,
+        expire_time: expireTime
+      }
+      
+      await gmUserStore.toggleBanChat(params)
+      ElMessage.success(`${action}成功`)
+      
+      // 关闭对话框并重置
+      banChatDialogVisible.value = false
+      banChatData.value = { expireTime: null, currentRow: null }
+      
+      // 刷新列表
+      await fetchUserList()
+    } catch (error) {
+      ElMessage.error(error.message || `${action}失败`)
+    }
+  }
+
+  // 提交禁言（带时间选择）
+  const submitBanChat = () => {
+    if (!banChatData.value.expireTime) {
+      ElMessage.warning('请选择禁言截止时间')
+      return
+    }
+    
+    ElMessageBox.confirm('确定要禁言该玩家吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
-    }).then(async () => {
-      try {
-        // 调用 API 切换禁言状态
-        await gmUserStore.toggleBanChat(row.player_id)
-        ElMessage.success(`${action}成功`)
-        // 刷新列表
-        await fetchUserList()
-      } catch (error) {
-        ElMessage.error(error.message || `${action}失败`)
-      }
-    })
+    }).then(() => {
+      // 直接使用保存的行数据，无需构造 tempRow
+      const expireTimestamp = Math.floor(new Date(banChatData.value.expireTime).getTime() / 1000)
+      executeBanChat(banChatData.value.currentRow, expireTimestamp)
+    }).catch(() => {})
   }
 
   // 切换封号状态

@@ -148,9 +148,9 @@ export const useGMUserStore = defineStore('gmUser', () => {
   }
 
   // 切换禁言状态
-  const toggleBanChat = async (player_id) => {
+  const toggleBanChat = async (params) => {
     try {
-      const response = await toggleGMBanChat({ player_id })
+      const response = await toggleGMBanChat(params)
       if (response.code === 0) {
         // 刷新列表
         await fetchUserList()
