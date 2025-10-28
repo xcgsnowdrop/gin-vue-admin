@@ -39,7 +39,7 @@ export const deleteGMUser = (data) => {
 // 获取游戏用户详情
 export const getGMUser = (id) => {
   return service({
-    url: `/gm/user/${id}`,
+    url: `/gm/user/detail/${id}`,
     method: 'get'
   })
 }

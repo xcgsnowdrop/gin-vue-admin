@@ -20,6 +20,7 @@
   "/src/view/example/upload/upload.vue": "Upload",
   "/src/view/gm/index.vue": "GM",
   "/src/view/gm/item/item.vue": "GMItem",
+  "/src/view/gm/user/components/PlayerDetail.vue": "PlayerDetail",
   "/src/view/gm/user/user.vue": "GMUser",
   "/src/view/init/index.vue": "Init",
   "/src/view/layout/aside/asideComponent/asyncSubmenu.vue": "AsyncSubmenu",

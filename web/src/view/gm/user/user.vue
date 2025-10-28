@@ -62,12 +62,17 @@
     </div>
     <div class="gva-table-box">
       <el-table :data="tableData" row-key="user_id">
-        <el-table-column align="left" label="UserID" min-width="120" prop="user_id" />
         <el-table-column
           align="left"
           label="PlayerID"
-          min-width="120"
+          min-width="130"
           prop="player_id"
+        />
+        <el-table-column
+          align="left"
+          label="UserID"
+          min-width="120"
+          prop="user_id"
         />
         <el-table-column
           align="left"
@@ -129,6 +134,14 @@
         <el-table-column label="操作" :min-width="appStore.operateMinWith" fixed="right">
           <template #default="scope">
             <el-button
+              type="primary"
+              link
+              icon="view"
+              @click="openPlayerDetail(scope.row.player_id)"
+            >
+              详情
+            </el-button>
+            <el-button
               :type="scope.row.ban_chat ? 'success' : 'warning'"
               link
               :icon="scope.row.ban_chat ? 'unlock' : 'lock'"
@@ -159,14 +172,22 @@
         />
       </div>
     </div>
+    
+    <!-- 玩家详情弹窗 -->
+    <PlayerDetail 
+      v-model="showPlayerDetail" 
+      :player-id="selectedPlayerId"
+      @close="handlePlayerDetailClose"
+    />
   </div>
 </template>
 
 <script setup>
   import { useGMUserStore } from '@/pinia/gm/user'
   import WarningBar from '@/components/warningBar/warningBar.vue'
+  import PlayerDetail from './components/PlayerDetail.vue'
 
-  import { watch, onMounted } from 'vue'
+  import { ref, watch, onMounted } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import { useAppStore } from "@/pinia";
   import { storeToRefs } from 'pinia'
@@ -195,6 +216,22 @@
     setPageSize
   } = gmUserStore
 
+
+  // 玩家详情相关
+  const showPlayerDetail = ref(false)
+  const selectedPlayerId = ref('')
+  
+  // 打开玩家详情
+  const openPlayerDetail = (playerId) => {
+    selectedPlayerId.value = playerId
+    showPlayerDetail.value = true
+  }
+  
+  // 关闭玩家详情
+  const handlePlayerDetailClose = () => {
+    showPlayerDetail.value = false
+    selectedPlayerId.value = ''
+  }
 
   const onSubmit = () => {
     setPage(1)
