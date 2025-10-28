@@ -55,10 +55,20 @@ export const useGMItemStore = defineStore('gmItem', () => {
       })
       
       if (response.code === 0) {
-        itemList.value = response.data.list || []
+        const list = response.data.list || []
+
+        // 预处理数据，转换时间戳为日期时间对象
+        list.forEach(item => {
+          item.log_time_formatted = item.log_time ? new Date(item.log_time * 1000).toLocaleString() : '-'
+        })
+
+        itemList.value = list
         total.value = response.data.total || 0
         page.value = response.data.page || 1
         pageSize.value = response.data.pageSize || 10
+        
+        // console.log('Pinia store - itemList.value 已更新:', itemList.value)
+        // console.log('Pinia store - 数据长度:', itemList.value.length)
       } else {
         throw new Error(response.msg || '获取道具流水列表失败')
       }
@@ -70,6 +80,7 @@ export const useGMItemStore = defineStore('gmItem', () => {
       loading.value = false
     }
   }
+
 
   // 获取道具流水详情
   const fetchItem = async (id) => {

@@ -52,34 +52,40 @@
         <el-table-column align="left" label="ID" min-width="80" prop="ID" />
         <el-table-column
           align="left"
-          label="游戏用户ID"
+          label="PlayerId"
           min-width="120"
-          prop="userId"
+          prop="player_id"
         />
         <el-table-column
           align="left"
-          label="道具ID"
+          label="资源类型"
           min-width="100"
-          prop="itemId"
+          prop="res_type_name"
         />
         <el-table-column
           align="left"
-          label="道具名称"
+          label="资源ID"
+          min-width="100"
+          prop="res_id"
+        />
+        <el-table-column
+          align="left"
+          label="资源名称"
           min-width="150"
-          prop="itemName"
+          prop="res_name"
         />
         <el-table-column
           align="left"
           label="操作类型"
           min-width="100"
-          prop="operationType"
+          prop="operation_type"
         >
           <template #default="scope">
             <el-tag
-              :type="getOperationTypeTag(scope.row.operationType)"
+              :type="getOperationTypeTag(scope.row.operation_type)"
               size="small"
             >
-              {{ getOperationTypeText(scope.row.operationType) }}
+              {{ getOperationTypeText(scope.row.operation_type) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -87,11 +93,11 @@
           align="left"
           label="数量变化"
           min-width="120"
-          prop="quantityChange"
+          prop="change_num"
         >
           <template #default="scope">
-            <span :class="getQuantityClass(scope.row.quantityChange)">
-              {{ scope.row.quantityChange > 0 ? '+' : '' }}{{ scope.row.quantityChange }}
+            <span :class="getQuantityClass(scope.row.change_num)">
+              {{ scope.row.change_num > 0 ? '+' : '' }}{{ scope.row.change_num }}
             </span>
           </template>
         </el-table-column>
@@ -99,25 +105,21 @@
           align="left"
           label="剩余数量"
           min-width="120"
-          prop="remainingQuantity"
+          prop="new_num"
         />
         <el-table-column
           align="left"
           label="操作原因"
           min-width="150"
-          prop="reason"
+          prop="log_text"
           show-overflow-tooltip
         />
         <el-table-column
           align="left"
           label="操作时间"
           min-width="180"
-          prop="createdAt"
-        >
-          <template #default="scope">
-            {{ formatDateTime(scope.row.createdAt) }}
-          </template>
-        </el-table-column>
+          prop="log_time_formatted"
+        />
         <el-table-column align="left" label="操作" min-width="200">
           <template #default="scope">
             <el-button
@@ -161,7 +163,7 @@
     </div>
 
     <!-- 详情对话框 -->
-    <el-dialog
+    <!-- <el-dialog
       v-model="detailDialogVisible"
       title="道具流水详情"
       width="600px"
@@ -185,10 +187,10 @@
         <el-descriptions-item label="操作原因" :span="2">{{ detailData.reason }}</el-descriptions-item>
         <el-descriptions-item label="操作时间" :span="2">{{ formatDateTime(detailData.createdAt) }}</el-descriptions-item>
       </el-descriptions>
-    </el-dialog>
+    </el-dialog> -->
 
     <!-- 编辑对话框 -->
-    <el-dialog
+    <!-- <el-dialog
       v-model="editDialogVisible"
       title="编辑道具流水"
       width="500px"
@@ -212,15 +214,16 @@
         <el-button @click="editDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="saveEdit">保存</el-button>
       </template>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import WarningBar from '@/components/warningBar/warningBar.vue'
 import { useGMItemStore } from '@/pinia/gm/item'
+import { storeToRefs } from 'pinia'
 
 defineOptions({
   name: 'GMItem'
@@ -236,13 +239,16 @@ const {
   page, 
   pageSize, 
   searchInfo,
+} = storeToRefs(gmItemStore)
+
+const {
   fetchItemList,
-  createItem,
-  updateItem,
+
+  // updateItem,
   removeItem,
   exportItems,
   cleanupOldData,
-  setSearchInfo,
+
   resetSearchInfo,
   setPage,
   setPageSize
@@ -257,12 +263,12 @@ const editDialogVisible = ref(false)
 const editForm = reactive({
   reason: ''
 })
-const editFormRef = ref()
-const editRules = {
-  reason: [
-    { required: true, message: '请输入操作原因', trigger: 'blur' }
-  ]
-}
+// const editFormRef = ref()
+// const editRules = {
+//   reason: [
+//     { required: true, message: '请输入操作原因', trigger: 'blur' }
+//   ]
+// }
 
 // 获取操作类型标签样式
 const getOperationTypeTag = (type) => {
@@ -291,11 +297,11 @@ const getQuantityClass = (quantity) => {
   return quantity > 0 ? 'text-green-600' : 'text-red-600'
 }
 
-// 格式化时间
-const formatDateTime = (dateTime) => {
-  if (!dateTime) return ''
-  return new Date(dateTime).toLocaleString('zh-CN')
-}
+// // 格式化时间
+// const formatDateTime = (dateTime) => {
+//   if (!dateTime) return ''
+//   return new Date(dateTime).toLocaleString('zh-CN')
+// }
 
 // 查询数据
 const onSubmit = () => {
@@ -311,47 +317,47 @@ const onReset = () => {
 }
 
 // 生成模拟数据
-const generateMockData = () => {
-  const data = []
-  const operationTypes = ['gain', 'consume', 'trade', 'system']
-  const itemNames = ['金币', '钻石', '经验药水', '装备强化石', '技能书', '宠物蛋']
+// const generateMockData = () => {
+//   const data = []
+//   const operationTypes = ['gain', 'consume', 'trade', 'system']
+//   const itemNames = ['金币', '钻石', '经验药水', '装备强化石', '技能书', '宠物蛋']
   
-  for (let i = 1; i <= pageSize.value; i++) {
-    const operationType = operationTypes[Math.floor(Math.random() * operationTypes.length)]
-    const quantityChange = operationType === 'gain' 
-      ? Math.floor(Math.random() * 1000) + 1
-      : -(Math.floor(Math.random() * 100) + 1)
+//   for (let i = 1; i <= pageSize.value; i++) {
+//     const operationType = operationTypes[Math.floor(Math.random() * operationTypes.length)]
+//     const quantityChange = operationType === 'gain' 
+//       ? Math.floor(Math.random() * 1000) + 1
+//       : -(Math.floor(Math.random() * 100) + 1)
     
-    data.push({
-      ID: (page.value - 1) * pageSize.value + i,
-      userId: Math.floor(Math.random() * 10000) + 1000,
-      itemId: Math.floor(Math.random() * 1000) + 1,
-      itemName: itemNames[Math.floor(Math.random() * itemNames.length)],
-      operationType,
-      quantityChange,
-      remainingQuantity: Math.floor(Math.random() * 10000) + 1000,
-      reason: getRandomReason(operationType),
-      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-    })
-  }
+//     data.push({
+//       ID: (page.value - 1) * pageSize.value + i,
+//       userId: Math.floor(Math.random() * 10000) + 1000,
+//       itemId: Math.floor(Math.random() * 1000) + 1,
+//       itemName: itemNames[Math.floor(Math.random() * itemNames.length)],
+//       operationType,
+//       quantityChange,
+//       remainingQuantity: Math.floor(Math.random() * 10000) + 1000,
+//       reason: getRandomReason(operationType),
+//       createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+//     })
+//   }
   
-  return {
-    data,
-    total: 1000
-  }
-}
+//   return {
+//     data,
+//     total: 1000
+//   }
+// }
 
 // 获取随机原因
-const getRandomReason = (type) => {
-  const reasons = {
-    gain: ['任务奖励', '活动奖励', '签到奖励', '充值获得', '系统补偿'],
-    consume: ['购买道具', '强化装备', '学习技能', '升级消耗', '交易消耗'],
-    trade: ['玩家交易', '拍卖行交易', '公会交易', '好友赠送'],
-    system: ['系统回收', '数据修正', '活动调整', '维护补偿']
-  }
-  const typeReasons = reasons[type] || ['系统操作']
-  return typeReasons[Math.floor(Math.random() * typeReasons.length)]
-}
+// const getRandomReason = (type) => {
+//   const reasons = {
+//     gain: ['任务奖励', '活动奖励', '签到奖励', '充值获得', '系统补偿'],
+//     consume: ['购买道具', '强化装备', '学习技能', '升级消耗', '交易消耗'],
+//     trade: ['玩家交易', '拍卖行交易', '公会交易', '好友赠送'],
+//     system: ['系统回收', '数据修正', '活动调整', '维护补偿']
+//   }
+//   const typeReasons = reasons[type] || ['系统操作']
+//   return typeReasons[Math.floor(Math.random() * typeReasons.length)]
+// }
 
 // 分页处理
 const handleCurrentChange = (val) => {
@@ -377,22 +383,22 @@ const editRecord = (row) => {
   editDialogVisible.value = true
 }
 
-// 保存编辑
-const saveEdit = async () => {
-  if (!editFormRef.value) return
+// // 保存编辑
+// const saveEdit = async () => {
+//   if (!editFormRef.value) return
   
-  try {
-    await editFormRef.value.validate()
-    await updateItem({
-      id: editForm.id,
-      reason: editForm.reason
-    })
-    ElMessage.success('保存成功')
-    editDialogVisible.value = false
-  } catch (error) {
-    ElMessage.error(error.message || '保存失败')
-  }
-}
+//   try {
+//     await editFormRef.value.validate()
+//     await updateItem({
+//       id: editForm.id,
+//       reason: editForm.reason
+//     })
+//     ElMessage.success('保存成功')
+//     editDialogVisible.value = false
+//   } catch (error) {
+//     ElMessage.error(error.message || '保存失败')
+//   }
+// }
 
 // 删除记录
 const deleteRecord = async (row) => {
@@ -439,6 +445,17 @@ const clearOldData = async () => {
     }
   }
 }
+
+watch(
+    () => tableData.value,
+    (newValue, oldValue) => {
+      console.log('tableData 变化了')
+      console.log('新值:', newValue)
+      console.log('旧值:', oldValue)
+      console.log('新值长度:', newValue?.length)
+    },
+    { deep: true, immediate: true }
+)
 
 // 初始化
 onMounted(() => {

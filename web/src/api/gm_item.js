@@ -3,9 +3,9 @@ import service from '@/utils/request'
 // 获取游戏道具列表
 export const getGMItemList = (data) => {
   return service({
-    url: '/gm/item/list',
-    method: 'get',
-    params: data
+    url: '/gm/resource/log/list',
+    method: 'post',
+    data: data
   })
 }
 
@@ -67,6 +67,40 @@ export const exportGMItem = (data) => {
 export const getGMItemStats = () => {
   return service({
     url: '/gm/item/stats',
+    method: 'get'
+  })
+}
+
+// 清理旧数据
+export const cleanupGMItem = (data) => {
+  return service({
+    url: '/gm/item/cleanup',
+    method: 'post',
+    data
+  })
+}
+
+// 批量删除道具流水记录
+export const batchDeleteGMItem = (data) => {
+  return service({
+    url: '/gm/item/batchDelete',
+    method: 'post',
+    data
+  })
+}
+
+// 获取操作类型列表
+export const getGMItemOperationTypes = () => {
+  return service({
+    url: '/gm/item/operationTypes',
+    method: 'get'
+  })
+}
+
+// 获取道具类型列表
+export const getGMItemTypes = () => {
+  return service({
+    url: '/gm/item/types',
     method: 'get'
   })
 }
