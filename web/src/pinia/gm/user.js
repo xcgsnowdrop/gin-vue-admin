@@ -64,14 +64,14 @@ export const useGMUserStore = defineStore('gmUser', () => {
       const response = await getGMUserList(queryParams)
       
       // 调试信息 - 在Chrome开发工具中查看
-      console.log('🔍 GM User API Response:', response)
-      console.log('🔍 Response code:', response.code)
-      console.log('🔍 Response data:', response.data)
+      // console.log('🔍 GM User API Response:', response)
+      // console.log('🔍 Response code:', response.code)
+      // console.log('🔍 Response data:', response.data)
       
       if (response.code === 0) {
         const playerList = response.data.player_list || response.data.list || []
-        console.log('🔍 Player list data:', playerList)
-        console.log('🔍 First player item:', playerList[0])
+        // console.log('🔍 Player list data:', playerList)
+        // console.log('🔍 First player item:', playerList[0])
         
         // 预处理数据，转换时间戳为日期时间对象
         playerList.forEach(user => {
@@ -84,7 +84,7 @@ export const useGMUserStore = defineStore('gmUser', () => {
         page.value = response.data.page || 1
         pageSize.value = response.data.pageSize || 10
         
-        console.log('🔍 Updated userList.value:', userList.value)
+        // console.log('🔍 Updated userList.value:', userList.value)
       } else {
         throw new Error(response.msg || '获取用户列表失败')
       }
