@@ -1,28 +1,52 @@
 <template>
   <div>
-    <warning-bar title="注：GM管理 - 游戏道具流水日志" />
+    <warning-bar title="注：GM管理 - 游戏资源流水日志" />
     <div class="gva-search-box">
       <el-form ref="searchForm" :inline="true" :model="searchInfo">
-        <el-form-item label="游戏用户ID">
-          <el-input v-model="searchInfo.userId" placeholder="游戏用户ID" />
+        <el-form-item label="PlayerId">
+          <el-input v-model="searchInfo.player_id" placeholder="PlayerId" />
         </el-form-item>
-        <el-form-item label="道具ID">
-          <el-input v-model="searchInfo.itemId" placeholder="道具ID" />
+        <el-form-item label="资源类型">
+          <el-select 
+            v-model="searchInfo.res_type" 
+            placeholder="请选择资源类型" 
+            clearable
+            @change="handleResourceTypeChange"
+          >
+            <el-option 
+              v-for="resType in resourceTypes" 
+              :key="resType.type" 
+              :label="resType.name" 
+              :value="resType.type" 
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="道具名称">
-          <el-input v-model="searchInfo.itemName" placeholder="道具名称" />
+        <el-form-item label="资源ID">
+          <el-select 
+            v-model="searchInfo.res_id" 
+            placeholder="请选择资源ID" 
+            clearable
+            :disabled="!searchInfo.res_type"
+          >
+            <el-option 
+              v-for="resource in resourceList" 
+              :key="resource.id" 
+              :label="resource.name" 
+              :value="resource.id" 
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="操作类型">
-          <el-select v-model="searchInfo.operationType" placeholder="请选择操作类型" clearable>
+        <!-- <el-form-item label="操作类型">
+          <el-select v-model="searchInfo.operation_type" placeholder="请选择操作类型" clearable>
             <el-option label="获得" value="gain" />
             <el-option label="消耗" value="consume" />
             <el-option label="交易" value="trade" />
             <el-option label="系统" value="system" />
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="时间范围">
           <el-date-picker
-            v-model="searchInfo.dateRange"
+            v-model="searchInfo.log_time_range"
             type="datetimerange"
             range-separator="至"
             start-placeholder="开始时间"
@@ -49,7 +73,7 @@
         </el-button>
       </div>
       <el-table :data="tableData" row-key="ID" v-loading="loading">
-        <el-table-column align="left" label="ID" min-width="80" prop="ID" />
+        <el-table-column align="left" label="ID" min-width="120" prop="_id" />
         <el-table-column
           align="left"
           label="PlayerId"
@@ -239,16 +263,18 @@ const {
   page, 
   pageSize, 
   searchInfo,
+  resourceTypes,
+  resourceList
 } = storeToRefs(gmItemStore)
 
 const {
-  fetchItemList,
-
+  fetchResourceLogList,
+  fetchResourceTypes,
+  fetchResourceList,
   // updateItem,
   removeItem,
   exportItems,
   cleanupOldData,
-
   resetSearchInfo,
   setPage,
   setPageSize
@@ -306,14 +332,14 @@ const getQuantityClass = (quantity) => {
 // 查询数据
 const onSubmit = () => {
   setPage(1)
-  fetchItemList()
+  fetchResourceLogList()
 }
 
 // 重置搜索
 const onReset = () => {
   resetSearchInfo()
   setPage(1)
-  fetchItemList()
+  fetchResourceLogList()
 }
 
 // 生成模拟数据
@@ -362,12 +388,12 @@ const onReset = () => {
 // 分页处理
 const handleCurrentChange = (val) => {
   setPage(val)
-  fetchItemList()
+  fetchResourceLogList()
 }
 
 const handleSizeChange = (val) => {
   setPageSize(val)
-  fetchItemList()
+  fetchResourceLogList()
 }
 
 // 查看详情
@@ -457,9 +483,31 @@ watch(
     { deep: true, immediate: true }
 )
 
+// 处理资源类型变化
+const handleResourceTypeChange = async (resType) => {
+  // 清空资源ID选择
+  searchInfo.value.res_id = ''
+  
+  if (resType) {
+    try {
+      await fetchResourceList(resType)
+    } catch (error) {
+      console.error('获取资源列表失败:', error)
+    }
+  }
+}
+
 // 初始化
-onMounted(() => {
-  fetchItemList()
+onMounted(async () => {
+  try {
+    // 并行获取资源类型和道具列表
+    await Promise.all([
+      fetchResourceTypes(),
+      fetchResourceLogList()
+    ])
+  } catch (error) {
+    console.error('初始化失败:', error)
+  }
 })
 </script>
 

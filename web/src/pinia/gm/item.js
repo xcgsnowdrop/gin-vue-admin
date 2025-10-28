@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import {
-  getGMItemList,
+  getGMResourceLogList,
   createGMItem,
   updateGMItem,
   deleteGMItem,
@@ -11,7 +11,9 @@ import {
   cleanupGMItem,
   getGMItemStats,
   getGMItemTypes,
-  getGMItemOperationTypes
+  getGMItemOperationTypes,
+  getGMResourceTypeList,
+  getGMResourceList
 } from '@/api/gm_item'
 
 export const useGMItemStore = defineStore('gmItem', () => {
@@ -23,11 +25,11 @@ export const useGMItemStore = defineStore('gmItem', () => {
   const page = ref(1)
   const pageSize = ref(10)
   const searchInfo = ref({
-    userId: '',
-    itemId: '',
-    itemName: '',
-    operationType: '',
-    dateRange: []
+    player_id: '',
+    res_type: '',
+    res_id: '',
+    operation_type: '',
+    log_time_range: []
   })
   const itemStats = ref({
     totalRecords: 0,
@@ -38,16 +40,18 @@ export const useGMItemStore = defineStore('gmItem', () => {
   })
   const itemTypes = ref([])
   const operationTypes = ref([])
+  const resourceTypes = ref([])  // 资源类型列表
+  const resourceList = ref([])    // 资源列表（根据类型动态获取）
 
   // 计算属性
   const hasItems = computed(() => itemList.value.length > 0)
   const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 
   // 获取道具流水列表
-  const fetchItemList = async (params = {}) => {
+  const fetchResourceLogList = async (params = {}) => {
     loading.value = true
     try {
-      const response = await getGMItemList({
+      const response = await getGMResourceLogList({
         page: page.value,
         pageSize: pageSize.value,
         ...searchInfo.value,
@@ -104,7 +108,7 @@ export const useGMItemStore = defineStore('gmItem', () => {
       const response = await createGMItem(itemData)
       if (response.code === 0) {
         // 刷新列表
-        await fetchItemList()
+        await fetchResourceLogList()
         return response.data
       } else {
         throw new Error(response.msg || '创建道具流水记录失败')
@@ -121,7 +125,7 @@ export const useGMItemStore = defineStore('gmItem', () => {
       const response = await updateGMItem(itemData)
       if (response.code === 0) {
         // 刷新列表
-        await fetchItemList()
+        await fetchResourceLogList()
         return response.data
       } else {
         throw new Error(response.msg || '更新道具流水记录失败')
@@ -138,7 +142,7 @@ export const useGMItemStore = defineStore('gmItem', () => {
       const response = await deleteGMItem({ id })
       if (response.code === 0) {
         // 刷新列表
-        await fetchItemList()
+        await fetchResourceLogList()
         return true
       } else {
         throw new Error(response.msg || '删除道具流水记录失败')
@@ -155,7 +159,7 @@ export const useGMItemStore = defineStore('gmItem', () => {
       const response = await batchDeleteGMItem({ ids })
       if (response.code === 0) {
         // 刷新列表
-        await fetchItemList()
+        await fetchResourceLogList()
         return true
       } else {
         throw new Error(response.msg || '批量删除道具流水记录失败')
@@ -186,7 +190,7 @@ export const useGMItemStore = defineStore('gmItem', () => {
       const response = await cleanupGMItem({ days })
       if (response.code === 0) {
         // 刷新列表
-        await fetchItemList()
+        await fetchResourceLogList()
         return true
       } else {
         throw new Error(response.msg || '清理旧数据失败')
@@ -248,6 +252,42 @@ export const useGMItemStore = defineStore('gmItem', () => {
     }
   }
 
+  // 获取资源类型列表
+  const fetchResourceTypes = async () => {
+    try {
+      const response = await getGMResourceTypeList()
+      if (response.code === 0) {
+        resourceTypes.value = response.data.list || []
+      } else {
+        throw new Error(response.msg || '获取资源类型失败')
+      }
+    } catch (error) {
+      console.error('获取资源类型失败:', error)
+      throw error
+    }
+  }
+
+  // 根据资源类型获取资源列表
+  const fetchResourceList = async (resType) => {
+    try {
+      if (!resType) {
+        resourceList.value = []
+        return []
+      }
+      
+      const response = await getGMResourceList(resType)
+      if (response.code === 0) {
+        resourceList.value = response.data.list || []
+      } else {
+        throw new Error(response.msg || '获取资源列表失败')
+      }
+    } catch (error) {
+      console.error('获取资源列表失败:', error)
+      resourceList.value = []
+      throw error
+    }
+  }
+
   // 设置搜索条件
   const setSearchInfo = (info) => {
     searchInfo.value = { ...searchInfo.value, ...info }
@@ -256,11 +296,11 @@ export const useGMItemStore = defineStore('gmItem', () => {
   // 重置搜索条件
   const resetSearchInfo = () => {
     searchInfo.value = {
-      userId: '',
-      itemId: '',
-      itemName: '',
-      operationType: '',
-      dateRange: []
+      player_id: '',
+      res_type: '',
+      res_id: '',
+      operation_type: '',
+      log_time_range: []
     }
   }
 
@@ -295,13 +335,15 @@ export const useGMItemStore = defineStore('gmItem', () => {
     itemStats,
     itemTypes,
     operationTypes,
+    resourceTypes,
+    resourceList,
     
     // 计算属性
     hasItems,
     totalPages,
     
     // 方法
-    fetchItemList,
+    fetchResourceLogList,
     fetchItem,
     createItem,
     updateItem,
@@ -312,6 +354,8 @@ export const useGMItemStore = defineStore('gmItem', () => {
     fetchItemStats,
     fetchItemTypes,
     fetchOperationTypes,
+    fetchResourceTypes,
+    fetchResourceList,
     setSearchInfo,
     resetSearchInfo,
     setPage,

@@ -1,7 +1,7 @@
 import service from '@/utils/request'
 
 // 获取游戏道具列表
-export const getGMItemList = (data) => {
+export const getGMResourceLogList = (data) => {
   return service({
     url: '/gm/resource/log/list',
     method: 'post',
@@ -101,6 +101,22 @@ export const getGMItemOperationTypes = () => {
 export const getGMItemTypes = () => {
   return service({
     url: '/gm/item/types',
+    method: 'get'
+  })
+}
+
+// 获取资源类型列表
+export const getGMResourceTypeList = () => {
+  return service({
+    url: '/gm/resource/type/list',
+    method: 'get'
+  })
+}
+
+// 根据资源类型获取资源列表
+export const getGMResourceList = (resType) => {
+  return service({
+    url: `/gm/resource/list/${resType}`,
     method: 'get'
   })
 }
