@@ -153,7 +153,7 @@
               :type="scope.row.ban_login ? 'success' : 'danger'"
               link
               :icon="scope.row.ban_login ? 'unlock' : 'lock'"
-              @click="toggleBanLogin(scope.row)"
+              @click="handleBanLogin(scope.row)"
             >
               {{ scope.row.ban_login ? '解除封号' : '封号' }}
             </el-button>
@@ -216,6 +216,43 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 封号时间选择对话框 -->
+    <el-dialog
+      v-model="banLoginDialogVisible"
+      title="🚫 设置封号截止时间"
+      width="500px"
+      align-center
+      destroy-on-close
+    >
+      <div style="padding: 20px 0;">
+        <el-form :model="banLoginData" label-width="120px">
+          <el-form-item label="封号截止时间" required>
+            <el-date-picker
+              v-model="banLoginData.expireTime"
+              type="datetime"
+              placeholder="请选择封号截止时间"
+              style="width: 100%"
+              :disabled-date="(time) => time.getTime() <= Date.now()"
+            />
+          </el-form-item>
+        </el-form>
+      </div>
+      
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="banLoginDialogVisible = false">取消</el-button>
+          <el-button 
+            type="danger" 
+            @click="submitBanLogin"
+            :disabled="!banLoginData.expireTime"
+          >
+            <el-icon><Lock /></el-icon>
+            确定封号
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -274,6 +311,13 @@
   // 禁言相关
   const banChatDialogVisible = ref(false)
   const banChatData = ref({
+    expireTime: null,
+    currentRow: null  // 保存当前操作的行数据
+  })
+
+  // 封号相关
+  const banLoginDialogVisible = ref(false)
+  const banLoginData = ref({
     expireTime: null,
     currentRow: null  // 保存当前操作的行数据
   })
@@ -381,26 +425,67 @@
     }).catch(() => {})
   }
 
-  // 切换封号状态
-  const toggleBanLogin = async (row) => {
+  // 处理封号/解除封号
+  const handleBanLogin = (row) => {
+    if (row.ban_login) {
+      // 解除封号：直接确认
+      ElMessageBox.confirm(`确定要解除该玩家的封号吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        executeBanLogin(row, null)
+      }).catch(() => {})
+    } else {
+      // 封号：打开对话框选择时间
+      banLoginData.value = {
+        expireTime: null,
+        currentRow: row  // 保存完整的行数据
+      }
+      banLoginDialogVisible.value = true
+    }
+  }
+
+  // 执行封号/解除封号操作
+  const executeBanLogin = async (row, expireTime) => {
     const action = row.ban_login ? '解除封号' : '封号'
-    const confirmText = row.ban_login ? '确定要解除该玩家的封号吗？' : '确定要封号该玩家吗？'
     
-    ElMessageBox.confirm(confirmText, '提示', {
+    try {
+      const params = {
+        player_id: row.player_id,
+        expire_time: expireTime
+      }
+      
+      await gmUserStore.toggleBanLogin(params)
+      ElMessage.success(`${action}成功`)
+      
+      // 关闭对话框并重置
+      banLoginDialogVisible.value = false
+      banLoginData.value = { expireTime: null, currentRow: null }
+      
+      // 刷新列表
+      await fetchUserList()
+    } catch (error) {
+      ElMessage.error(error.message || `${action}失败`)
+    }
+  }
+
+  // 提交封号（带时间选择）
+  const submitBanLogin = () => {
+    if (!banLoginData.value.expireTime) {
+      ElMessage.warning('请选择封号截止时间')
+      return
+    }
+    
+    ElMessageBox.confirm('确定要封号该玩家吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
-    }).then(async () => {
-      try {
-        // 调用 API 切换封号状态
-        await gmUserStore.toggleBanLogin(row.player_id)
-        ElMessage.success(`${action}成功`)
-        // 刷新列表
-        await fetchUserList()
-      } catch (error) {
-        ElMessage.error(error.message || `${action}失败`)
-      }
-    })
+    }).then(() => {
+      // 直接使用保存的行数据，无需构造 tempRow
+      const expireTimestamp = Math.floor(new Date(banLoginData.value.expireTime).getTime() / 1000)
+      executeBanLogin(banLoginData.value.currentRow, expireTimestamp)
+    }).catch(() => {})
   }
 
 </script>

@@ -2,14 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import {
   getGMUserList,
-  createGMUser,
-  updateGMUser,
   getGMUser,
   toggleGMBanChat,
   toggleGMBanLogin,
   batchOperateGMUser,
   exportGMUser,
-  getGMUserStats
 } from '@/api/gm_user'
 
 export const useGMUserStore = defineStore('gmUser', () => {
@@ -113,40 +110,6 @@ export const useGMUserStore = defineStore('gmUser', () => {
     }
   }
 
-  // 创建用户
-  const createUser = async (userData) => {
-    try {
-      const response = await createGMUser(userData)
-      if (response.code === 0) {
-        // 刷新列表
-        await fetchUserList()
-        return response.data
-      } else {
-        throw new Error(response.msg || '创建用户失败')
-      }
-    } catch (error) {
-      console.error('创建用户失败:', error)
-      throw error
-    }
-  }
-
-  // 更新用户
-  const updateUser = async (userData) => {
-    try {
-      const response = await updateGMUser(userData)
-      if (response.code === 0) {
-        // 刷新列表
-        await fetchUserList()
-        return response.data
-      } else {
-        throw new Error(response.msg || '更新用户失败')
-      }
-    } catch (error) {
-      console.error('更新用户失败:', error)
-      throw error
-    }
-  }
-
   // 切换禁言状态
   const toggleBanChat = async (params) => {
     try {
@@ -165,10 +128,10 @@ export const useGMUserStore = defineStore('gmUser', () => {
   }
 
   // 切换封号状态
-  const toggleBanLogin = async (player_id) => {
+  const toggleBanLogin = async (params) => {
     try {
-      const response = await toggleGMBanLogin({ player_id })
-      if (response.status === 0) {
+      const response = await toggleGMBanLogin(params)
+      if (response.code === 0) {
         // 刷新列表
         await fetchUserList()
         return true
@@ -211,22 +174,6 @@ export const useGMUserStore = defineStore('gmUser', () => {
       return response
     } catch (error) {
       console.error('导出用户数据失败:', error)
-      throw error
-    }
-  }
-
-  // 获取用户统计信息
-  const fetchUserStats = async () => {
-    try {
-      const response = await getGMUserStats()
-      if (response.code === 0) {
-        userStats.value = response.data
-        return response.data
-      } else {
-        throw new Error(response.msg || '获取用户统计失败')
-      }
-    } catch (error) {
-      console.error('获取用户统计失败:', error)
       throw error
     }
   }
@@ -285,13 +232,10 @@ export const useGMUserStore = defineStore('gmUser', () => {
     // 方法
     fetchUserList,
     fetchUser,
-    createUser,
-    updateUser,
     toggleBanChat,
     toggleBanLogin,
     batchOperate,
     exportUsers,
-    fetchUserStats,
     setSearchInfo,
     resetSearchInfo,
     setPage,
