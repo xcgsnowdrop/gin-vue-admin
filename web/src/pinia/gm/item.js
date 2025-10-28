@@ -2,15 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import {
   getGMResourceLogList,
-  createGMItem,
-  updateGMItem,
-  deleteGMItem,
-  getGMItem,
-  batchDeleteGMItem,
   exportGMItem,
   cleanupGMItem,
-  getGMItemStats,
-  getGMItemTypes,
   getGMItemOperationTypes,
   getGMResourceTypeList,
   getGMResourceList
@@ -85,91 +78,6 @@ export const useGMItemStore = defineStore('gmItem', () => {
     }
   }
 
-
-  // 获取道具流水详情
-  const fetchItem = async (id) => {
-    try {
-      const response = await getGMItem(id)
-      if (response.code === 0) {
-        currentItem.value = response.data
-        return response.data
-      } else {
-        throw new Error(response.msg || '获取道具流水详情失败')
-      }
-    } catch (error) {
-      console.error('获取道具流水详情失败:', error)
-      throw error
-    }
-  }
-
-  // 创建道具流水记录
-  const createItem = async (itemData) => {
-    try {
-      const response = await createGMItem(itemData)
-      if (response.code === 0) {
-        // 刷新列表
-        await fetchResourceLogList()
-        return response.data
-      } else {
-        throw new Error(response.msg || '创建道具流水记录失败')
-      }
-    } catch (error) {
-      console.error('创建道具流水记录失败:', error)
-      throw error
-    }
-  }
-
-  // 更新道具流水记录
-  const updateItem = async (itemData) => {
-    try {
-      const response = await updateGMItem(itemData)
-      if (response.code === 0) {
-        // 刷新列表
-        await fetchResourceLogList()
-        return response.data
-      } else {
-        throw new Error(response.msg || '更新道具流水记录失败')
-      }
-    } catch (error) {
-      console.error('更新道具流水记录失败:', error)
-      throw error
-    }
-  }
-
-  // 删除道具流水记录
-  const removeItem = async (id) => {
-    try {
-      const response = await deleteGMItem({ id })
-      if (response.code === 0) {
-        // 刷新列表
-        await fetchResourceLogList()
-        return true
-      } else {
-        throw new Error(response.msg || '删除道具流水记录失败')
-      }
-    } catch (error) {
-      console.error('删除道具流水记录失败:', error)
-      throw error
-    }
-  }
-
-  // 批量删除道具流水记录
-  const batchDeleteItems = async (ids) => {
-    try {
-      const response = await batchDeleteGMItem({ ids })
-      if (response.code === 0) {
-        // 刷新列表
-        await fetchResourceLogList()
-        return true
-      } else {
-        throw new Error(response.msg || '批量删除道具流水记录失败')
-      }
-    } catch (error) {
-      console.error('批量删除道具流水记录失败:', error)
-      throw error
-    }
-  }
-
   // 导出道具流水数据
   const exportItems = async (params = {}) => {
     try {
@@ -197,41 +105,6 @@ export const useGMItemStore = defineStore('gmItem', () => {
       }
     } catch (error) {
       console.error('清理旧数据失败:', error)
-      throw error
-    }
-  }
-
-  // 获取道具流水统计信息
-  const fetchItemStats = async (params = {}) => {
-    try {
-      const response = await getGMItemStats({
-        ...searchInfo.value,
-        ...params
-      })
-      if (response.code === 0) {
-        itemStats.value = response.data
-        return response.data
-      } else {
-        throw new Error(response.msg || '获取道具流水统计失败')
-      }
-    } catch (error) {
-      console.error('获取道具流水统计失败:', error)
-      throw error
-    }
-  }
-
-  // 获取道具类型列表
-  const fetchItemTypes = async () => {
-    try {
-      const response = await getGMItemTypes()
-      if (response.code === 0) {
-        itemTypes.value = response.data
-        return response.data
-      } else {
-        throw new Error(response.msg || '获取道具类型失败')
-      }
-    } catch (error) {
-      console.error('获取道具类型失败:', error)
       throw error
     }
   }
@@ -344,15 +217,8 @@ export const useGMItemStore = defineStore('gmItem', () => {
     
     // 方法
     fetchResourceLogList,
-    fetchItem,
-    createItem,
-    updateItem,
-    removeItem,
-    batchDeleteItems,
     exportItems,
     cleanupOldData,
-    fetchItemStats,
-    fetchItemTypes,
     fetchOperationTypes,
     fetchResourceTypes,
     fetchResourceList,
