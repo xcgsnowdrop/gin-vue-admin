@@ -144,7 +144,7 @@
           min-width="180"
           prop="log_time_formatted"
         />
-        <el-table-column align="left" label="操作" min-width="200">
+        <!-- <el-table-column align="left" label="操作" min-width="200">
           <template #default="scope">
             <el-button
               type="primary"
@@ -171,7 +171,7 @@
               删除
             </el-button>
           </template>
-        </el-table-column>
+        </el-table-column> -->
       </el-table>
       <div class="gva-pagination">
         <el-pagination
@@ -186,59 +186,6 @@
       </div>
     </div>
 
-    <!-- 详情对话框 -->
-    <!-- <el-dialog
-      v-model="detailDialogVisible"
-      title="道具流水详情"
-      width="600px"
-    >
-      <el-descriptions :column="2" border>
-        <el-descriptions-item label="流水ID">{{ detailData.ID }}</el-descriptions-item>
-        <el-descriptions-item label="游戏用户ID">{{ detailData.userId }}</el-descriptions-item>
-        <el-descriptions-item label="道具ID">{{ detailData.itemId }}</el-descriptions-item>
-        <el-descriptions-item label="道具名称">{{ detailData.itemName }}</el-descriptions-item>
-        <el-descriptions-item label="操作类型">
-          <el-tag :type="getOperationTypeTag(detailData.operationType)">
-            {{ getOperationTypeText(detailData.operationType) }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="数量变化">
-          <span :class="getQuantityClass(detailData.quantityChange)">
-            {{ detailData.quantityChange > 0 ? '+' : '' }}{{ detailData.quantityChange }}
-          </span>
-        </el-descriptions-item>
-        <el-descriptions-item label="剩余数量">{{ detailData.remainingQuantity }}</el-descriptions-item>
-        <el-descriptions-item label="操作原因" :span="2">{{ detailData.reason }}</el-descriptions-item>
-        <el-descriptions-item label="操作时间" :span="2">{{ formatDateTime(detailData.createdAt) }}</el-descriptions-item>
-      </el-descriptions>
-    </el-dialog> -->
-
-    <!-- 编辑对话框 -->
-    <!-- <el-dialog
-      v-model="editDialogVisible"
-      title="编辑道具流水"
-      width="500px"
-    >
-      <el-form
-        ref="editFormRef"
-        :model="editForm"
-        :rules="editRules"
-        label-width="100px"
-      >
-        <el-form-item label="操作原因" prop="reason">
-          <el-input
-            v-model="editForm.reason"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入操作原因"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="editDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveEdit">保存</el-button>
-      </template>
-    </el-dialog> -->
   </div>
 </template>
 
@@ -271,8 +218,6 @@ const {
   fetchResourceLogList,
   fetchResourceTypes,
   fetchResourceList,
-  // updateItem,
-  removeItem,
   exportItems,
   cleanupOldData,
   resetSearchInfo,
@@ -280,21 +225,6 @@ const {
   setPageSize
 } = gmItemStore
 
-// 详情对话框
-const detailDialogVisible = ref(false)
-const detailData = ref({})
-
-// 编辑对话框
-const editDialogVisible = ref(false)
-const editForm = reactive({
-  reason: ''
-})
-// const editFormRef = ref()
-// const editRules = {
-//   reason: [
-//     { required: true, message: '请输入操作原因', trigger: 'blur' }
-//   ]
-// }
 
 // 获取操作类型标签样式
 const getOperationTypeTag = (type) => {
@@ -323,12 +253,6 @@ const getQuantityClass = (quantity) => {
   return quantity > 0 ? 'text-green-600' : 'text-red-600'
 }
 
-// // 格式化时间
-// const formatDateTime = (dateTime) => {
-//   if (!dateTime) return ''
-//   return new Date(dateTime).toLocaleString('zh-CN')
-// }
-
 // 查询数据
 const onSubmit = () => {
   setPage(1)
@@ -342,49 +266,6 @@ const onReset = () => {
   fetchResourceLogList()
 }
 
-// 生成模拟数据
-// const generateMockData = () => {
-//   const data = []
-//   const operationTypes = ['gain', 'consume', 'trade', 'system']
-//   const itemNames = ['金币', '钻石', '经验药水', '装备强化石', '技能书', '宠物蛋']
-  
-//   for (let i = 1; i <= pageSize.value; i++) {
-//     const operationType = operationTypes[Math.floor(Math.random() * operationTypes.length)]
-//     const quantityChange = operationType === 'gain' 
-//       ? Math.floor(Math.random() * 1000) + 1
-//       : -(Math.floor(Math.random() * 100) + 1)
-    
-//     data.push({
-//       ID: (page.value - 1) * pageSize.value + i,
-//       userId: Math.floor(Math.random() * 10000) + 1000,
-//       itemId: Math.floor(Math.random() * 1000) + 1,
-//       itemName: itemNames[Math.floor(Math.random() * itemNames.length)],
-//       operationType,
-//       quantityChange,
-//       remainingQuantity: Math.floor(Math.random() * 10000) + 1000,
-//       reason: getRandomReason(operationType),
-//       createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-//     })
-//   }
-  
-//   return {
-//     data,
-//     total: 1000
-//   }
-// }
-
-// 获取随机原因
-// const getRandomReason = (type) => {
-//   const reasons = {
-//     gain: ['任务奖励', '活动奖励', '签到奖励', '充值获得', '系统补偿'],
-//     consume: ['购买道具', '强化装备', '学习技能', '升级消耗', '交易消耗'],
-//     trade: ['玩家交易', '拍卖行交易', '公会交易', '好友赠送'],
-//     system: ['系统回收', '数据修正', '活动调整', '维护补偿']
-//   }
-//   const typeReasons = reasons[type] || ['系统操作']
-//   return typeReasons[Math.floor(Math.random() * typeReasons.length)]
-// }
-
 // 分页处理
 const handleCurrentChange = (val) => {
   setPage(val)
@@ -394,54 +275,6 @@ const handleCurrentChange = (val) => {
 const handleSizeChange = (val) => {
   setPageSize(val)
   fetchResourceLogList()
-}
-
-// 查看详情
-const viewDetail = (row) => {
-  detailData.value = { ...row }
-  detailDialogVisible.value = true
-}
-
-// 编辑记录
-const editRecord = (row) => {
-  editForm.reason = row.reason
-  editForm.id = row.ID
-  editDialogVisible.value = true
-}
-
-// // 保存编辑
-// const saveEdit = async () => {
-//   if (!editFormRef.value) return
-  
-//   try {
-//     await editFormRef.value.validate()
-//     await updateItem({
-//       id: editForm.id,
-//       reason: editForm.reason
-//     })
-//     ElMessage.success('保存成功')
-//     editDialogVisible.value = false
-//   } catch (error) {
-//     ElMessage.error(error.message || '保存失败')
-//   }
-// }
-
-// 删除记录
-const deleteRecord = async (row) => {
-  try {
-    await ElMessageBox.confirm('确定要删除这条记录吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-    
-    await removeItem(row.ID)
-    ElMessage.success('删除成功')
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error(error.message || '删除失败')
-    }
-  }
 }
 
 // 导出数据
