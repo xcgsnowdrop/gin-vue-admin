@@ -17,11 +17,20 @@ export const useGMItemStore = defineStore('gmItem', () => {
   const total = ref(0)
   const page = ref(1)
   const pageSize = ref(10)
+  // 获取当前月份，格式为YYYYMM
+  const getCurrentMonth = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    return `${year}${month}`
+  }
+
   const searchInfo = ref({
     player_id: '',
     res_type: '',
     res_id: '',
     // operation_type: '',
+    month: getCurrentMonth(), // 默认当前月份
     log_time_range: []
   })
   const itemStats = ref({
@@ -190,6 +199,7 @@ export const useGMItemStore = defineStore('gmItem', () => {
       res_type: '',
       res_id: '',
       // operation_type: '',
+      month: getCurrentMonth(), // 重置为当前月份
       log_time_range: []
     }
   }

@@ -44,7 +44,33 @@
             <el-option label="系统" value="system" />
           </el-select>
         </el-form-item> -->
+        <el-form-item label="查询月份">
+          <template #label>
+            <span>查询月份</span>
+            <el-tooltip content="选择要查询的月份，资源流水按月分表存储，一次只能查询一个月的数据" placement="top">
+              <el-icon style="margin-left: 4px; color: #909399; cursor: help;">
+                <QuestionFilled />
+              </el-icon>
+            </el-tooltip>
+          </template>
+          <el-date-picker
+            v-model="searchInfo.month"
+            type="month"
+            placeholder="请选择月份"
+            format="YYYY年MM月"
+            value-format="YYYYMM"
+            :default-value="new Date()"
+          />
+        </el-form-item>
         <el-form-item label="时间范围">
+          <template #label>
+            <span>时间范围</span>
+            <el-tooltip content="在选定月份内选择具体的时间范围进行筛选" placement="top">
+              <el-icon style="margin-left: 4px; color: #909399; cursor: help;">
+                <QuestionFilled />
+              </el-icon>
+            </el-tooltip>
+          </template>
           <el-date-picker
             v-model="searchInfo.log_time_range"
             type="datetimerange"
@@ -64,14 +90,14 @@
       </el-form>
     </div>
     <div class="gva-table-box">
-      <div class="gva-btn-list">
+      <!-- <div class="gva-btn-list">
         <el-button type="success" icon="download" @click="exportData">
           导出数据
         </el-button>
         <el-button type="warning" icon="delete" @click="clearOldData">
           清理旧数据
         </el-button>
-      </div>
+      </div> -->
       <el-table :data="tableData" row-key="ID" v-loading="loading">
         <el-table-column align="left" label="ID" min-width="120" prop="_id" />
         <el-table-column
@@ -191,7 +217,8 @@
 
 <script setup>
 import { onMounted, watch } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+// import { ElMessage, ElMessageBox } from 'element-plus'
+import { QuestionFilled } from '@element-plus/icons-vue'
 import WarningBar from '@/components/warningBar/warningBar.vue'
 import { useGMItemStore } from '@/pinia/gm/item'
 import { storeToRefs } from 'pinia'
@@ -218,8 +245,8 @@ const {
   fetchResourceLogList,
   fetchResourceTypes,
   fetchResourceList,
-  exportItems,
-  cleanupOldData,
+  // exportItems,
+  // cleanupOldData,
   resetSearchInfo,
   setPage,
   setPageSize
@@ -277,33 +304,33 @@ const handleSizeChange = (val) => {
   fetchResourceLogList()
 }
 
-// 导出数据
-const exportData = async () => {
-  try {
-    await exportItems()
-    ElMessage.success('导出成功')
-  } catch (error) {
-    ElMessage.error(error.message || '导出失败')
-  }
-}
+// // 导出数据
+// const exportData = async () => {
+//   try {
+//     await exportItems()
+//     ElMessage.success('导出成功')
+//   } catch (error) {
+//     ElMessage.error(error.message || '导出失败')
+//   }
+// }
 
-// 清理旧数据
-const clearOldData = async () => {
-  try {
-    await ElMessageBox.confirm('确定要清理30天前的旧数据吗？此操作不可恢复！', '警告', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+// // 清理旧数据
+// const clearOldData = async () => {
+//   try {
+//     await ElMessageBox.confirm('确定要清理30天前的旧数据吗？此操作不可恢复！', '警告', {
+//       confirmButtonText: '确定',
+//       cancelButtonText: '取消',
+//       type: 'warning'
+//     })
     
-    await cleanupOldData(30)
-    ElMessage.success('清理完成')
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error(error.message || '清理失败')
-    }
-  }
-}
+//     await cleanupOldData(30)
+//     ElMessage.success('清理完成')
+//   } catch (error) {
+//     if (error !== 'cancel') {
+//       ElMessage.error(error.message || '清理失败')
+//     }
+//   }
+// }
 
 watch(
     () => tableData.value,
