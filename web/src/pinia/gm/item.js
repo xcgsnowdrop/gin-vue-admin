@@ -21,7 +21,7 @@ export const useGMItemStore = defineStore('gmItem', () => {
     player_id: '',
     res_type: '',
     res_id: '',
-    operation_type: '',
+    // operation_type: '',
     log_time_range: []
   })
   const itemStats = ref({
@@ -44,10 +44,27 @@ export const useGMItemStore = defineStore('gmItem', () => {
   const fetchResourceLogList = async (params = {}) => {
     loading.value = true
     try {
+      // 处理时间范围转换
+      const processedSearchInfo = { ...searchInfo.value }
+      if (processedSearchInfo.log_time_range && processedSearchInfo.log_time_range.length === 2) {
+        // 将日期时间字符串转换为时间戳（秒）
+        processedSearchInfo.start_time = Math.floor(new Date(processedSearchInfo.log_time_range[0]).getTime() / 1000)
+        processedSearchInfo.end_time = Math.floor(new Date(processedSearchInfo.log_time_range[1]).getTime() / 1000)
+        
+        // 调试信息
+        // console.log('时间范围转换:')
+        // console.log('原始时间:', processedSearchInfo.log_time_range)
+        // console.log('开始时间戳:', processedSearchInfo.start_time, '对应时间:', new Date(processedSearchInfo.start_time * 1000).toLocaleString())
+        // console.log('结束时间戳:', processedSearchInfo.end_time, '对应时间:', new Date(processedSearchInfo.end_time * 1000).toLocaleString())
+        
+        // 删除原始的时间范围字段，避免传给后端
+        delete processedSearchInfo.log_time_range
+      }
+      
       const response = await getGMResourceLogList({
         page: page.value,
         pageSize: pageSize.value,
-        ...searchInfo.value,
+        ...processedSearchInfo,
         ...params
       })
       
@@ -172,7 +189,7 @@ export const useGMItemStore = defineStore('gmItem', () => {
       player_id: '',
       res_type: '',
       res_id: '',
-      operation_type: '',
+      // operation_type: '',
       log_time_range: []
     }
   }

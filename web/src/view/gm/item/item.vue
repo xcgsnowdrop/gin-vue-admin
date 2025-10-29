@@ -190,7 +190,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import WarningBar from '@/components/warningBar/warningBar.vue'
 import { useGMItemStore } from '@/pinia/gm/item'
