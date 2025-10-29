@@ -79,6 +79,7 @@
             end-placeholder="结束时间"
             format="YYYY-MM-DD HH:mm:ss"
             value-format="YYYY-MM-DD HH:mm:ss"
+            :disabled-date="disabledDate"
           />
         </el-form-item>
         <el-form-item>
@@ -252,6 +253,23 @@ const {
   setPageSize
 } = gmItemStore
 
+// 限制时间范围选择器只能在选定月份内选择
+const disabledDate = (time) => {
+  if (!searchInfo.value.month) {
+    return false // 如果没有选择月份，不限制
+  }
+  
+  const selectedMonth = searchInfo.value.month
+  const year = parseInt(selectedMonth.substring(0, 4))
+  const month = parseInt(selectedMonth.substring(4, 6)) - 1 // JavaScript月份从0开始
+  
+  const currentDate = new Date(time)
+  const currentYear = currentDate.getFullYear()
+  const currentMonth = currentDate.getMonth()
+  
+  // 禁用不在选定年月的日期
+  return currentYear !== year || currentMonth !== month
+}
 
 // 获取操作类型标签样式
 const getOperationTypeTag = (type) => {
@@ -331,6 +349,32 @@ const handleSizeChange = (val) => {
 //     }
 //   }
 // }
+
+// 监听月份变化，清空时间范围选择
+watch(
+  () => searchInfo.value.month,
+  (newMonth, oldMonth) => {
+    if (newMonth !== oldMonth && searchInfo.value.log_time_range && searchInfo.value.log_time_range.length > 0) {
+      // 检查当前选择的时间是否还在新月份范围内
+      const selectedMonth = newMonth
+      const year = parseInt(selectedMonth.substring(0, 4))
+      const month = parseInt(selectedMonth.substring(4, 6)) - 1
+      
+      const startTime = new Date(searchInfo.value.log_time_range[0])
+      const endTime = new Date(searchInfo.value.log_time_range[1])
+      
+      const startYear = startTime.getFullYear()
+      const startMonth = startTime.getMonth()
+      const endYear = endTime.getFullYear()
+      const endMonth = endTime.getMonth()
+      
+      // 如果时间范围不在新月份内，清空时间范围
+      if (startYear !== year || startMonth !== month || endYear !== year || endMonth !== month) {
+        searchInfo.value.log_time_range = []
+      }
+    }
+  }
+)
 
 watch(
     () => tableData.value,
