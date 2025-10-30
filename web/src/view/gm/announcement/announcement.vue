@@ -181,6 +181,30 @@
           </el-table-column>
           <el-table-column align="left" label="开始时间" prop="start_time_formatted" width="180" />
           <el-table-column align="left" label="结束时间" prop="end_time_formatted" width="180" />
+          <el-table-column align="left" label="公告类型" width="120">
+            <template #default="scope">
+              <el-tag :type="getAnnouncementTypeTag(scope.row.type)" size="default">
+                {{ getAnnouncementTypeName(scope.row.type) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column align="left" label="是否展示" width="100">
+            <template #default="scope">
+              <el-tag 
+                :type="getShowStatusTag(scope.row.isShow)" 
+                size="default"
+                effect="plain"
+              >
+                <el-icon v-if="scope.row.isShow" style="margin-right: 4px;">
+                  <View />
+                </el-icon>
+                <el-icon v-else style="margin-right: 4px;">
+                  <Hide />
+                </el-icon>
+                {{ getShowStatusText(scope.row.isShow) }}
+              </el-tag>
+            </template>
+          </el-table-column>
           <el-table-column
             align="left"
             label="操作"
@@ -297,14 +321,14 @@
             >
               <el-option label="版本更新" value="1" />
               <el-option label="活动预告" value="2" />
-              <el-option label="FAQ" value="2" />
+              <el-option label="FAQ" value="3" />
             </el-select>
           </el-form-item>
           <el-form-item label="是否展示:" prop="isShow">
             <el-switch
               v-model="formData.isShow"
-              :active-value="1"
-              :inactive-value="0"
+              :active-value="true"
+              :inactive-value="false"
             />
           </el-form-item>
           <!-- <el-form-item label="公告ID:" prop="id">
@@ -329,6 +353,7 @@
     // 全量引入格式化工具 请按需保留
     import { ElMessage, ElMessageBox } from 'element-plus'
     import { ref, reactive, onMounted, watch } from 'vue'
+    import { View, Hide } from '@element-plus/icons-vue'
   
     defineOptions({
       name: 'GmAnnouncement'
@@ -604,8 +629,8 @@
   
     // 删除行
     const deleteInfoFunc = async (row) => {
-      const res = await deleteAnnouncement(row.ID)
-      if (res.code === 0) {
+      const res = await deleteAnnouncement({ index: row.index })
+      if (res.success) {
         ElMessage({
           type: 'success',
           message: '删除成功'
@@ -614,6 +639,11 @@
           page.value--
         }
         fetchAnnouncementList()
+      } else {
+        ElMessage({
+          type: 'error',
+          message: res.error || '删除失败'
+        })
       }
     }
   
@@ -673,6 +703,44 @@
           })
         }
       })
+    }
+
+    // 公告类型映射
+    const announcementTypeMap = {
+      '1': { name: '版本更新', tagType: 'success' },
+      '2': { name: '活动预告', tagType: 'warning' },
+      '3': { name: 'FAQ', tagType: 'info' }
+    }
+
+    // 获取公告类型名称
+    const getAnnouncementTypeName = (type) => {
+      if (!type) return '未知'
+      const typeStr = String(type)
+      return announcementTypeMap[typeStr]?.name || '未知'
+    }
+
+    // 获取公告类型标签样式
+    const getAnnouncementTypeTag = (type) => {
+      if (!type) return 'info'
+      const typeStr = String(type)
+      return announcementTypeMap[typeStr]?.tagType || 'info'
+    }
+
+    // 获取展示状态文本
+    const getShowStatusText = (isShow) => {
+      // 兼容 true, false, 1, 0, "true", "false" 等情况
+      if (isShow === true || isShow === 1 || isShow === '1' || isShow === 'true') {
+        return '展示中'
+      }
+      return '已隐藏'
+    }
+
+    // 获取展示状态标签样式
+    const getShowStatusTag = (isShow) => {
+      if (isShow === true || isShow === 1 || isShow === '1' || isShow === 'true') {
+        return 'success'
+      }
+      return 'info'
     }
 
     // 语言代码到语言名称的映射

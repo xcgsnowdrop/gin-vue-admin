@@ -112,17 +112,17 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
   }
 
   // 删除公告
-  const deleteAnnouncement = async (id) => {
+  const deleteAnnouncement = async (data) => {
     try {
-      const response = await deleteGMAnnouncement(id)
+      const response = await deleteGMAnnouncement(data)
       if (response.code === 0) {
-        return true
+        return { success: true, data: response.data }
       } else {
         throw new Error(response.msg || '删除公告失败')
       }
     } catch (error) {
       console.error('删除公告失败:', error)
-      return false
+      return { success: false, error: error.message || '删除公告失败' }
     }
   }
 
@@ -143,17 +143,17 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
   }
 
   // 置顶公告
-  const toppingAnnouncement = async (id) => {
+  const toppingAnnouncement = async (data) => {
     try {
-      const response = await toppingGMAnnouncement(id)
+      const response = await toppingGMAnnouncement(data)
       if (response.code === 0) {
-        return true
+        return { success: true, data: response.data }
       } else {
         throw new Error(response.msg || '置顶公告失败')
       }
     } catch (error) {
       console.error('置顶公告失败:', error)
-      return false
+      return { success: false, error: error.message || '置顶公告失败' }
     }
   }
 
