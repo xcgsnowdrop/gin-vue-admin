@@ -100,7 +100,7 @@
         >
           <el-table-column type="selection" width="55" />
   
-          <el-table-column align="left" label="排序" prop="index" width="180" />
+          <el-table-column align="left" label="排序" prop="index" width="80" />
           <el-table-column align="left" label="标题" width="200">
             <template #default="scope">
               <div class="multilingual-cell">
@@ -181,6 +181,7 @@
           </el-table-column>
           <el-table-column align="left" label="开始时间" prop="start_time_formatted" width="180" />
           <el-table-column align="left" label="结束时间" prop="end_time_formatted" width="180" />
+          <el-table-column align="left" label="创建时间" prop="create_time_formatted" width="180" />
           <el-table-column align="left" label="公告类型" width="120">
             <template #default="scope">
               <el-tag :type="getAnnouncementTypeTag(scope.row.type)" size="default">

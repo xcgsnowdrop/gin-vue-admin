@@ -77,6 +77,7 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
         list.forEach(item => {
           item.start_time_formatted = item.startTime ? new Date(item.startTime * 1000).toLocaleString() : '-'
           item.end_time_formatted = item.endTime ? new Date(item.endTime * 1000).toLocaleString() : '-'
+          item.create_time_formatted = item.createTime ? new Date(item.createTime * 1000).toLocaleString() : '-'
         })
 
         announcementList.value = list
