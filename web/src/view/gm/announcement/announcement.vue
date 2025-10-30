@@ -320,6 +320,7 @@
               v-model="formData.endTime"
               type="datetime"
               placeholder="请选择结束时间"
+              :disabled-date="disabledEndDate"
             />
           </el-form-item>
           <el-form-item label="类型:" prop="type">
@@ -420,8 +421,47 @@
       isShow: 1
     })
 
+    // 禁用结束时间：必须在今天及开始时间（若有）之后的日期
+    const disabledEndDate = (time) => {
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+      let minDateMs = todayStart.getTime()
+      if (formData.value.startTime) {
+        const start = new Date(formData.value.startTime)
+        const startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+        minDateMs = Math.max(minDateMs, startDateOnly.getTime())
+      }
+      return time.getTime() < minDateMs
+    }
+
     // 验证规则
-    const rule = reactive({})
+    const rule = reactive({
+      endTime: [
+        {
+          validator: (rule, value, callback) => {
+            if (!value) {
+              callback()
+              return
+            }
+            const endMs = new Date(value).getTime()
+            const nowMs = Date.now()
+            if (endMs <= nowMs) {
+              callback(new Error('结束时间必须大于当前时间'))
+              return
+            }
+            if (formData.value.startTime) {
+              const startMs = new Date(formData.value.startTime).getTime()
+              if (endMs <= startMs) {
+                callback(new Error('结束时间必须大于开始时间'))
+                return
+              }
+            }
+            callback()
+          },
+          trigger: 'change'
+        }
+      ]
+    })
   
     const searchRule = reactive({
       createdAt: [
