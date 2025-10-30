@@ -268,7 +268,7 @@
   import { storeToRefs } from 'pinia'
 
   defineOptions({
-    name: 'GMUser'
+    name: 'GmUser'
   })
 
   const appStore = useAppStore()

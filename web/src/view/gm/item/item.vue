@@ -225,7 +225,7 @@ import { useGMItemStore } from '@/pinia/gm/item'
 import { storeToRefs } from 'pinia'
 
 defineOptions({
-  name: 'GMItem'
+  name: 'GmItem'
 })
 
 const gmItemStore = useGMItemStore()

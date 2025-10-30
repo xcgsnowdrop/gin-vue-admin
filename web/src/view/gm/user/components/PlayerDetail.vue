@@ -120,6 +120,10 @@ import { User, Document, Check } from '@element-plus/icons-vue'
 import VueJsonPretty from 'vue-json-pretty'
 import 'vue-json-pretty/lib/styles.css'
 
+defineOptions({
+  name: 'GmPlayerDetail'
+})
+
 const props = defineProps({
   modelValue: {
     type: Boolean,
