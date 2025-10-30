@@ -94,7 +94,7 @@
           style="width: 100%"
           tooltip-effect="dark"
           :data="tableData"
-          row-key="ID"
+          row-key="index"
           v-loading="loading"
           @selection-change="handleSelectionChange"
         >
