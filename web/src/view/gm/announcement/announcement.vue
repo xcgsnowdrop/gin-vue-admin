@@ -209,7 +209,7 @@
             align="left"
             label="操作"
             fixed="right"
-            min-width="240"
+            min-width="300"
           >
             <template #default="scope">
               <el-button
@@ -220,6 +220,15 @@
                 @click="updateInfoFunc(scope.row)"
               >
                 变更
+              </el-button>
+              <el-button
+                type="warning"
+                link
+                icon="top"
+                :disabled="scope.row.index === 1"
+                @click="toppingRow(scope.row)"
+              >
+                置顶
               </el-button>
               <el-button
                 type="primary"
@@ -331,13 +340,6 @@
               :inactive-value="false"
             />
           </el-form-item>
-          <!-- <el-form-item label="公告ID:" prop="id">
-            <el-input
-              v-model="formData.id"
-              placeholder="请输入ID"
-              :disabled="false"
-            />
-          </el-form-item> -->
         </el-form>
       </el-drawer>
     </div>
@@ -509,6 +511,17 @@
         deleteInfoFunc(row)
       })
     }
+
+    // 置顶行
+    const toppingRow = (row) => {
+      ElMessageBox.confirm('确定要置顶此公告吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        toppingInfoFunc(row)
+      })
+    }
   
     // 多选删除
     const onDelete = async () => {
@@ -649,6 +662,22 @@
         ElMessage({
           type: 'error',
           message: error.message || '删除失败'
+        })
+      }
+    }
+
+    // 置顶行
+    const toppingInfoFunc = async (row) => {
+      try {
+        await toppingAnnouncement({ index: row.index })
+        ElMessage({
+          type: 'success',
+          message: '置顶成功'
+        })
+      } catch (error) {
+        ElMessage({
+          type: 'error',
+          message: error.message || '置顶失败'
         })
       }
     }
