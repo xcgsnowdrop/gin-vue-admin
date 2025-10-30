@@ -20,8 +20,8 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
 
   const searchInfo = ref({
     type: '',
-    start_time: null,
-    end_time: null
+    startCreatedAt: null,
+    endCreatedAt: null
   })
 
   // 计算属性
@@ -59,9 +59,9 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
     loading.value = true
     try {
       const processedSearchInfo = { ...searchInfo.value }
-      if (processedSearchInfo.start_time && processedSearchInfo.end_time) {
-        processedSearchInfo.start_time = Math.floor(new Date(processedSearchInfo.start_time).getTime() / 1000)
-        processedSearchInfo.end_time = Math.floor(new Date(processedSearchInfo.end_time).getTime() / 1000)
+      if (processedSearchInfo.startCreatedAt && processedSearchInfo.endCreatedAt) {
+        processedSearchInfo.startCreatedAt = Math.floor(new Date(processedSearchInfo.startCreatedAt).getTime() / 1000)
+        processedSearchInfo.endCreatedAt = Math.floor(new Date(processedSearchInfo.endCreatedAt).getTime() / 1000)
       }
       const response = await getGMAnnouncementList({
         page: page.value,

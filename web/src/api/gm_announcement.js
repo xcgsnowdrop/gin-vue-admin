@@ -1,10 +1,11 @@
 import service from '@/utils/request'
 
 // 获取公告列表
-export const getGMAnnouncementList = () => {
+export const getGMAnnouncementList = (data) => {
   return service({
-    url: '/gm/announcement/list/get',
-    method: 'get'
+    url: '/gm/announcement/list',
+    method: 'post',
+    data
   })
 }
 

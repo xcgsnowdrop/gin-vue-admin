@@ -9,12 +9,12 @@
           :rules="searchRule"
           @keyup.enter="onSubmit"
         >
-          <el-form-item label="创建日期" prop="createdAt">
+          <el-form-item label="创建时间" prop="createdAt">
             <template #label>
               <span>
-                创建日期
+                创建时间
                 <el-tooltip
-                  content="搜索范围是开始日期（包含）至结束日期（不包含）"
+                  content="搜索范围是开始时间（包含）至结束时间（不包含）"
                 >
                   <el-icon><QuestionFilled /></el-icon>
                 </el-tooltip>
@@ -23,7 +23,7 @@
             <el-date-picker
               v-model="searchInfo.startCreatedAt"
               type="datetime"
-              placeholder="开始日期"
+              placeholder="开始时间"
               :disabled-date="
                 (time) =>
                   searchInfo.endCreatedAt
@@ -35,7 +35,7 @@
             <el-date-picker
               v-model="searchInfo.endCreatedAt"
               type="datetime"
-              placeholder="结束日期"
+              placeholder="结束时间"
               :disabled-date="
                 (time) =>
                   searchInfo.startCreatedAt
