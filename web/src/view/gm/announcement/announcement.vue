@@ -517,7 +517,7 @@
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async () => {
-        const IDs = []
+        const indexes = []
         if (multipleSelection.value.length === 0) {
           ElMessage({
             type: 'warning',
@@ -527,17 +527,17 @@
         }
         multipleSelection.value &&
           multipleSelection.value.map((item) => {
-            IDs.push(item.ID)
+            indexes.push(item.index)
           })
         
         try {
-          await deleteAnnouncement(IDs)
+          await deleteAnnouncement({indexes: indexes})
           ElMessage({
             type: 'success',
             message: '删除成功'
           })
           // 如果删除后当前页没有数据且不是第一页，则回到上一页
-          if (tableData.value.length === IDs.length && page.value > 1) {
+          if (tableData.value.length === indexes.length && page.value > 1) {
             setPage(page.value - 1)
           }
         } catch (error) {
@@ -636,7 +636,7 @@
     // 删除行
     const deleteInfoFunc = async (row) => {
       try {
-        await deleteAnnouncement({ index: row.index })
+        await deleteAnnouncement({ indexes: [row.index] })
         ElMessage({
           type: 'success',
           message: '删除成功'
