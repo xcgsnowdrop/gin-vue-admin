@@ -473,7 +473,7 @@
   
     // 分页
     const handleSizeChange = (val) => {
-      pageSize.value = val
+      setPageSize(val)
       fetchAnnouncementList()
     }
   
@@ -529,16 +529,22 @@
           multipleSelection.value.map((item) => {
             IDs.push(item.ID)
           })
-        const res = await deleteAnnouncement(IDs)
-        if (res.code === 0) {
+        
+        try {
+          await deleteAnnouncement(IDs)
           ElMessage({
             type: 'success',
             message: '删除成功'
           })
+          // 如果删除后当前页没有数据且不是第一页，则回到上一页
           if (tableData.value.length === IDs.length && page.value > 1) {
-            page.value--
+            setPage(page.value - 1)
           }
-          fetchAnnouncementList()
+        } catch (error) {
+          ElMessage({
+            type: 'error',
+            message: error.message || '删除失败'
+          })
         }
       })
     }
@@ -629,20 +635,20 @@
   
     // 删除行
     const deleteInfoFunc = async (row) => {
-      const res = await deleteAnnouncement({ index: row.index })
-      if (res.success) {
+      try {
+        await deleteAnnouncement({ index: row.index })
         ElMessage({
           type: 'success',
           message: '删除成功'
         })
+        // 如果删除后当前页没有数据且不是第一页，则回到上一页
         if (tableData.value.length === 1 && page.value > 1) {
-          page.value--
+          setPage(page.value - 1)
         }
-        fetchAnnouncementList()
-      } else {
+      } catch (error) {
         ElMessage({
           type: 'error',
-          message: res.error || '删除失败'
+          message: error.message || '删除失败'
         })
       }
     }
@@ -676,30 +682,28 @@
       elFormRef.value?.validate(async (valid) => {
         if (!valid) return
         
-        let res
-        switch (type.value) {
-          case 'create':
-            res = await addAnnouncement(formData.value)
-            break
-          case 'update':
-            res = await updateAnnouncement(formData.value)
-            break
-          default:
-            res = await addAnnouncement(formData.value)
-            break
-        }
-        
-        if (res.success) {
+        try {
+          switch (type.value) {
+            case 'create':
+              await addAnnouncement(formData.value)
+              break
+            case 'update':
+              await updateAnnouncement(formData.value)
+              break
+            default:
+              await addAnnouncement(formData.value)
+              break
+          }
+          
           ElMessage({
             type: 'success',
             message: '创建/更改成功'
           })
           closeDialog()
-          fetchAnnouncementList()
-        } else {
+        } catch (error) {
           ElMessage({
             type: 'error',
-            message: res.error || '操作失败'
+            message: error.message || '操作失败'
           })
         }
       })

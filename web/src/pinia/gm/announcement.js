@@ -101,13 +101,15 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
       const processedData = prepareSubmitData(data)
       const response = await addGMAnnouncement(processedData)
       if (response.code === 0) {
-        return { success: true, data: response.data }
+        // 添加成功后自动刷新列表
+        await fetchAnnouncementList()
+        return true
       } else {
         throw new Error(response.msg || '添加公告失败')
       }
     } catch (error) {
       console.error('添加公告失败:', error)
-      return { success: false, error: error.message || '添加公告失败' }
+      throw error
     }
   }
 
@@ -116,13 +118,15 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
     try {
       const response = await deleteGMAnnouncement(data)
       if (response.code === 0) {
-        return { success: true, data: response.data }
+        // 删除成功后自动刷新列表
+        await fetchAnnouncementList()
+        return true
       } else {
         throw new Error(response.msg || '删除公告失败')
       }
     } catch (error) {
       console.error('删除公告失败:', error)
-      return { success: false, error: error.message || '删除公告失败' }
+      throw error
     }
   }
 
@@ -132,13 +136,15 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
       const processedData = prepareSubmitData(data)
       const response = await updateGMAnnouncement(processedData)
       if (response.code === 0) {
-        return { success: true, data: response.data }
+        // 更新成功后自动刷新列表
+        await fetchAnnouncementList()
+        return true
       } else {
         throw new Error(response.msg || '更新公告失败')
       }
     } catch (error) {
       console.error('更新公告失败:', error)
-      return { success: false, error: error.message || '更新公告失败' }
+      throw error
     }
   }
 
@@ -147,13 +153,15 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
     try {
       const response = await toppingGMAnnouncement(data)
       if (response.code === 0) {
-        return { success: true, data: response.data }
+        // 置顶成功后自动刷新列表
+        await fetchAnnouncementList()
+        return true
       } else {
         throw new Error(response.msg || '置顶公告失败')
       }
     } catch (error) {
       console.error('置顶公告失败:', error)
-      return { success: false, error: error.message || '置顶公告失败' }
+      throw error
     }
   }
 
