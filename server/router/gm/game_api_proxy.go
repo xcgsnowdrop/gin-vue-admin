@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"gmserver/global"
 	"gmserver/middleware"
@@ -26,8 +27,8 @@ func (s *GameApiProxyRouter) InitGameApiProxyRouter(Router *gin.RouterGroup) {
 
 // gameApiProxy 游戏API代理实现
 func (s *GameApiProxyRouter) gameApiProxy(c *gin.Context) {
-	// 获取原始路径
-	originalPath := c.Request.URL.Path
+	// 获取原始路径，去掉开头的 /gm 前缀
+	originalPath := strings.TrimPrefix(c.Request.URL.Path, "/gm")
 
 	// 构建目标URL
 	targetURL := fmt.Sprintf("http://%s:%d%s",

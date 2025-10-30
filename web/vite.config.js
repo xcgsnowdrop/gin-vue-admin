@@ -79,7 +79,7 @@ export default ({ mode }) => {
           rewrite: (path) =>
             path.replace(new RegExp('^' + process.env.VITE_BASE_API), '')
         },
-        // GM管理模块代理规则 - 代理到游戏服务器
+        // GM管理模块代理规则 - 代理到游戏服务器 (已使用server/router/gm/game_api_proxy.go实现代理， 此代理规则已废弃)
         '/gm': {
           // target: 'http://localhost:8300',
           target: `${process.env.VITE_BASE_PATH}:${process.env.VITE_SERVER_PORT}/`,
