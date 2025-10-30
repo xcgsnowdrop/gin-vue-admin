@@ -95,37 +95,92 @@
           tooltip-effect="dark"
           :data="tableData"
           row-key="ID"
+          v-loading="loading"
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55" />
   
-          <el-table-column align="left" label="日期" prop="CreatedAt" width="180">
+          <el-table-column align="left" label="排序" prop="index" width="180" />
+          <el-table-column align="left" label="标题" width="200">
             <template #default="scope">
-              {{ formatDate(scope.row.CreatedAt) }}
-            </template>
-          </el-table-column>
-  
-          <el-table-column align="left" label="标题" prop="title" width="120" />
-          <el-table-column align="left" label="作者" prop="userID" width="120">
-            <template #default="scope">
-              <span>{{
-                filterDataSource(dataSource.userID, scope.row.userID)
-              }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="附件" prop="attachments" width="200">
-            <template #default="scope">
-              <div class="file-list">
-                <el-tag
-                  v-for="file in scope.row.attachments"
-                  :key="file.uid"
-                  @click="downloadFile(file.url)"
+              <div class="multilingual-cell">
+                <span class="main-text">{{ getMultilingualText(scope.row.title) }}</span>
+                <el-popover
+                  placement="top"
+                  :width="300"
+                  trigger="hover"
+                  popper-class="multilingual-popover"
                 >
-                  {{ file.name }}
-                </el-tag>
+                  <template #reference>
+                    <div class="language-tags">
+                      <el-tag
+                        v-for="lang in getAvailableLanguages(scope.row.title)"
+                        :key="lang.code"
+                        size="small"
+                        :type="lang.isDefault ? 'primary' : 'info'"
+                        class="lang-tag"
+                      >
+                        {{ lang.label }}
+                      </el-tag>
+                    </div>
+                  </template>
+                  <div class="multilingual-detail">
+                    <div
+                      v-for="lang in getAvailableLanguages(scope.row.title)"
+                      :key="lang.code"
+                      class="lang-item"
+                    >
+                      <el-tag size="small" :type="lang.isDefault ? 'primary' : 'info'">
+                        {{ lang.label }}
+                      </el-tag>
+                      <span class="lang-text">{{ lang.text || '(空)' }}</span>
+                    </div>
+                  </div>
+                </el-popover>
               </div>
             </template>
           </el-table-column>
+          <el-table-column align="left" label="内容" width="250">
+            <template #default="scope">
+              <div class="multilingual-cell">
+                <span class="main-text">{{ getMultilingualText(scope.row.content, 30) }}</span>
+                <el-popover
+                  placement="top"
+                  :width="300"
+                  trigger="hover"
+                  popper-class="multilingual-popover"
+                >
+                  <template #reference>
+                    <div class="language-tags">
+                      <el-tag
+                        v-for="lang in getAvailableLanguages(scope.row.content)"
+                        :key="lang.code"
+                        size="small"
+                        :type="lang.isDefault ? 'primary' : 'info'"
+                        class="lang-tag"
+                      >
+                        {{ lang.label }}
+                      </el-tag>
+                    </div>
+                  </template>
+                  <div class="multilingual-detail">
+                    <div
+                      v-for="lang in getAvailableLanguages(scope.row.content)"
+                      :key="lang.code"
+                      class="lang-item"
+                    >
+                      <el-tag size="small" :type="lang.isDefault ? 'primary' : 'info'">
+                        {{ lang.label }}
+                      </el-tag>
+                      <div class="lang-text">{{ lang.text || '(空)' }}</div>
+                    </div>
+                  </div>
+                </el-popover>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column align="left" label="开始时间" prop="start_time_formatted" width="180" />
+          <el-table-column align="left" label="结束时间" prop="end_time_formatted" width="180" />
           <el-table-column
             align="left"
             label="操作"
@@ -165,6 +220,8 @@
           />
         </div>
       </div>
+
+      <!-- 新增/修改弹窗 -->
       <el-drawer
         v-model="dialogFormVisible"
         destroy-on-close
@@ -190,82 +247,151 @@
           label-width="80px"
         >
           <el-form-item label="标题:" prop="title">
-            <el-input
-              v-model="formData.title"
-              :clearable="true"
-              placeholder="请输入标题"
-            />
+            <el-tabs v-model="activeTitleTab" type="border-card" class="multilingual-tabs">
+              <el-tab-pane
+                v-for="lang in languageOptions"
+                :key="lang.code"
+                :label="lang.label"
+                :name="lang.code"
+              >
+                <el-input
+                  v-model="formData.title[lang.code]"
+                  :clearable="true"
+                  :placeholder="`请输入${lang.label}标题`"
+                />
+              </el-tab-pane>
+            </el-tabs>
           </el-form-item>
           <el-form-item label="内容:" prop="content">
-            <RichEdit v-model="formData.content" />
+            <el-tabs v-model="activeContentTab" type="border-card" class="multilingual-tabs">
+              <el-tab-pane
+                v-for="lang in languageOptions"
+                :key="lang.code"
+                :label="lang.label"
+                :name="lang.code"
+              >
+                <RichEdit v-model="formData.content[lang.code]" />
+              </el-tab-pane>
+            </el-tabs>
           </el-form-item>
-          <el-form-item label="作者:" prop="userID">
+          <el-form-item label="开始时间:" prop="startTime">
+            <el-date-picker
+              v-model="formData.startTime"
+              type="datetime"
+              placeholder="请选择开始时间"
+            />
+          </el-form-item>
+          <el-form-item label="结束时间:" prop="endTime">
+            <el-date-picker
+              v-model="formData.endTime"
+              type="datetime"
+              placeholder="请选择结束时间"
+            />
+          </el-form-item>
+          <el-form-item label="类型:" prop="type">
             <el-select
-              v-model="formData.userID"
-              placeholder="请选择作者"
+              v-model="formData.type"
+              placeholder="请选择类型"
               style="width: 100%"
               :clearable="true"
             >
-              <el-option
-                v-for="(item, key) in dataSource.userID"
-                :key="key"
-                :label="item.label"
-                :value="item.value"
-              />
+              <el-option label="版本更新" value="1" />
+              <el-option label="活动预告" value="2" />
+              <el-option label="FAQ" value="2" />
             </el-select>
           </el-form-item>
-          <el-form-item label="附件:" prop="attachments">
-            <SelectFile v-model="formData.attachments" />
+          <el-form-item label="是否展示:" prop="isShow">
+            <el-switch
+              v-model="formData.isShow"
+              :active-value="1"
+              :inactive-value="0"
+            />
           </el-form-item>
+          <!-- <el-form-item label="公告ID:" prop="id">
+            <el-input
+              v-model="formData.id"
+              placeholder="请输入ID"
+              :disabled="false"
+            />
+          </el-form-item> -->
         </el-form>
       </el-drawer>
     </div>
   </template>
   
   <script setup>
-    import {
-      getInfoDataSource,
-      createInfo,
-      deleteInfo,
-      deleteInfoByIds,
-      updateInfo,
-      findInfo,
-      getInfoList
-    } from '@/plugin/announcement/api/info'
-    import { getUrl } from '@/utils/image'
     // 富文本组件
     import RichEdit from '@/components/richtext/rich-edit.vue'
     // 文件选择组件
-    import SelectFile from '@/components/selectFile/selectFile.vue'
+    import { useGMAnnouncementStore } from '@/pinia/gm/announcement'
+    import { storeToRefs } from 'pinia'
   
     // 全量引入格式化工具 请按需保留
-    import { formatDate, filterDataSource } from '@/utils/format'
     import { ElMessage, ElMessageBox } from 'element-plus'
-    import { ref, reactive } from 'vue'
+    import { ref, reactive, onMounted, watch } from 'vue'
   
     defineOptions({
       name: 'GmAnnouncement'
     })
   
+    const gmAnnouncementStore = useGMAnnouncementStore()
+    // 使用store中的状态
+    const { 
+      announcementList: tableData, 
+      loading, 
+      total, 
+      page,
+      pageSize,
+      searchInfo,
+    } = storeToRefs(gmAnnouncementStore)
+
+    // 使用store中的方法
+    const { 
+        fetchAnnouncementList,
+        addAnnouncement,
+        deleteAnnouncement,
+        updateAnnouncement,
+        toppingAnnouncement,
+        resetSearchInfo,
+        setPage,
+        setPageSize
+    } = gmAnnouncementStore
+
     // 控制更多查询条件显示/隐藏状态
     const showAllQuery = ref(false)
+
+    // 语言选项配置
+    const languageOptions = [
+      { code: 'en', label: '英文' },
+      { code: 'zh-TW', label: '繁中' },
+      { code: 'ja', label: '日文' },
+      { code: 'ko', label: '韩文' }
+    ]
+
+    // 多语言表单标签页活动状态
+    const activeTitleTab = ref('en')
+    const activeContentTab = ref('en')
   
+    // 初始化多语言数据对象
+    const initMultilingualData = () => {
+      const multilingual = {}
+      languageOptions.forEach(lang => {
+        multilingual[lang.code] = ''
+      })
+      return multilingual
+    }
+
     // 自动化生成的字典（可能为空）以及字段
     const formData = ref({
-      title: '',
-      content: '',
-      userID: undefined,
-      attachments: []
+      title: initMultilingualData(),
+      content: initMultilingualData(),
+      startTime: null,
+      endTime: null,
+      type: '',
+    //   id: undefined,
+      isShow: 1
     })
-    const dataSource = ref([])
-    const getDataSourceFunc = async () => {
-      const res = await getInfoDataSource()
-      if (res.code === 0) {
-        dataSource.value = res.data
-      }
-    }
-    getDataSourceFunc()
-  
+
     // 验证规则
     const rule = reactive({})
   
@@ -304,17 +430,11 @@
     const elFormRef = ref()
     const elSearchFormRef = ref()
   
-    // =========== 表格控制部分 ===========
-    const page = ref(1)
-    const total = ref(0)
-    const pageSize = ref(10)
-    const tableData = ref([])
-    const searchInfo = ref({})
-  
     // 重置
     const onReset = () => {
-      searchInfo.value = {}
-      getTableData()
+      resetSearchInfo()
+      setPage(1)
+      fetchAnnouncementList()
     }
   
     // 搜索
@@ -322,38 +442,22 @@
       elSearchFormRef.value?.validate(async (valid) => {
         if (!valid) return
         page.value = 1
-        getTableData()
+        fetchAnnouncementList()
       })
     }
   
     // 分页
     const handleSizeChange = (val) => {
       pageSize.value = val
-      getTableData()
+      fetchAnnouncementList()
     }
   
     // 修改页面容量
     const handleCurrentChange = (val) => {
-      page.value = val
-      getTableData()
+      setPage(val)
+      fetchAnnouncementList()
     }
-  
-    // 查询
-    const getTableData = async () => {
-      const table = await getInfoList({
-        page: page.value,
-        pageSize: pageSize.value,
-        ...searchInfo.value
-      })
-      if (table.code === 0) {
-        tableData.value = table.data.list
-        total.value = table.data.total
-        page.value = table.data.page
-        pageSize.value = table.data.pageSize
-      }
-    }
-  
-    getTableData()
+
   
     // ============== 表格控制部分结束 ===============
   
@@ -400,7 +504,7 @@
           multipleSelection.value.map((item) => {
             IDs.push(item.ID)
           })
-        const res = await deleteInfoByIds({ IDs })
+        const res = await deleteAnnouncement(IDs)
         if (res.code === 0) {
           ElMessage({
             type: 'success',
@@ -409,7 +513,7 @@
           if (tableData.value.length === IDs.length && page.value > 1) {
             page.value--
           }
-          getTableData()
+          fetchAnnouncementList()
         }
       })
     }
@@ -419,17 +523,88 @@
   
     // 更新行
     const updateInfoFunc = async (row) => {
-      const res = await findInfo({ ID: row.ID })
       type.value = 'update'
-      if (res.code === 0) {
-        formData.value = res.data
-        dialogFormVisible.value = true
+      // 确保多语言数据格式正确
+      const data = { ...row }
+      
+      // 如果 title 是对象，直接使用；如果是字符串，转换为对象
+      if (!data.title || typeof data.title !== 'object') {
+        const oldTitle = data.title || ''
+        data.title = initMultilingualData()
+        // 如果有旧数据（字符串格式），将其赋值给英文
+        if (oldTitle) {
+          data.title.en = oldTitle
+        }
+      } else {
+        // 确保所有语言字段都存在
+        languageOptions.forEach(lang => {
+          if (!data.title[lang.code]) {
+            data.title[lang.code] = ''
+          }
+        })
       }
+
+      // 如果 content 是对象，直接使用；如果是字符串，转换为对象
+      if (!data.content || typeof data.content !== 'object') {
+        const oldContent = data.content || ''
+        data.content = initMultilingualData()
+        // 如果有旧数据（字符串格式），将其赋值给英文
+        if (oldContent) {
+          data.content.en = oldContent
+        }
+      } else {
+        // 确保所有语言字段都存在
+        languageOptions.forEach(lang => {
+          if (!data.content[lang.code]) {
+            data.content[lang.code] = ''
+          }
+        })
+      }
+
+      // 转换时间戳为 Date 对象（用于日期选择器）
+      if (data.startTime && typeof data.startTime === 'number') {
+        data.startTime = new Date(data.startTime * 1000) // 秒级时间戳转 Date
+      } else if (data.startTime && typeof data.startTime === 'string') {
+        // 如果是字符串格式的时间戳
+        const timestamp = Number(data.startTime)
+        if (!isNaN(timestamp)) {
+          data.startTime = new Date(timestamp * 1000)
+        }
+      }
+
+      if (data.endTime && typeof data.endTime === 'number') {
+        data.endTime = new Date(data.endTime * 1000) // 秒级时间戳转 Date
+      } else if (data.endTime && typeof data.endTime === 'string') {
+        // 如果是字符串格式的时间戳
+        const timestamp = Number(data.endTime)
+        if (!isNaN(timestamp)) {
+          data.endTime = new Date(timestamp * 1000)
+        }
+      }
+
+
+      formData.value = data
+      
+      // 设置默认活动标签页为第一个有内容的语言
+      for (const lang of languageOptions) {
+        if (data.title[lang.code] && data.title[lang.code].trim()) {
+          activeTitleTab.value = lang.code
+          break
+        }
+      }
+      for (const lang of languageOptions) {
+        if (data.content[lang.code] && data.content[lang.code].trim()) {
+          activeContentTab.value = lang.code
+          break
+        }
+      }
+      
+      dialogFormVisible.value = true
     }
   
     // 删除行
     const deleteInfoFunc = async (row) => {
-      const res = await deleteInfo({ ID: row.ID })
+      const res = await deleteAnnouncement(row.ID)
       if (res.code === 0) {
         ElMessage({
           type: 'success',
@@ -438,7 +613,7 @@
         if (tableData.value.length === 1 && page.value > 1) {
           page.value--
         }
-        getTableData()
+        fetchAnnouncementList()
       }
     }
   
@@ -455,42 +630,166 @@
     const closeDialog = () => {
       dialogFormVisible.value = false
       formData.value = {
-        title: '',
-        content: '',
-        userID: undefined,
-        attachments: []
+        title: initMultilingualData(),
+        content: initMultilingualData(),
+        startTime: null,
+        endTime: null,
+        type: '',
+        id: undefined,
+        isShow: 1
       }
+      activeTitleTab.value = 'en'
+      activeContentTab.value = 'en'
     }
     // 弹窗确定
     const enterDialog = async () => {
       elFormRef.value?.validate(async (valid) => {
         if (!valid) return
+        
         let res
         switch (type.value) {
           case 'create':
-            res = await createInfo(formData.value)
+            res = await addAnnouncement(formData.value)
             break
           case 'update':
-            res = await updateInfo(formData.value)
+            res = await updateAnnouncement(formData.value)
             break
           default:
-            res = await createInfo(formData.value)
+            res = await addAnnouncement(formData.value)
             break
         }
-        if (res.code === 0) {
+        
+        if (res.success) {
           ElMessage({
             type: 'success',
             message: '创建/更改成功'
           })
           closeDialog()
-          getTableData()
+          fetchAnnouncementList()
+        } else {
+          ElMessage({
+            type: 'error',
+            message: res.error || '操作失败'
+          })
         }
       })
     }
-  
-    const downloadFile = (url) => {
-      window.open(getUrl(url), '_blank')
+
+    // 语言代码到语言名称的映射
+    const languageMap = {
+      'en': '英文',
+      'zh-TW': '繁中',
+      'ja': '日文',
+      'ko': '韩文'
     }
+
+    // 语言优先级顺序（用于选择默认显示语言）
+    const languagePriority = ['en', 'zh-TW', 'ja', 'ko']
+
+    // 获取多语言文本（返回默认语言的文本）
+    const getMultilingualText = (multilingualObj, maxLength = null) => {
+      if (!multilingualObj || typeof multilingualObj !== 'object') {
+        return '-'
+      }
+
+      // 按优先级查找第一个有值的语言
+      for (const lang of languagePriority) {
+        if (multilingualObj[lang] && multilingualObj[lang].trim()) {
+          let text = multilingualObj[lang]
+          if (maxLength && text.length > maxLength) {
+            text = text.substring(0, maxLength) + '...'
+          }
+          return text
+        }
+      }
+
+      // 如果没有找到，返回第一个有值的语言
+      for (const key in multilingualObj) {
+        if (multilingualObj[key] && multilingualObj[key].trim()) {
+          let text = multilingualObj[key]
+          if (maxLength && text.length > maxLength) {
+            text = text.substring(0, maxLength) + '...'
+          }
+          return text
+        }
+      }
+
+      return '-'
+    }
+
+    // 获取所有可用语言列表
+    const getAvailableLanguages = (multilingualObj) => {
+      if (!multilingualObj || typeof multilingualObj !== 'object') {
+        return []
+      }
+
+      const languages = []
+      let defaultLanguage = null
+
+      // 先找出默认语言（优先级最高的有值语言）
+      for (const lang of languagePriority) {
+        if (multilingualObj[lang] && multilingualObj[lang].trim()) {
+          defaultLanguage = lang
+          break
+        }
+      }
+
+      // 如果没有找到，使用第一个有值的语言作为默认语言
+      if (!defaultLanguage) {
+        for (const key in multilingualObj) {
+          if (multilingualObj[key] && multilingualObj[key].trim()) {
+            defaultLanguage = key
+            break
+          }
+        }
+      }
+
+      // 构建语言列表
+      for (const lang of languagePriority) {
+        if (multilingualObj[lang]) {
+          languages.push({
+            code: lang,
+            label: languageMap[lang] || lang.toUpperCase(),
+            text: multilingualObj[lang],
+            isDefault: lang === defaultLanguage
+          })
+        }
+      }
+
+      // 如果有其他语言不在优先级列表中，也添加进去
+      for (const key in multilingualObj) {
+        if (!languagePriority.includes(key) && multilingualObj[key]) {
+          languages.push({
+            code: key,
+            label: key.toUpperCase(),
+            text: multilingualObj[key],
+            isDefault: key === defaultLanguage
+          })
+        }
+      }
+
+      return languages
+    }
+
+    watch(
+      () => tableData.value,
+      (newValue, oldValue) => {
+        console.log('tableData 变化了')
+        console.log('新值:', newValue)
+        console.log('旧值:', oldValue)
+      },
+      { deep: true, immediate: true }
+    )
+
+    onMounted(async () => {
+      try {
+        await Promise.all([
+          fetchAnnouncementList()
+        ])
+    } catch (error) {
+      console.error('初始化失败:', error)
+    }
+  })
   </script>
   
   <style>
@@ -506,6 +805,92 @@
   
     .fileBtn:last-child {
       margin-bottom: 0;
+    }
+
+    /* 多语言单元格样式 */
+    .multilingual-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .multilingual-cell .main-text {
+      font-weight: 500;
+      color: #303133;
+      word-break: break-word;
+    }
+
+    .multilingual-cell .language-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    .multilingual-cell .lang-tag {
+      cursor: pointer;
+      font-size: 11px;
+      height: 18px;
+      line-height: 16px;
+      padding: 0 6px;
+    }
+
+    /* 多语言详情弹窗样式 */
+    .multilingual-detail {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .multilingual-detail .lang-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #ebeef5;
+    }
+
+    .multilingual-detail .lang-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .multilingual-detail .lang-item .el-tag {
+      margin-right: 8px;
+      flex-shrink: 0;
+      min-width: 50px;
+      text-align: center;
+    }
+
+    .multilingual-detail .lang-text {
+      flex: 1;
+      color: #606266;
+      word-break: break-word;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    /* 弹窗样式优化 */
+    :deep(.multilingual-popover) {
+      max-width: 350px;
+    }
+
+    /* 多语言表单标签页样式 */
+    .multilingual-tabs {
+      margin-top: 8px;
+    }
+
+    :deep(.multilingual-tabs .el-tabs__header) {
+      margin-bottom: 16px;
+    }
+
+    :deep(.multilingual-tabs .el-tabs__item) {
+      padding: 0 20px;
+      font-size: 14px;
+    }
+
+    :deep(.multilingual-tabs .el-tab-pane) {
+      padding: 0;
     }
   </style>
   
