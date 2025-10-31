@@ -89,7 +89,7 @@
                   v-for="(attachment, index) in scope.row.attachments"
                   :key="index"
                   size="small"
-                  type="info"
+                  type="success"
                   class="attachment-tag"
                 >
                   {{ formatAttachment(attachment) }}
