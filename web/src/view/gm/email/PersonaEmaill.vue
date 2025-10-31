@@ -6,27 +6,6 @@
           <el-form-item label="PlayerId">
             <el-input v-model="searchInfo.player_id" placeholder="PlayerId" />
           </el-form-item>
-          
-          <el-form-item label="时间范围">
-            <template #label>
-              <span>时间范围</span>
-              <el-tooltip content="在选定月份内选择具体的时间范围进行筛选" placement="top">
-                <el-icon style="margin-left: 4px; color: #909399; cursor: help;">
-                  <QuestionFilled />
-                </el-icon>
-              </el-tooltip>
-            </template>
-            <el-date-picker
-              v-model="searchInfo.log_time_range"
-              type="datetimerange"
-              range-separator="至"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
-              format="YYYY-MM-DD HH:mm:ss"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              :disabled-date="disabledDate"
-            />
-          </el-form-item>
           <el-form-item>
             <el-button type="primary" icon="search" @click="onSubmit">
               查询
@@ -152,35 +131,6 @@
             min-width="150"
             prop="remark"
           />
-          
-          <el-table-column align="left" label="操作" fixed="right" min-width="200">
-            <template #default="scope">
-              <el-button
-                type="primary"
-                link
-                icon="view"
-                @click="viewDetail(scope.row)"
-              >
-                查看详情
-              </el-button>
-              <el-button
-                type="warning"
-                link
-                icon="edit"
-                @click="editRecord(scope.row)"
-              >
-                编辑
-              </el-button>
-              <el-button
-                type="danger"
-                link
-                icon="delete"
-                @click="deleteRecord(scope.row)"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
         </el-table>
         <div class="gva-pagination">
           <el-pagination
@@ -220,10 +170,10 @@
           :rules="rule"
           label-width="80px"
         >
-          <el-form-item label="玩家PlayerID:" prop="player_id">
+          <el-form-item label="玩家PlayerID:" prop="player_id" required>
             <el-input v-model="formData.player_id" placeholder="请输入PlayerId" />
           </el-form-item>
-          <el-form-item label="邮件发件人:" prop="senderI18n">
+          <el-form-item label="邮件发件人:" prop="senderI18n" required>
             <el-tabs v-model="activeTitleTab" type="border-card" class="multilingual-tabs">
               <el-tab-pane
                 v-for="lang in languageOptions"
@@ -239,7 +189,7 @@
               </el-tab-pane>
             </el-tabs>
           </el-form-item>
-          <el-form-item label="邮件标题:" prop="titleI18n">
+          <el-form-item label="邮件标题:" prop="titleI18n" required>
             <el-tabs v-model="activeTitleTab" type="border-card" class="multilingual-tabs">
               <el-tab-pane
                 v-for="lang in languageOptions"
@@ -255,7 +205,7 @@
               </el-tab-pane>
             </el-tabs>
           </el-form-item>
-          <el-form-item label="邮件内容:" prop="contentI18n">
+          <el-form-item label="邮件内容:" prop="contentI18n" required>
             <el-tabs v-model="activeContentTab" type="border-card" class="multilingual-tabs">
               <el-tab-pane
                 v-for="lang in languageOptions"
@@ -330,14 +280,15 @@
           <el-form-item label="邮件备注:" prop="remark">
             <el-input v-model="formData.remark" placeholder="请输入邮件备注" />
           </el-form-item>
-          <el-form-item label="开始生效时间:" prop="startTime">
+          <el-form-item label="开始生效时间:" prop="startTime" required>
             <el-date-picker
               v-model="formData.startTime"
               type="datetime"
               placeholder="请选择开始时间"
+              style="width: 100%"
             />
           </el-form-item>
-          <el-form-item label="邮件类型:" prop="type">
+          <el-form-item label="邮件类型:" prop="type" required>
             <el-select
               v-model="formData.type"
               placeholder="请选择邮件类型"
@@ -355,15 +306,13 @@
   </template>
   
   <script setup>
-  import { onMounted, watch } from 'vue'
+  import { onMounted, watch, ref, reactive } from 'vue'
   // import { ElMessage, ElMessageBox } from 'element-plus'
-  import { QuestionFilled } from '@element-plus/icons-vue'
   import WarningBar from '@/components/warningBar/warningBar.vue'
   import RichEdit from '@/components/richtext/rich-edit.vue'
   import MultilingualCell from '@/components/multilingual/MultilingualCell.vue'
   import { useGMPersonalEmailStore } from '@/pinia/gm/personalEamil'
   import { storeToRefs } from 'pinia'
-  import { ref } from 'vue'
   import { ElMessage } from 'element-plus'
   
   defineOptions({
@@ -396,24 +345,6 @@
     setPage,
     setPageSize
   } = gmPersonalEmailStore
-  
-  // 限制时间范围选择器只能在选定月份内选择
-  const disabledDate = (time) => {
-    if (!searchInfo.value.month) {
-      return false // 如果没有选择月份，不限制
-    }
-    
-    const selectedMonth = searchInfo.value.month
-    const year = parseInt(selectedMonth.substring(0, 4))
-    const month = parseInt(selectedMonth.substring(4, 6)) - 1 // JavaScript月份从0开始
-    
-    const currentDate = new Date(time)
-    const currentYear = currentDate.getFullYear()
-    const currentMonth = currentDate.getMonth()
-    
-    // 禁用不在选定年月的日期
-    return currentYear !== year || currentMonth !== month
-  }
   
   // 格式化附件显示
   const formatAttachment = (attachment) => {
@@ -489,6 +420,7 @@
 
     // 行为控制标记（弹窗内部需要增还是改）
     const type = ref('')
+
     // 弹窗控制标记
     const dialogFormVisible = ref(false)
   
@@ -501,13 +433,90 @@
       return multilingual
     }
 
+    // 初始化发件人默认值（各语言的"GM系统管理员"）
+    const initSenderI18nDefault = () => {
+      return {
+        'en': 'GM System Administrator',
+        'zh-TW': 'GM系統管理員',
+        'ja': 'GMシステム管理者',
+        'ko': 'GM 시스템 관리자'
+      }
+    }
+
     // 附件资源列表缓存（每个类型对应一个资源列表）
     const attachmentResourceLists = ref({})
+
+    // 验证规则
+    const rule = reactive({
+      player_id: [
+        { required: true, message: '请输入玩家PlayerID', trigger: 'blur' }
+      ],
+      senderI18n: [
+        { 
+          validator: (rule, value, callback) => {
+            if (!value || typeof value !== 'object') {
+              callback(new Error('请输入邮件发件人'))
+              return
+            }
+            // 检查是否至少有一个语言版本有值
+            const hasValue = Object.values(value).some(v => v && v.trim())
+            if (!hasValue) {
+              callback(new Error('请输入至少一种语言的发件人'))
+              return
+            }
+            callback()
+          },
+          trigger: 'blur'
+        }
+      ],
+      titleI18n: [
+        { 
+          validator: (rule, value, callback) => {
+            if (!value || typeof value !== 'object') {
+              callback(new Error('请输入邮件标题'))
+              return
+            }
+            // 检查是否至少有一个语言版本有值
+            const hasValue = Object.values(value).some(v => v && v.trim())
+            if (!hasValue) {
+              callback(new Error('请输入至少一种语言的标题'))
+              return
+            }
+            callback()
+          },
+          trigger: 'blur'
+        }
+      ],
+      contentI18n: [
+        { 
+          validator: (rule, value, callback) => {
+            if (!value || typeof value !== 'object') {
+              callback(new Error('请输入邮件内容'))
+              return
+            }
+            // 检查是否至少有一个语言版本有值
+            const hasValue = Object.values(value).some(v => v && v.trim())
+            if (!hasValue) {
+              callback(new Error('请输入至少一种语言的内容'))
+              return
+            }
+            callback()
+          },
+          trigger: 'blur'
+        }
+      ],
+      startTime: [
+        { required: true, message: '请选择开始生效时间', trigger: 'change' }
+      ],
+      type: [
+        { required: true, message: '请选择邮件类型', trigger: 'change' }
+      ]
+    })
 
     // 自动化生成的字典（可能为空）以及字段
     const formData = ref({
       player_id: '',
-      senderI18n: initMultilingualData(),
+      senderI18n: initSenderI18nDefault(),
       titleI18n: initMultilingualData(),
       contentI18n: initMultilingualData(),
       attachments: [],
@@ -516,8 +525,10 @@
       remark: '',
       startTime: null,
       endTime: null,
-      type: ''
+      type: '1'  // 默认选中类型1
     })
+
+
   // 打开弹窗
   const openDialog = () => {
     type.value = 'create'
@@ -582,7 +593,7 @@
     dialogFormVisible.value = false
     formData.value = {
       player_id: '',
-      senderI18n: initMultilingualData(),
+      senderI18n: initSenderI18nDefault(),
       titleI18n: initMultilingualData(),
       contentI18n: initMultilingualData(),
       attachments: [],
@@ -591,7 +602,7 @@
       remark: '',
       startTime: null,
       endTime: null,
-      type: ''
+      type: '1'  // 默认选中类型1
     }
     attachmentResourceLists.value = {}
     activeTitleTab.value = 'en'
