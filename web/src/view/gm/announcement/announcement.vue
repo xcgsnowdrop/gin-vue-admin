@@ -1,6 +1,6 @@
 <template>
     <div>
-      <div class="gva-search-box">
+      <!-- <div class="gva-search-box">
         <el-form
           ref="elSearchFormRef"
           :inline="true"
@@ -46,7 +46,7 @@
           </el-form-item>
   
           <template v-if="showAllQuery">
-            <!-- 将需要控制显示状态的查询条件添加到此范围内 -->
+           // 将需要控制显示状态的查询条件添加到此范围内
           </template>
   
           <el-form-item>
@@ -74,7 +74,7 @@
             </el-button>
           </el-form-item>
         </el-form>
-      </div>
+      </div> -->
       <div class="gva-table-box">
         <div class="gva-btn-list">
           <el-button type="primary" icon="plus" @click="openDialog">
@@ -218,7 +218,7 @@
                 link
                 icon="edit"
                 class="table-button"
-                @click="updateInfoFunc(scope.row)"
+                @click="updateRow(scope.row)"
               >
                 变更
               </el-button>
@@ -371,7 +371,7 @@
       total, 
       page,
       pageSize,
-      searchInfo,
+    //   searchInfo,
     } = storeToRefs(gmAnnouncementStore)
 
     // 使用store中的方法
@@ -381,13 +381,13 @@
         deleteAnnouncement,
         updateAnnouncement,
         toppingAnnouncement,
-        resetSearchInfo,
+        // resetSearchInfo,
         setPage,
         setPageSize
     } = gmAnnouncementStore
 
     // 控制更多查询条件显示/隐藏状态
-    const showAllQuery = ref(false)
+    // const showAllQuery = ref(false)
 
     // 语言选项配置
     const languageOptions = [
@@ -463,56 +463,56 @@
       ]
     })
   
-    const searchRule = reactive({
-      createdAt: [
-        {
-          validator: (rule, value, callback) => {
-            if (
-              searchInfo.value.startCreatedAt &&
-              !searchInfo.value.endCreatedAt
-            ) {
-              callback(new Error('请填写结束日期'))
-            } else if (
-              !searchInfo.value.startCreatedAt &&
-              searchInfo.value.endCreatedAt
-            ) {
-              callback(new Error('请填写开始日期'))
-            } else if (
-              searchInfo.value.startCreatedAt &&
-              searchInfo.value.endCreatedAt &&
-              (searchInfo.value.startCreatedAt.getTime() ===
-                searchInfo.value.endCreatedAt.getTime() ||
-                searchInfo.value.startCreatedAt.getTime() >
-                  searchInfo.value.endCreatedAt.getTime())
-            ) {
-              callback(new Error('开始日期应当早于结束日期'))
-            } else {
-              callback()
-            }
-          },
-          trigger: 'change'
-        }
-      ]
-    })
+    // const searchRule = reactive({
+    //   createdAt: [
+    //     {
+    //       validator: (rule, value, callback) => {
+    //         if (
+    //           searchInfo.value.startCreatedAt &&
+    //           !searchInfo.value.endCreatedAt
+    //         ) {
+    //           callback(new Error('请填写结束日期'))
+    //         } else if (
+    //           !searchInfo.value.startCreatedAt &&
+    //           searchInfo.value.endCreatedAt
+    //         ) {
+    //           callback(new Error('请填写开始日期'))
+    //         } else if (
+    //           searchInfo.value.startCreatedAt &&
+    //           searchInfo.value.endCreatedAt &&
+    //           (searchInfo.value.startCreatedAt.getTime() ===
+    //             searchInfo.value.endCreatedAt.getTime() ||
+    //             searchInfo.value.startCreatedAt.getTime() >
+    //               searchInfo.value.endCreatedAt.getTime())
+    //         ) {
+    //           callback(new Error('开始日期应当早于结束日期'))
+    //         } else {
+    //           callback()
+    //         }
+    //       },
+    //       trigger: 'change'
+    //     }
+    //   ]
+    // })
   
     const elFormRef = ref()
-    const elSearchFormRef = ref()
+    // const elSearchFormRef = ref()
   
     // 重置
-    const onReset = () => {
-      resetSearchInfo()
-      setPage(1)
-      fetchAnnouncementList()
-    }
+    // const onReset = () => {
+    //   resetSearchInfo()
+    //   setPage(1)
+    //   fetchAnnouncementList()
+    // }
   
     // 搜索
-    const onSubmit = () => {
-      elSearchFormRef.value?.validate(async (valid) => {
-        if (!valid) return
-        page.value = 1
-        fetchAnnouncementList()
-      })
-    }
+    // const onSubmit = () => {
+    //   elSearchFormRef.value?.validate(async (valid) => {
+    //     if (!valid) return
+    //     page.value = 1
+    //     fetchAnnouncementList()
+    //   })
+    // }
   
     // 分页
     const handleSizeChange = (val) => {
@@ -607,7 +607,7 @@
     const type = ref('')
   
     // 更新行
-    const updateInfoFunc = async (row) => {
+    const updateRow = async (row) => {
       type.value = 'update'
       // 确保多语言数据格式正确
       const data = { ...row }
@@ -826,7 +826,7 @@
     }
 
     // 语言优先级顺序（用于选择默认显示语言）
-    const languagePriority = ['en', 'zh-TW', 'ja', 'ko']
+    const languagePriority = ['ja', 'en', 'zh-TW', 'ko']
 
     // 获取多语言文本（返回默认语言的文本）
     const getMultilingualText = (multilingualObj, maxLength = null) => {
