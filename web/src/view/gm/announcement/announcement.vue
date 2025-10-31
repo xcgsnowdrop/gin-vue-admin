@@ -287,6 +287,7 @@
     // 文件选择组件
     import { useGMAnnouncementStore } from '@/pinia/gm/announcement'
     import { storeToRefs } from 'pinia'
+    import { languageOptions, initMultilingualData, useMultilingual } from '@/composables/useMultilingual'
   
     // 全量引入格式化工具 请按需保留
     import { ElMessage, ElMessageBox } from 'element-plus'
@@ -323,26 +324,8 @@
     // 控制更多查询条件显示/隐藏状态
     // const showAllQuery = ref(false)
 
-    // 语言选项配置
-    const languageOptions = [
-      { code: 'en', label: '英文' },
-      { code: 'zh-TW', label: '繁中' },
-      { code: 'ja', label: '日文' },
-      { code: 'ko', label: '韩文' }
-    ]
-
-    // 多语言表单标签页活动状态
-    const activeTitleTab = ref('en')
-    const activeContentTab = ref('en')
-  
-    // 初始化多语言数据对象
-    const initMultilingualData = () => {
-      const multilingual = {}
-      languageOptions.forEach(lang => {
-        multilingual[lang.code] = ''
-      })
-      return multilingual
-    }
+    // 使用多语言 Composable
+    const { activeTitleTab, activeContentTab, resetActiveTabs, setActiveTabsFromData } = useMultilingual()
 
     // 自动化生成的字典（可能为空）以及字段
     const formData = ref({
@@ -580,18 +563,7 @@
         formData.value = data
         
         // 设置默认活动标签页为第一个有内容的语言
-        for (const lang of languageOptions) {
-            if (data.title[lang.code] && data.title[lang.code].trim()) {
-            activeTitleTab.value = lang.code
-            break
-            }
-        }
-        for (const lang of languageOptions) {
-            if (data.content[lang.code] && data.content[lang.code].trim()) {
-            activeContentTab.value = lang.code
-            break
-            }
-        }
+        setActiveTabsFromData(data)
         
         dialogFormVisible.value = true
     }
@@ -653,8 +625,7 @@
         id: undefined,
         isShow: 1
       }
-      activeTitleTab.value = 'en'
-      activeContentTab.value = 'en'
+      resetActiveTabs()
     }
     // 弹窗确定
     const enterDialog = async () => {

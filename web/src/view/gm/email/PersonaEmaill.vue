@@ -307,13 +307,13 @@
   
   <script setup>
   import { onMounted, watch, ref, reactive } from 'vue'
-  // import { ElMessage, ElMessageBox } from 'element-plus'
   import WarningBar from '@/components/warningBar/warningBar.vue'
   import RichEdit from '@/components/richtext/rich-edit.vue'
   import MultilingualCell from '@/components/multilingual/MultilingualCell.vue'
   import { useGMPersonalEmailStore } from '@/pinia/gm/personalEamil'
   import { storeToRefs } from 'pinia'
   import { ElMessage } from 'element-plus'
+  import { languageOptions, initMultilingualData, initSenderI18nDefault, useMultilingual } from '@/composables/useMultilingual'
   
   defineOptions({
     name: 'GmPersonalEmail'
@@ -404,18 +404,6 @@
   }
 
   
-    // 语言选项配置
-    const languageOptions = [
-      { code: 'en', label: '英文' },
-      { code: 'zh-TW', label: '繁中' },
-      { code: 'ja', label: '日文' },
-      { code: 'ko', label: '韩文' }
-    ]
-  
-    // 多语言表单标签页活动状态
-    const activeTitleTab = ref('en')
-    const activeContentTab = ref('en')
-
     const elFormRef = ref()
 
     // 行为控制标记（弹窗内部需要增还是改）
@@ -423,25 +411,9 @@
 
     // 弹窗控制标记
     const dialogFormVisible = ref(false)
-  
-    // 初始化多语言数据对象
-    const initMultilingualData = () => {
-      const multilingual = {}
-      languageOptions.forEach(lang => {
-        multilingual[lang.code] = ''
-      })
-      return multilingual
-    }
 
-    // 初始化发件人默认值（各语言的"GM系统管理员"）
-    const initSenderI18nDefault = () => {
-      return {
-        'en': 'GM System Administrator',
-        'zh-TW': 'GM系統管理員',
-        'ja': 'GMシステム管理者',
-        'ko': 'GM 시스템 관리자'
-      }
-    }
+    // 使用多语言 Composable
+    const { activeTitleTab, activeContentTab, resetActiveTabs } = useMultilingual()
 
     // 附件资源列表缓存（每个类型对应一个资源列表）
     const attachmentResourceLists = ref({})
@@ -605,8 +577,7 @@
       type: '1'  // 默认选中类型1
     }
     attachmentResourceLists.value = {}
-    activeTitleTab.value = 'en'
-    activeContentTab.value = 'en'
+    resetActiveTabs()
   }
   // 弹窗确定
   const enterDialog = async () => {
