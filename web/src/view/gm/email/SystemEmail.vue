@@ -103,7 +103,7 @@
             align="left"
             label="区服列表"
             min-width="150"
-            prop="areaIds"
+            prop="area_ids"
           />
           <el-table-column
             align="left"
@@ -111,6 +111,32 @@
             min-width="150"
             prop="max_reg_time_formatted"
           />
+          <el-table-column
+            align="left"
+            label="操作"
+            fixed="right"
+            min-width="300"
+          >
+            <template #default="scope">
+              <el-button
+                type="primary"
+                link
+                icon="edit"
+                class="table-button"
+                @click="updateRow(scope.row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                type="danger"
+                link
+                icon="delete"
+                @click="deleteRow(scope.row)"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
         </el-table>
         <div class="gva-pagination">
           <el-pagination
@@ -342,30 +368,6 @@
     return `${typeName} - ${resourceName} × ${attachment.num}`
   }
 
-  // 获取模板参数列表
-  const getTemplateParams = (tplParams) => {
-    if (!tplParams) return []
-    
-    // 如果已经是数组，直接返回
-    if (Array.isArray(tplParams)) {
-      return tplParams.filter(param => param !== null && param !== undefined)
-    }
-    
-    // 如果是字符串，尝试解析为 JSON
-    if (typeof tplParams === 'string') {
-      try {
-        const parsed = JSON.parse(tplParams)
-        if (Array.isArray(parsed)) {
-          return parsed.filter(param => param !== null && param !== undefined)
-        }
-      } catch (e) {
-        // 如果解析失败，可能是逗号分隔的字符串
-        return tplParams.split(',').map(s => s.trim()).filter(s => s)
-      }
-    }
-    
-    return []
-  }
   
   // 查询数据
   const onSubmit = () => {
@@ -401,7 +403,7 @@
     const dialogFormVisible = ref(false)
 
     // 使用多语言 Composable
-    const { activeTitleTab, activeContentTab, resetActiveTabs } = useMultilingual()
+    const { activeTitleTab, activeContentTab, resetActiveTabs, setActiveTabsFromData } = useMultilingual()
 
     // 附件资源列表缓存（每个类型对应一个资源列表）
     const attachmentResourceLists = ref({})
@@ -487,6 +489,60 @@
       maxRegTime: null, // 最大注册时间
     })
 
+    // 更新行
+    const updateRow = async (row) => {
+        type.value = 'update'
+        // 确保多语言数据格式正确
+        const data = { ...row }
+      
+        // 确保所有语言字段都存在
+        languageOptions.forEach(lang => {
+          if (!data.titleI18n[lang.code]) {
+            data.titleI18n[lang.code] = ''
+          }
+          if (!data.contentI18n[lang.code]) {
+            data.contentI18n[lang.code] = ''
+          }
+        })
+
+        // 转换时间戳为 Date 对象（用于日期选择器）
+        if (data.startTime && typeof data.startTime === 'number') {
+            data.startTime = new Date(data.startTime * 1000) // 秒级时间戳转 Date
+        } else if (data.startTime && typeof data.startTime === 'string') {
+            // 如果是字符串格式的时间戳
+            const timestamp = Number(data.startTime)
+            if (!isNaN(timestamp)) {
+            data.startTime = new Date(timestamp * 1000)
+            }
+        }
+
+        if (data.endTime && typeof data.endTime === 'number') {
+            data.endTime = new Date(data.endTime * 1000) // 秒级时间戳转 Date
+        } else if (data.endTime && typeof data.endTime === 'string') {
+            // 如果是字符串格式的时间戳
+            const timestamp = Number(data.endTime)
+            if (!isNaN(timestamp)) {
+            data.endTime = new Date(timestamp * 1000)
+            }
+        }
+
+        if (data.maxRegTime && typeof data.maxRegTime === 'number') {
+            data.maxRegTime = new Date(data.maxRegTime * 1000) // 秒级时间戳转 Date
+        } else if (data.maxRegTime && typeof data.maxRegTime === 'string') {
+            // 如果是字符串格式的时间戳
+            const timestamp = Number(data.maxRegTime)
+            if (!isNaN(timestamp)) {
+            data.maxRegTime = new Date(timestamp * 1000)
+            }
+        }
+
+        formData.value = data
+        
+        // 设置默认活动标签页为第一个有内容的语言
+        setActiveTabsFromData(data)
+        
+        dialogFormVisible.value = true
+    }
 
   // 打开弹窗
   const openDialog = () => {

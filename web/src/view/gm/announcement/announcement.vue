@@ -164,7 +164,7 @@
                 置顶
               </el-button>
               <el-button
-                type="primary"
+                type="danger"
                 link
                 icon="delete"
                 @click="deleteRow(scope.row)"
