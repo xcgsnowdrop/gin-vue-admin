@@ -103,80 +103,12 @@
           <el-table-column align="left" label="排序" prop="index" width="80" />
           <el-table-column align="left" label="标题" width="200">
             <template #default="scope">
-              <div class="multilingual-cell">
-                <span class="main-text">{{ getMultilingualText(scope.row.title) }}</span>
-                <el-popover
-                  placement="top"
-                  :width="300"
-                  trigger="hover"
-                  popper-class="multilingual-popover"
-                >
-                  <template #reference>
-                    <div class="language-tags">
-                      <el-tag
-                        v-for="lang in getAvailableLanguages(scope.row.title)"
-                        :key="lang.code"
-                        size="small"
-                        :type="lang.isDefault ? 'primary' : 'info'"
-                        class="lang-tag"
-                      >
-                        {{ lang.label }}
-                      </el-tag>
-                    </div>
-                  </template>
-                  <div class="multilingual-detail">
-                    <div
-                      v-for="lang in getAvailableLanguages(scope.row.title)"
-                      :key="lang.code"
-                      class="lang-item"
-                    >
-                      <el-tag size="small" :type="lang.isDefault ? 'primary' : 'info'">
-                        {{ lang.label }}
-                      </el-tag>
-                      <span class="lang-text">{{ lang.text || '(空)' }}</span>
-                    </div>
-                  </div>
-                </el-popover>
-              </div>
+              <MultilingualCell :value="scope.row.title" />
             </template>
           </el-table-column>
           <el-table-column align="left" label="内容" width="250">
             <template #default="scope">
-              <div class="multilingual-cell">
-                <span class="main-text">{{ getMultilingualText(scope.row.content, 30) }}</span>
-                <el-popover
-                  placement="top"
-                  :width="300"
-                  trigger="hover"
-                  popper-class="multilingual-popover"
-                >
-                  <template #reference>
-                    <div class="language-tags">
-                      <el-tag
-                        v-for="lang in getAvailableLanguages(scope.row.content)"
-                        :key="lang.code"
-                        size="small"
-                        :type="lang.isDefault ? 'primary' : 'info'"
-                        class="lang-tag"
-                      >
-                        {{ lang.label }}
-                      </el-tag>
-                    </div>
-                  </template>
-                  <div class="multilingual-detail">
-                    <div
-                      v-for="lang in getAvailableLanguages(scope.row.content)"
-                      :key="lang.code"
-                      class="lang-item"
-                    >
-                      <el-tag size="small" :type="lang.isDefault ? 'primary' : 'info'">
-                        {{ lang.label }}
-                      </el-tag>
-                      <div class="lang-text">{{ lang.text || '(空)' }}</div>
-                    </div>
-                  </div>
-                </el-popover>
-              </div>
+              <MultilingualCell :value="scope.row.content" :max-length="30" />
             </template>
           </el-table-column>
           <el-table-column align="left" label="开始时间" prop="start_time_formatted" width="180" />
@@ -350,6 +282,8 @@
   <script setup>
     // 富文本组件
     import RichEdit from '@/components/richtext/rich-edit.vue'
+    // 多语言显示组件
+    import MultilingualCell from '@/components/multilingual/MultilingualCell.vue'
     // 文件选择组件
     import { useGMAnnouncementStore } from '@/pinia/gm/announcement'
     import { storeToRefs } from 'pinia'
@@ -792,101 +726,6 @@
       return 'info'
     }
 
-    // 语言代码到语言名称的映射
-    const languageMap = {
-      'en': '英文',
-      'zh-TW': '繁中',
-      'ja': '日文',
-      'ko': '韩文'
-    }
-
-    // 语言优先级顺序（用于选择默认显示语言）
-    const languagePriority = ['ja', 'en', 'zh-TW', 'ko']
-
-    // 获取多语言文本（返回默认语言的文本）
-    const getMultilingualText = (multilingualObj, maxLength = null) => {
-      if (!multilingualObj || typeof multilingualObj !== 'object') {
-        return '-'
-      }
-
-      // 按优先级查找第一个有值的语言
-      for (const lang of languagePriority) {
-        if (multilingualObj[lang] && multilingualObj[lang].trim()) {
-          let text = multilingualObj[lang]
-          if (maxLength && text.length > maxLength) {
-            text = text.substring(0, maxLength) + '...'
-          }
-          return text
-        }
-      }
-
-      // 如果没有找到，返回第一个有值的语言
-      for (const key in multilingualObj) {
-        if (multilingualObj[key] && multilingualObj[key].trim()) {
-          let text = multilingualObj[key]
-          if (maxLength && text.length > maxLength) {
-            text = text.substring(0, maxLength) + '...'
-          }
-          return text
-        }
-      }
-
-      return '-'
-    }
-
-    // 获取所有可用语言列表
-    const getAvailableLanguages = (multilingualObj) => {
-      if (!multilingualObj || typeof multilingualObj !== 'object') {
-        return []
-      }
-
-      const languages = []
-      let defaultLanguage = null
-
-      // 先找出默认语言（优先级最高的有值语言）
-      for (const lang of languagePriority) {
-        if (multilingualObj[lang] && multilingualObj[lang].trim()) {
-          defaultLanguage = lang
-          break
-        }
-      }
-
-      // 如果没有找到，使用第一个有值的语言作为默认语言
-      if (!defaultLanguage) {
-        for (const key in multilingualObj) {
-          if (multilingualObj[key] && multilingualObj[key].trim()) {
-            defaultLanguage = key
-            break
-          }
-        }
-      }
-
-      // 构建语言列表
-      for (const lang of languagePriority) {
-        if (multilingualObj[lang]) {
-          languages.push({
-            code: lang,
-            label: languageMap[lang] || lang.toUpperCase(),
-            text: multilingualObj[lang],
-            isDefault: lang === defaultLanguage
-          })
-        }
-      }
-
-      // 如果有其他语言不在优先级列表中，也添加进去
-      for (const key in multilingualObj) {
-        if (!languagePriority.includes(key) && multilingualObj[key]) {
-          languages.push({
-            code: key,
-            label: key.toUpperCase(),
-            text: multilingualObj[key],
-            isDefault: key === defaultLanguage
-          })
-        }
-      }
-
-      return languages
-    }
 
     watch(
       () => tableData.value,

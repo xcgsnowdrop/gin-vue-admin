@@ -19,6 +19,8 @@
   "/src/view/example/upload/scanUpload.vue": "scanUpload",
   "/src/view/example/upload/upload.vue": "Upload",
   "/src/view/gm/announcement/announcement.vue": "GmAnnouncement",
+  "/src/view/gm/email/PersonaEmaill.vue": "GmPersonalEmail",
+  "/src/view/gm/email/SystemEmail.vue": "SystemEmail",
   "/src/view/gm/index.vue": "GmIndex",
   "/src/view/gm/item/item.vue": "GmItem",
   "/src/view/gm/user/components/PlayerDetail.vue": "GmPlayerDetail",
