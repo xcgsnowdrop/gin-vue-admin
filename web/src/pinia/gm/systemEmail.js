@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import {
   getGMSystemEmailList,
   sendGMSystemEmail,
+  deleteGMSystemEmail,
 } from '@/api/gm_email'
 import { getGMResourceTypeList, getGMResourceList } from '@/api/gm_item'
 
@@ -213,6 +214,20 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
     }
   }
 
+  // 删除系统邮件
+  const deleteSystemEmail = async (email_id) => {
+    try {
+      const response = await deleteGMSystemEmail(email_id)
+      if (response.code === 0) {
+        await fetchSystemEmailList()
+        return true
+      }
+    } catch (error) {
+      console.error('删除系统邮件失败:', error)
+      throw error
+    }
+  }
+
   // 设置搜索条件
   const setSearchInfo = (info) => {
     searchInfo.value = { ...searchInfo.value, ...info }
@@ -263,5 +278,6 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
     resetSearchInfo,
     setPage,
     setPageSize,
+    deleteSystemEmail,
   }
 })

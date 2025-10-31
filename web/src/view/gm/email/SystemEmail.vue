@@ -326,7 +326,7 @@
   import MultilingualCell from '@/components/multilingual/MultilingualCell.vue'
   import { useGMSystemEmailStore } from '@/pinia/gm/systemEmail'
   import { storeToRefs } from 'pinia'
-  import { ElMessage } from 'element-plus'
+  import { ElMessage, ElMessageBox } from 'element-plus'
   import { languageOptions, initMultilingualData, initSenderI18nDefault, useMultilingual } from '@/composables/useMultilingual'
   
   defineOptions({
@@ -357,7 +357,8 @@
     getResourceName,
     resetSearchInfo,
     setPage,
-    setPageSize
+    setPageSize,
+    deleteSystemEmail
   } = gmSystemEmailStore
   
   // 格式化附件显示
@@ -542,6 +543,37 @@
         setActiveTabsFromData(data)
         
         dialogFormVisible.value = true
+    }
+
+    // 删除行
+    const deleteRow = (row) => {
+      ElMessageBox.confirm('确定要删除吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteRowFunc(row)
+      })
+    }
+
+    // 删除行
+    const deleteRowFunc = async (row) => {
+      try {
+        await deleteSystemEmail({ email_id: row.email_id })
+        ElMessage({
+          type: 'success',
+          message: '删除成功'
+        })
+        // 如果删除后当前页没有数据且不是第一页，则回到上一页
+        if (tableData.value.length === 1 && page.value > 1) {
+          setPage(page.value - 1)
+        }
+      } catch (error) {
+        ElMessage({
+          type: 'error',
+          message: error.message || '删除失败'
+        })
+      }
     }
 
   // 打开弹窗

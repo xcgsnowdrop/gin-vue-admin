@@ -35,3 +35,21 @@ export const sendGMSystemEmail = (data) => {
     data
   })
 }
+
+// 删除系统邮件
+export const deleteGMSystemEmail = (data) => {
+  return service({
+    url: '/gm/email/system/delete',
+    method: 'post',
+    data
+  })
+}
+
+// 更新系统邮件
+export const updateGMSystemEmail = (data) => {
+  return service({
+    url: '/gm/email/system/update',
+    method: 'post',
+    data
+  })
+}
