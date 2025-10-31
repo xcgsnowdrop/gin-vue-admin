@@ -310,7 +310,7 @@
   import WarningBar from '@/components/warningBar/warningBar.vue'
   import RichEdit from '@/components/richtext/rich-edit.vue'
   import MultilingualCell from '@/components/multilingual/MultilingualCell.vue'
-  import { useGMPersonalEmailStore } from '@/pinia/gm/personalEamil'
+  import { useGMPersonalEmailStore } from '@/pinia/gm/personalEmail'
   import { storeToRefs } from 'pinia'
   import { ElMessage } from 'element-plus'
   import { languageOptions, initMultilingualData, initSenderI18nDefault, useMultilingual } from '@/composables/useMultilingual'
