@@ -608,83 +608,58 @@
   
     // 更新行
     const updateRow = async (row) => {
-      type.value = 'update'
-      // 确保多语言数据格式正确
-      const data = { ...row }
+        type.value = 'update'
+        // 确保多语言数据格式正确
+        const data = { ...row }
       
-      // 如果 title 是对象，直接使用；如果是字符串，转换为对象
-      if (!data.title || typeof data.title !== 'object') {
-        const oldTitle = data.title || ''
-        data.title = initMultilingualData()
-        // 如果有旧数据（字符串格式），将其赋值给英文
-        if (oldTitle) {
-          data.title.en = oldTitle
-        }
-      } else {
         // 确保所有语言字段都存在
         languageOptions.forEach(lang => {
           if (!data.title[lang.code]) {
             data.title[lang.code] = ''
           }
-        })
-      }
-
-      // 如果 content 是对象，直接使用；如果是字符串，转换为对象
-      if (!data.content || typeof data.content !== 'object') {
-        const oldContent = data.content || ''
-        data.content = initMultilingualData()
-        // 如果有旧数据（字符串格式），将其赋值给英文
-        if (oldContent) {
-          data.content.en = oldContent
-        }
-      } else {
-        // 确保所有语言字段都存在
-        languageOptions.forEach(lang => {
           if (!data.content[lang.code]) {
             data.content[lang.code] = ''
           }
         })
-      }
 
-      // 转换时间戳为 Date 对象（用于日期选择器）
-      if (data.startTime && typeof data.startTime === 'number') {
-        data.startTime = new Date(data.startTime * 1000) // 秒级时间戳转 Date
-      } else if (data.startTime && typeof data.startTime === 'string') {
-        // 如果是字符串格式的时间戳
-        const timestamp = Number(data.startTime)
-        if (!isNaN(timestamp)) {
-          data.startTime = new Date(timestamp * 1000)
+        // 转换时间戳为 Date 对象（用于日期选择器）
+        if (data.startTime && typeof data.startTime === 'number') {
+            data.startTime = new Date(data.startTime * 1000) // 秒级时间戳转 Date
+        } else if (data.startTime && typeof data.startTime === 'string') {
+            // 如果是字符串格式的时间戳
+            const timestamp = Number(data.startTime)
+            if (!isNaN(timestamp)) {
+            data.startTime = new Date(timestamp * 1000)
+            }
         }
-      }
 
-      if (data.endTime && typeof data.endTime === 'number') {
-        data.endTime = new Date(data.endTime * 1000) // 秒级时间戳转 Date
-      } else if (data.endTime && typeof data.endTime === 'string') {
-        // 如果是字符串格式的时间戳
-        const timestamp = Number(data.endTime)
-        if (!isNaN(timestamp)) {
-          data.endTime = new Date(timestamp * 1000)
+        if (data.endTime && typeof data.endTime === 'number') {
+            data.endTime = new Date(data.endTime * 1000) // 秒级时间戳转 Date
+        } else if (data.endTime && typeof data.endTime === 'string') {
+            // 如果是字符串格式的时间戳
+            const timestamp = Number(data.endTime)
+            if (!isNaN(timestamp)) {
+            data.endTime = new Date(timestamp * 1000)
+            }
         }
-      }
 
-
-      formData.value = data
-      
-      // 设置默认活动标签页为第一个有内容的语言
-      for (const lang of languageOptions) {
-        if (data.title[lang.code] && data.title[lang.code].trim()) {
-          activeTitleTab.value = lang.code
-          break
+        formData.value = data
+        
+        // 设置默认活动标签页为第一个有内容的语言
+        for (const lang of languageOptions) {
+            if (data.title[lang.code] && data.title[lang.code].trim()) {
+            activeTitleTab.value = lang.code
+            break
+            }
         }
-      }
-      for (const lang of languageOptions) {
-        if (data.content[lang.code] && data.content[lang.code].trim()) {
-          activeContentTab.value = lang.code
-          break
+        for (const lang of languageOptions) {
+            if (data.content[lang.code] && data.content[lang.code].trim()) {
+            activeContentTab.value = lang.code
+            break
+            }
         }
-      }
-      
-      dialogFormVisible.value = true
+        
+        dialogFormVisible.value = true
     }
   
     // 删除行
