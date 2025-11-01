@@ -8,6 +8,7 @@ import {
   getGMResourceTypeList,
   getGMResourceList
 } from '@/api/gm_item'
+import { timestampToDate, dateToTimestamp } from '@/utils/timestamp'
 
 export const useGMItemStore = defineStore('gmItem', () => {
   // 状态
@@ -57,14 +58,8 @@ export const useGMItemStore = defineStore('gmItem', () => {
       const processedSearchInfo = { ...searchInfo.value }
       if (processedSearchInfo.log_time_range && processedSearchInfo.log_time_range.length === 2) {
         // 将日期时间字符串转换为时间戳（秒）
-        processedSearchInfo.start_time = Math.floor(new Date(processedSearchInfo.log_time_range[0]).getTime() / 1000)
-        processedSearchInfo.end_time = Math.floor(new Date(processedSearchInfo.log_time_range[1]).getTime() / 1000)
-        
-        // 调试信息
-        // console.log('时间范围转换:')
-        // console.log('原始时间:', processedSearchInfo.log_time_range)
-        // console.log('开始时间戳:', processedSearchInfo.start_time, '对应时间:', new Date(processedSearchInfo.start_time * 1000).toLocaleString())
-        // console.log('结束时间戳:', processedSearchInfo.end_time, '对应时间:', new Date(processedSearchInfo.end_time * 1000).toLocaleString())
+        processedSearchInfo.start_time = dateToTimestamp(processedSearchInfo.log_time_range[0])
+        processedSearchInfo.end_time = dateToTimestamp(processedSearchInfo.log_time_range[1])
         
         // 删除原始的时间范围字段，避免传给后端
         delete processedSearchInfo.log_time_range
@@ -82,16 +77,13 @@ export const useGMItemStore = defineStore('gmItem', () => {
 
         // 预处理数据，转换时间戳为日期时间对象
         list.forEach(item => {
-          item.log_time_formatted = item.log_time ? new Date(item.log_time * 1000).toLocaleString() : '-'
+          item.log_time = timestampToDate(item.log_time)
         })
 
         itemList.value = list
         total.value = response.data.total || 0
         page.value = response.data.page || 1
         pageSize.value = response.data.pageSize || 10
-        
-        // console.log('Pinia store - itemList.value 已更新:', itemList.value)
-        // console.log('Pinia store - 数据长度:', itemList.value.length)
       } else {
         throw new Error(response.msg || '获取道具流水列表失败')
       }

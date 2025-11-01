@@ -169,8 +169,12 @@
           align="left"
           label="操作时间"
           min-width="180"
-          prop="log_time_formatted"
-        />
+          prop="log_time"
+        >
+          <template #default="scope">
+            {{ formatTimestamp(scope.row.log_time) }}
+          </template>
+        </el-table-column>
         <!-- <el-table-column align="left" label="操作" min-width="200">
           <template #default="scope">
             <el-button
@@ -223,6 +227,7 @@ import { QuestionFilled } from '@element-plus/icons-vue'
 import WarningBar from '@/components/warningBar/warningBar.vue'
 import { useGMItemStore } from '@/pinia/gm/item'
 import { storeToRefs } from 'pinia'
+import { formatTimestamp } from '@/utils/timestamp'
 
 defineOptions({
   name: 'GmItem'
