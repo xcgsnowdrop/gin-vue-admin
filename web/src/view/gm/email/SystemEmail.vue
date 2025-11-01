@@ -303,8 +303,8 @@
               style="width: 100%"
             />
           </el-form-item>
-          <el-form-item label="生效区服列表:" prop="areaIds" required>
-            <el-input v-model="formData.areaIds" placeholder="请输入生效区服列表" />
+          <el-form-item label="生效区服列表:" prop="areaIds">
+            <el-input v-model="formData.areaIds" placeholder="请输入生效区服列表,用英文逗号分隔，为空表示全区服" />
           </el-form-item>
           <el-form-item label="最大注册时间:" prop="maxRegTime" required>
             <el-date-picker
@@ -358,7 +358,8 @@
     resetSearchInfo,
     setPage,
     setPageSize,
-    deleteSystemEmail
+    deleteSystemEmail,
+    updateSystemEmail
   } = gmSystemEmailStore
   
   // 格式化附件显示
@@ -486,7 +487,7 @@
       remark: '',
       startTime: null,
       endTime: null,
-      areaIds: [], // 区服ID列表，为空表示全区服
+      areaIds: '', // 区服ID列表，为空表示全区服
       maxRegTime: null, // 最大注册时间
     })
 
@@ -507,34 +508,28 @@
         })
 
         // 转换时间戳为 Date 对象（用于日期选择器）
-        if (data.startTime && typeof data.startTime === 'number') {
-            data.startTime = new Date(data.startTime * 1000) // 秒级时间戳转 Date
-        } else if (data.startTime && typeof data.startTime === 'string') {
+        if (data.start_time && typeof data.start_time === 'number') {
+            data.startTime = new Date(data.start_time * 1000) // 秒级时间戳转 Date
+        } else if (data.start_time && typeof data.start_time === 'string') {
             // 如果是字符串格式的时间戳
-            const timestamp = Number(data.startTime)
+            const timestamp = Number(data.start_time)
             if (!isNaN(timestamp)) {
             data.startTime = new Date(timestamp * 1000)
             }
         }
 
-        if (data.endTime && typeof data.endTime === 'number') {
-            data.endTime = new Date(data.endTime * 1000) // 秒级时间戳转 Date
-        } else if (data.endTime && typeof data.endTime === 'string') {
+        if (data.max_reg_time && typeof data.max_reg_time === 'number') {
+            data.maxRegTime = new Date(data.max_reg_time * 1000) // 秒级时间戳转 Date
+        } else if (data.max_reg_time && typeof data.max_reg_time === 'string') {
             // 如果是字符串格式的时间戳
-            const timestamp = Number(data.endTime)
-            if (!isNaN(timestamp)) {
-            data.endTime = new Date(timestamp * 1000)
-            }
-        }
-
-        if (data.maxRegTime && typeof data.maxRegTime === 'number') {
-            data.maxRegTime = new Date(data.maxRegTime * 1000) // 秒级时间戳转 Date
-        } else if (data.maxRegTime && typeof data.maxRegTime === 'string') {
-            // 如果是字符串格式的时间戳
-            const timestamp = Number(data.maxRegTime)
+            const timestamp = Number(data.max_reg_time)
             if (!isNaN(timestamp)) {
             data.maxRegTime = new Date(timestamp * 1000)
             }
+        }
+
+        if (Array.isArray(data.area_ids)) {
+            data.areaIds = data.area_ids.join(',')
         }
 
         formData.value = data
@@ -647,7 +642,7 @@
       remark: '',
       startTime: null,
       endTime: null,
-      areaIds: [], // 区服ID列表，为空表示全区服
+      areaIds: '', // 区服ID列表，为空表示全区服
       maxRegTime: null, // 最大注册时间
     }
     attachmentResourceLists.value = {}
@@ -675,7 +670,7 @@
             await sendSystemEmail(submitData)
             break
           case 'update':
-            // await updatePersonalEmail(submitData)
+            await updateSystemEmail(submitData)
             break
           default:
             await sendSystemEmail(submitData)

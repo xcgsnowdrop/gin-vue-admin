@@ -4,6 +4,7 @@ import {
   getGMSystemEmailList,
   sendGMSystemEmail,
   deleteGMSystemEmail,
+  updateGMSystemEmail,
 } from '@/api/gm_email'
 import { getGMResourceTypeList, getGMResourceList } from '@/api/gm_item'
 
@@ -214,6 +215,23 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
     }
   }
 
+  // 更新系统邮件
+  const updateSystemEmail = async (data) => {
+    try {
+      const processedData = prepareSubmitData(data)
+      const response = await updateGMSystemEmail(processedData)
+      if (response.code === 0) {
+        await fetchSystemEmailList()
+        return true
+      } else {
+        throw new Error(response.msg || '更新系统邮件失败')
+      }
+    } catch (error) {
+      console.error('更新系统邮件失败:', error)
+      throw error
+    }
+  }
+
   // 删除系统邮件
   const deleteSystemEmail = async (email_id) => {
     try {
@@ -279,5 +297,6 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
     setPage,
     setPageSize,
     deleteSystemEmail,
+    updateSystemEmail,
   }
 })
