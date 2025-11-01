@@ -35,9 +35,21 @@
               <MultilingualCell :value="scope.row.content" :max-length="30" />
             </template>
           </el-table-column>
-          <el-table-column align="left" label="开始时间" prop="start_time_formatted" width="180" />
-          <el-table-column align="left" label="结束时间" prop="end_time_formatted" width="180" />
-          <el-table-column align="left" label="创建时间" prop="create_time_formatted" width="180" />
+          <el-table-column align="left" label="开始时间" width="180">
+            <template #default="scope">
+              {{ formatTimestamp(scope.row.startTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column align="left" label="结束时间" width="180">
+            <template #default="scope">
+              {{ formatTimestamp(scope.row.endTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column align="left" label="创建时间" width="180">
+            <template #default="scope">
+              {{ formatTimestamp(scope.row.createTime) }}
+            </template>
+          </el-table-column>
           <el-table-column align="left" label="公告类型" width="120">
             <template #default="scope">
               <el-tag :type="getAnnouncementTypeTag(scope.row.type)" size="default">
@@ -204,7 +216,7 @@
     import { ElMessage, ElMessageBox } from 'element-plus'
     import { ref, reactive, onMounted, watch } from 'vue'
     import { View, Hide } from '@element-plus/icons-vue'
-    import { convertTimestampsToDates } from '@/utils/timestamp'
+    import { formatTimestamp } from '@/utils/timestamp'
   
     defineOptions({
       name: 'GmAnnouncement'
@@ -390,10 +402,6 @@
             data.content[lang.code] = ''
           }
         })
-
-        // 转换时间戳为 Date 对象（用于日期选择器）- 使用工具函数
-        const dateFields = ['startTime', 'endTime']
-        data = convertTimestampsToDates(data, dateFields)
 
         formData.value = data
         

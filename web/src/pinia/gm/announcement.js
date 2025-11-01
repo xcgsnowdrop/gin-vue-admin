@@ -7,7 +7,7 @@ import {
     updateGMAnnouncement, 
     toppingGMAnnouncement 
 } from '@/api/gm_announcement'
-import { formatTimestamp, convertDatesToTimestamps } from '@/utils/timestamp'
+import { timestampToDate, convertDatesToTimestamps } from '@/utils/timestamp'
 
 
 export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
@@ -56,9 +56,9 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
 
         // 预处理数据，添加格式化时间字段（使用工具函数）
         list.forEach(item => {
-          item.start_time_formatted = formatTimestamp(item.startTime)
-          item.end_time_formatted = formatTimestamp(item.endTime)
-          item.create_time_formatted = formatTimestamp(item.createTime)
+          item.startTime = timestampToDate(item.startTime)
+          item.endTime = timestampToDate(item.endTime)
+          item.createTime = timestampToDate(item.createTime)
         })
 
         announcementList.value = list
