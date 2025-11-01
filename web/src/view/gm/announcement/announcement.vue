@@ -1,80 +1,5 @@
 <template>
     <div>
-      <!-- <div class="gva-search-box">
-        <el-form
-          ref="elSearchFormRef"
-          :inline="true"
-          :model="searchInfo"
-          class="demo-form-inline"
-          :rules="searchRule"
-          @keyup.enter="onSubmit"
-        >
-          <el-form-item label="创建时间" prop="createdAt">
-            <template #label>
-              <span>
-                创建时间
-                <el-tooltip
-                  content="搜索范围是开始时间（包含）至结束时间（不包含）"
-                >
-                  <el-icon><QuestionFilled /></el-icon>
-                </el-tooltip>
-              </span>
-            </template>
-            <el-date-picker
-              v-model="searchInfo.startCreatedAt"
-              type="datetime"
-              placeholder="开始时间"
-              :disabled-date="
-                (time) =>
-                  searchInfo.endCreatedAt
-                    ? time.getTime() > searchInfo.endCreatedAt.getTime()
-                    : false
-              "
-            />
-            —
-            <el-date-picker
-              v-model="searchInfo.endCreatedAt"
-              type="datetime"
-              placeholder="结束时间"
-              :disabled-date="
-                (time) =>
-                  searchInfo.startCreatedAt
-                    ? time.getTime() < searchInfo.startCreatedAt.getTime()
-                    : false
-              "
-            />
-          </el-form-item>
-  
-          <template v-if="showAllQuery">
-           // 将需要控制显示状态的查询条件添加到此范围内
-          </template>
-  
-          <el-form-item>
-            <el-button type="primary" icon="search" @click="onSubmit">
-              查询
-            </el-button>
-            <el-button icon="refresh" @click="onReset"> 重置 </el-button>
-            <el-button
-              v-if="!showAllQuery"
-              link
-              type="primary"
-              icon="arrow-down"
-              @click="showAllQuery = true"
-            >
-              展开
-            </el-button>
-            <el-button
-              v-else
-              link
-              type="primary"
-              icon="arrow-up"
-              @click="showAllQuery = false"
-            >
-              收起
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </div> -->
       <div class="gva-table-box">
         <div class="gva-btn-list">
           <el-button type="primary" icon="plus" @click="openDialog">
@@ -99,7 +24,6 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55" />
-  
           <el-table-column align="left" label="排序" prop="index" width="80" />
           <el-table-column align="left" label="标题" width="200">
             <template #default="scope">
@@ -212,7 +136,7 @@
           :rules="rule"
           label-width="80px"
         >
-          <el-form-item label="标题:" prop="title">
+          <el-form-item label="标题:" prop="title" required>
             <el-tabs v-model="activeTitleTab" type="border-card" class="multilingual-tabs">
               <el-tab-pane
                 v-for="lang in languageOptions"
@@ -228,7 +152,7 @@
               </el-tab-pane>
             </el-tabs>
           </el-form-item>
-          <el-form-item label="内容:" prop="content">
+          <el-form-item label="内容:" prop="content" required>
             <el-tabs v-model="activeContentTab" type="border-card" class="multilingual-tabs">
               <el-tab-pane
                 v-for="lang in languageOptions"
@@ -240,14 +164,14 @@
               </el-tab-pane>
             </el-tabs>
           </el-form-item>
-          <el-form-item label="开始时间:" prop="startTime">
+          <el-form-item label="开始时间:" prop="startTime" required>
             <el-date-picker
               v-model="formData.startTime"
               type="datetime"
               placeholder="请选择开始时间"
             />
           </el-form-item>
-          <el-form-item label="结束时间:" prop="endTime">
+          <el-form-item label="结束时间:" prop="endTime" required>
             <el-date-picker
               v-model="formData.endTime"
               type="datetime"
@@ -255,7 +179,7 @@
               :disabled-date="disabledEndDate"
             />
           </el-form-item>
-          <el-form-item label="类型:" prop="type">
+          <el-form-item label="类型:" prop="type" required>
             <el-select
               v-model="formData.type"
               placeholder="请选择类型"
