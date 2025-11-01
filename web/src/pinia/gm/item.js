@@ -76,9 +76,9 @@ export const useGMItemStore = defineStore('gmItem', () => {
         const list = response.data.list || []
 
         // 预处理数据，转换时间戳为日期时间对象
-        list.forEach(item => {
-          item.log_time = timestampToDate(item.log_time)
-        })
+        // list.forEach(item => {
+        //   item.log_time = timestampToDate(item.log_time)
+        // })
 
         itemList.value = list
         total.value = response.data.total || 0

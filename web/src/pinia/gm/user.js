@@ -8,6 +8,7 @@ import {
   batchOperateGMUser,
   exportGMUser,
 } from '@/api/gm_user'
+import { timestampToDate } from '@/utils/timestamp'
 
 export const useGMUserStore = defineStore('gmUser', () => {
   // 状态
@@ -60,21 +61,14 @@ export const useGMUserStore = defineStore('gmUser', () => {
       
       const response = await getGMUserList(queryParams)
       
-      // 调试信息 - 在Chrome开发工具中查看
-      // console.log('🔍 GM User API Response:', response)
-      // console.log('🔍 Response code:', response.code)
-      // console.log('🔍 Response data:', response.data)
-      
       if (response.code === 0) {
         const playerList = response.data.player_list || response.data.list || []
-        // console.log('🔍 Player list data:', playerList)
-        // console.log('🔍 First player item:', playerList[0])
-        
+
         // 预处理数据，转换时间戳为日期时间对象
-        playerList.forEach(user => {
-          user.register_time_formatted = user.register_time ? new Date(user.register_time * 1000).toLocaleString() : '-'
-          user.login_time_formatted = user.login_time ? new Date(user.login_time * 1000).toLocaleString() : '-'
-        })
+        // playerList.forEach(user => {
+        //   user.register_time = timestampToDate(user.register_time)
+        //   user.login_time = timestampToDate(user.login_time)
+        // })
 
         userList.value = playerList
         total.value = response.data.total || 0

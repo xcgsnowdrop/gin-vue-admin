@@ -104,8 +104,16 @@
           min-width="60"
           prop="area_id"
         />
-        <el-table-column align="left" label="注册时间" min-width="180" prop="register_time_formatted" />
-        <el-table-column align="left" label="最后登录时间" min-width="180" prop="login_time_formatted" />
+        <el-table-column align="left" label="注册时间" min-width="180" prop="register_time">
+          <template #default="scope">
+            {{ formatTimestamp(scope.row.register_time) }}
+          </template>
+        </el-table-column>
+        <el-table-column align="left" label="最后登录时间" min-width="180" prop="login_time">
+          <template #default="scope">
+            {{ formatTimestamp(scope.row.login_time) }}
+          </template>
+        </el-table-column>
         <el-table-column align="left" label="玩家状态" min-width="200">
           <template #default="scope">
             <div class="status-container">
@@ -266,6 +274,7 @@
   import { Lock } from '@element-plus/icons-vue'
   import { useAppStore } from "@/pinia";
   import { storeToRefs } from 'pinia'
+  import { formatTimestamp } from '@/utils/timestamp'
 
   defineOptions({
     name: 'GmUser'
