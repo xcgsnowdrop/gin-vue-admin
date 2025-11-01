@@ -29,21 +29,12 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
   const hasAnnouncements = computed(() => announcementList.value.length > 0)
   const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 
-  // 准备提交数据：转换时间戳格式（使用工具函数）
-  const prepareSubmitData = (data) => {
-    // 使用工具函数批量转换时间字段
-    return convertDatesToTimestamps(data, ['startTime', 'endTime'])
-  }
 
   // 获取公告列表
   const fetchAnnouncementList = async (params = {}) => {
     loading.value = true
     try {
-      const processedSearchInfo = { ...searchInfo.value }
-      if (processedSearchInfo.startCreatedAt && processedSearchInfo.endCreatedAt) {
-        processedSearchInfo.startCreatedAt = Math.floor(new Date(processedSearchInfo.startCreatedAt).getTime() / 1000)
-        processedSearchInfo.endCreatedAt = Math.floor(new Date(processedSearchInfo.endCreatedAt).getTime() / 1000)
-      }
+      const processedSearchInfo = convertDatesToTimestamps(searchInfo.value, ['startCreatedAt', 'endCreatedAt'])
       const response = await getGMAnnouncementList({
         page: page.value,
         pageSize: pageSize.value,
@@ -80,7 +71,7 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
   // 添加公告
   const addAnnouncement = async (data) => {
     try {
-      const processedData = prepareSubmitData(data)
+      const processedData = convertDatesToTimestamps(data, ['startTime', 'endTime'])
       const response = await addGMAnnouncement(processedData)
       if (response.code === 0) {
         // 添加成功后自动刷新列表
@@ -115,7 +106,7 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
   // 更新公告
   const updateAnnouncement = async (data) => {
     try {
-      const processedData = prepareSubmitData(data)
+      const processedData = convertDatesToTimestamps(data, ['startTime', 'endTime'])
       const response = await updateGMAnnouncement(processedData)
       if (response.code === 0) {
         // 更新成功后自动刷新列表
@@ -199,7 +190,6 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
     deleteAnnouncement,
     updateAnnouncement,
     toppingAnnouncement,
-    prepareSubmitData,
     setSearchInfo,
     resetSearchInfo,
     setPage,
