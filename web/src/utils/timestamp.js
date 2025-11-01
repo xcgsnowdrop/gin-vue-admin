@@ -68,7 +68,7 @@ export function dateToTimestamp(date) {
 
 /**
  * 格式化时间戳为字符串
- * @param {number|string|null|undefined} timestamp - 时间戳（秒级）
+ * @param {number|string|null|undefined|Date} timestamp - 时间戳（秒级）或 Date 对象
  * @param {string} format - 格式化模式，默认为本地化字符串
  * @returns {string} 格式化后的时间字符串，如果无效则返回 '-'
  */
