@@ -217,7 +217,6 @@
       total, 
       page,
       pageSize,
-    //   searchInfo,
     } = storeToRefs(gmAnnouncementStore)
 
     // 使用store中的方法
@@ -227,13 +226,10 @@
         deleteAnnouncement,
         updateAnnouncement,
         toppingAnnouncement,
-        // resetSearchInfo,
         setPage,
         setPageSize
     } = gmAnnouncementStore
 
-    // 控制更多查询条件显示/隐藏状态
-    // const showAllQuery = ref(false)
 
     // 使用多语言 Composable
     const { activeTitleTab, activeContentTab, resetActiveTabs, setActiveTabsFromData } = useMultilingual()
@@ -245,7 +241,6 @@
       startTime: null,
       endTime: null,
       type: '',
-    //   id: undefined,
       isShow: 1
     })
 
@@ -291,57 +286,8 @@
       ]
     })
   
-    // const searchRule = reactive({
-    //   createdAt: [
-    //     {
-    //       validator: (rule, value, callback) => {
-    //         if (
-    //           searchInfo.value.startCreatedAt &&
-    //           !searchInfo.value.endCreatedAt
-    //         ) {
-    //           callback(new Error('请填写结束日期'))
-    //         } else if (
-    //           !searchInfo.value.startCreatedAt &&
-    //           searchInfo.value.endCreatedAt
-    //         ) {
-    //           callback(new Error('请填写开始日期'))
-    //         } else if (
-    //           searchInfo.value.startCreatedAt &&
-    //           searchInfo.value.endCreatedAt &&
-    //           (searchInfo.value.startCreatedAt.getTime() ===
-    //             searchInfo.value.endCreatedAt.getTime() ||
-    //             searchInfo.value.startCreatedAt.getTime() >
-    //               searchInfo.value.endCreatedAt.getTime())
-    //         ) {
-    //           callback(new Error('开始日期应当早于结束日期'))
-    //         } else {
-    //           callback()
-    //         }
-    //       },
-    //       trigger: 'change'
-    //     }
-    //   ]
-    // })
-  
     const elFormRef = ref()
-    // const elSearchFormRef = ref()
-  
-    // 重置
-    // const onReset = () => {
-    //   resetSearchInfo()
-    //   setPage(1)
-    //   fetchAnnouncementList()
-    // }
-  
-    // 搜索
-    // const onSubmit = () => {
-    //   elSearchFormRef.value?.validate(async (valid) => {
-    //     if (!valid) return
-    //     page.value = 1
-    //     fetchAnnouncementList()
-    //   })
-    // }
-  
+    
     // 分页
     const handleSizeChange = (val) => {
       setPageSize(val)
@@ -356,12 +302,6 @@
 
   
     // ============== 表格控制部分结束 ===============
-  
-    // 获取需要的字典 可能为空 按需保留
-    const setOptions = async () => {}
-  
-    // 获取需要的字典 可能为空 按需保留
-    setOptions()
   
     // 多选数据
     const multipleSelection = ref([])
