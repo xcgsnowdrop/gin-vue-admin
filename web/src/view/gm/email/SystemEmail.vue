@@ -188,50 +188,27 @@
               <el-option label="类型3" value="3" />
             </el-select>
           </el-form-item>
-          <el-form-item label="邮件发件人:" prop="senderI18n" required>
-            <el-tabs v-model="activeTitleTab" type="border-card" class="multilingual-tabs">
-              <el-tab-pane
-                v-for="lang in languageOptions"
-                :key="lang.code"
-                :label="lang.label"
-                :name="lang.code"
-              >
-                <el-input
-                  v-model="formData.senderI18n[lang.code]"
-                  :clearable="true"
-                  :placeholder="`请输入${lang.label}发件人`"
-                />
-              </el-tab-pane>
-            </el-tabs>
-          </el-form-item>
-          <el-form-item label="邮件标题:" prop="titleI18n" required>
-            <el-tabs v-model="activeTitleTab" type="border-card" class="multilingual-tabs">
-              <el-tab-pane
-                v-for="lang in languageOptions"
-                :key="lang.code"
-                :label="lang.label"
-                :name="lang.code"
-              >
-                <el-input
-                  v-model="formData.titleI18n[lang.code]"
-                  :clearable="true"
-                  :placeholder="`请输入${lang.label}标题`"
-                />
-              </el-tab-pane>
-            </el-tabs>
-          </el-form-item>
-          <el-form-item label="邮件内容:" prop="contentI18n" required>
-            <el-tabs v-model="activeContentTab" type="border-card" class="multilingual-tabs">
-              <el-tab-pane
-                v-for="lang in languageOptions"
-                :key="lang.code"
-                :label="lang.label"
-                :name="lang.code"
-              >
-                <RichEdit v-model="formData.contentI18n[lang.code]" />
-              </el-tab-pane>
-            </el-tabs>
-          </el-form-item>
+          <MultilingualInput
+            label="邮件发件人"
+            prop="senderI18n"
+            :required="true"
+            v-model="formData.senderI18n"
+            v-model:active-tab="activeSenderTab"
+          />
+          <MultilingualInput
+            label="邮件标题"
+            prop="titleI18n"
+            :required="true"
+            v-model="formData.titleI18n"
+            v-model:active-tab="activeTitleTab"
+          />
+          <MultilingualRichEdit
+            label="邮件内容"
+            prop="contentI18n"
+            :required="true"
+            v-model="formData.contentI18n"
+            v-model:active-tab="activeContentTab"
+          />
           <el-form-item label="邮件附件:" prop="attachments">
             <div class="attachments-form">
               <div
@@ -322,8 +299,9 @@
   <script setup>
   import { onMounted, watch, ref, reactive } from 'vue'
   import WarningBar from '@/components/warningBar/warningBar.vue'
-  import RichEdit from '@/components/richtext/rich-edit.vue'
   import MultilingualCell from '@/components/multilingual/MultilingualCell.vue'
+  import MultilingualInput from '@/components/multilingual/MultilingualInput.vue'
+  import MultilingualRichEdit from '@/components/multilingual/MultilingualRichEdit.vue'
   import { useGMSystemEmailStore } from '@/pinia/gm/systemEmail'
   import { storeToRefs } from 'pinia'
   import { ElMessage, ElMessageBox } from 'element-plus'
@@ -405,7 +383,7 @@
     const dialogFormVisible = ref(false)
 
     // 使用多语言 Composable
-    const { activeTitleTab, activeContentTab, resetActiveTabs, setActiveTabsFromData } = useMultilingual()
+    const { activeSenderTab, activeTitleTab, activeContentTab, resetActiveTabs, setActiveTabsFromData } = useMultilingual()
 
     // 附件资源列表缓存（每个类型对应一个资源列表）
     const attachmentResourceLists = ref({})

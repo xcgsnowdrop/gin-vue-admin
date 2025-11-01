@@ -136,34 +136,20 @@
           :rules="rule"
           label-width="80px"
         >
-          <el-form-item label="标题:" prop="title" required>
-            <el-tabs v-model="activeTitleTab" type="border-card" class="multilingual-tabs">
-              <el-tab-pane
-                v-for="lang in languageOptions"
-                :key="lang.code"
-                :label="lang.label"
-                :name="lang.code"
-              >
-                <el-input
-                  v-model="formData.title[lang.code]"
-                  :clearable="true"
-                  :placeholder="`请输入${lang.label}标题`"
-                />
-              </el-tab-pane>
-            </el-tabs>
-          </el-form-item>
-          <el-form-item label="内容:" prop="content" required>
-            <el-tabs v-model="activeContentTab" type="border-card" class="multilingual-tabs">
-              <el-tab-pane
-                v-for="lang in languageOptions"
-                :key="lang.code"
-                :label="lang.label"
-                :name="lang.code"
-              >
-                <RichEdit v-model="formData.content[lang.code]" />
-              </el-tab-pane>
-            </el-tabs>
-          </el-form-item>
+          <MultilingualInput
+            label="标题"
+            prop="title"
+            :required="true"
+            v-model="formData.title"
+            v-model:active-tab="activeTitleTab"
+          />
+          <MultilingualRichEdit
+            label="内容"
+            prop="content"
+            :required="true"
+            v-model="formData.content"
+            v-model:active-tab="activeContentTab"
+          />
           <el-form-item label="开始时间:" prop="startTime" required>
             <el-date-picker
               v-model="formData.startTime"
@@ -204,10 +190,11 @@
   </template>
   
   <script setup>
-    // 富文本组件
-    import RichEdit from '@/components/richtext/rich-edit.vue'
     // 多语言显示组件
     import MultilingualCell from '@/components/multilingual/MultilingualCell.vue'
+    // 多语言输入组件
+    import MultilingualInput from '@/components/multilingual/MultilingualInput.vue'
+    import MultilingualRichEdit from '@/components/multilingual/MultilingualRichEdit.vue'
     // 文件选择组件
     import { useGMAnnouncementStore } from '@/pinia/gm/announcement'
     import { storeToRefs } from 'pinia'

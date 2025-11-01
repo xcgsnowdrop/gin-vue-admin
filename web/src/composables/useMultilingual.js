@@ -56,6 +56,7 @@ export const initSenderI18nDefault = () => {
  */
 export const useMultilingual = () => {
   // 多语言表单标签页活动状态
+  const activeSenderTab = ref('en')
   const activeTitleTab = ref('en')
   const activeContentTab = ref('en')
 
@@ -63,6 +64,7 @@ export const useMultilingual = () => {
    * 重置活动标签页
    */
   const resetActiveTabs = () => {
+    activeSenderTab.value = 'en'
     activeTitleTab.value = 'en'
     activeContentTab.value = 'en'
   }
@@ -74,6 +76,14 @@ export const useMultilingual = () => {
    * @param {Object} data.content - 内容的多语言对象
    */
   const setActiveTabsFromData = (data) => {
+    if (data.sender) {
+      for (const lang of languagePriority) {
+        if (data.sender[lang] && data.sender[lang].trim()) {
+          activeSenderTab.value = lang
+          break
+        }
+      }
+    }
     if (data.title) {
       for (const lang of languagePriority) {
         if (data.title[lang] && data.title[lang].trim()) {
@@ -93,6 +103,7 @@ export const useMultilingual = () => {
   }
 
   return {
+    activeSenderTab,
     activeTitleTab,
     activeContentTab,
     resetActiveTabs,
