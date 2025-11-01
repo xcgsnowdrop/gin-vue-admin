@@ -204,6 +204,7 @@
     import { ElMessage, ElMessageBox } from 'element-plus'
     import { ref, reactive, onMounted, watch } from 'vue'
     import { View, Hide } from '@element-plus/icons-vue'
+    import { convertTimestampsToDates } from '@/utils/timestamp'
   
     defineOptions({
       name: 'GmAnnouncement'
@@ -378,7 +379,7 @@
     const updateRow = async (row) => {
         type.value = 'update'
         // 确保多语言数据格式正确
-        const data = { ...row }
+        let data = { ...row }
       
         // 确保所有语言字段都存在
         languageOptions.forEach(lang => {
@@ -390,26 +391,9 @@
           }
         })
 
-        // 转换时间戳为 Date 对象（用于日期选择器）
-        if (data.startTime && typeof data.startTime === 'number') {
-            data.startTime = new Date(data.startTime * 1000) // 秒级时间戳转 Date
-        } else if (data.startTime && typeof data.startTime === 'string') {
-            // 如果是字符串格式的时间戳
-            const timestamp = Number(data.startTime)
-            if (!isNaN(timestamp)) {
-            data.startTime = new Date(timestamp * 1000)
-            }
-        }
-
-        if (data.endTime && typeof data.endTime === 'number') {
-            data.endTime = new Date(data.endTime * 1000) // 秒级时间戳转 Date
-        } else if (data.endTime && typeof data.endTime === 'string') {
-            // 如果是字符串格式的时间戳
-            const timestamp = Number(data.endTime)
-            if (!isNaN(timestamp)) {
-            data.endTime = new Date(timestamp * 1000)
-            }
-        }
+        // 转换时间戳为 Date 对象（用于日期选择器）- 使用工具函数
+        const dateFields = ['startTime', 'endTime']
+        data = convertTimestampsToDates(data, dateFields)
 
         formData.value = data
         

@@ -7,6 +7,7 @@ import {
     updateGMAnnouncement, 
     toppingGMAnnouncement 
 } from '@/api/gm_announcement'
+import { formatTimestamp, convertDatesToTimestamps } from '@/utils/timestamp'
 
 
 export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
@@ -28,30 +29,10 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
   const hasAnnouncements = computed(() => announcementList.value.length > 0)
   const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 
-  // 准备提交数据：转换时间戳格式
+  // 准备提交数据：转换时间戳格式（使用工具函数）
   const prepareSubmitData = (data) => {
-    const submitData = { ...data }
-    
-    // 转换时间戳：将 Date 对象转换为时间戳（秒）
-    if (submitData.startTime instanceof Date) {
-      submitData.startTime = Math.floor(submitData.startTime.getTime() / 1000)
-    } else if (submitData.startTime) {
-      const date = new Date(submitData.startTime)
-      if (!isNaN(date.getTime())) {
-        submitData.startTime = Math.floor(date.getTime() / 1000)
-      }
-    }
-    
-    if (submitData.endTime instanceof Date) {
-      submitData.endTime = Math.floor(submitData.endTime.getTime() / 1000)
-    } else if (submitData.endTime) {
-      const date = new Date(submitData.endTime)
-      if (!isNaN(date.getTime())) {
-        submitData.endTime = Math.floor(date.getTime() / 1000)
-      }
-    }
-    
-    return submitData
+    // 使用工具函数批量转换时间字段
+    return convertDatesToTimestamps(data, ['startTime', 'endTime'])
   }
 
   // 获取公告列表
@@ -73,11 +54,11 @@ export const useGMAnnouncementStore = defineStore('gmAnnouncement', () => {
       if (response.code === 0) {
         const list = response.data.announcementList || []
 
-        // 预处理数据，转换时间戳为日期时间对象
+        // 预处理数据，添加格式化时间字段（使用工具函数）
         list.forEach(item => {
-          item.start_time_formatted = item.startTime ? new Date(item.startTime * 1000).toLocaleString() : '-'
-          item.end_time_formatted = item.endTime ? new Date(item.endTime * 1000).toLocaleString() : '-'
-          item.create_time_formatted = item.createTime ? new Date(item.createTime * 1000).toLocaleString() : '-'
+          item.start_time_formatted = formatTimestamp(item.startTime)
+          item.end_time_formatted = formatTimestamp(item.endTime)
+          item.create_time_formatted = formatTimestamp(item.createTime)
         })
 
         announcementList.value = list
