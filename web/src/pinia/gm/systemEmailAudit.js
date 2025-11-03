@@ -75,12 +75,12 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
         }
 
         // 预处理数据，转换时间戳为日期时间对象
-        list.forEach(item => {
-          item.create_time_formatted = item.create_time ? new Date(item.create_time * 1000).toLocaleString() : '-'
-          item.start_time_formatted = item.start_time ? new Date(item.start_time * 1000).toLocaleString() : '-'
-          item.end_time_formatted = item.end_time ? new Date(item.end_time * 1000).toLocaleString() : '-'
-          item.max_reg_time_formatted = item.max_reg_time ? new Date(item.max_reg_time * 1000).toLocaleString() : '-'
-        })
+        // list.forEach(item => {
+        //   item.create_time_formatted = item.create_time ? new Date(item.create_time * 1000).toLocaleString() : '-'
+        //   item.start_time_formatted = item.start_time ? new Date(item.start_time * 1000).toLocaleString() : '-'
+        //   item.end_time_formatted = item.end_time ? new Date(item.end_time * 1000).toLocaleString() : '-'
+        //   item.max_reg_time_formatted = item.max_reg_time ? new Date(item.max_reg_time * 1000).toLocaleString() : '-'
+        // })
 
         systemEmailAuditList.value = list
         total.value = response.data.total || 0

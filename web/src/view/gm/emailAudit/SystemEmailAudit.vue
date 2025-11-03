@@ -23,9 +23,9 @@
         <el-table :data="tableData" row-key="id" v-loading="loading">
           <el-table-column align="left" label="ID" min-width="80" prop="id" />
           <el-table-column align="left" label="申请人" min-width="80" prop="applicantId" />
-          <el-table-column align="left" label="申请时间" min-width="250" prop="applicantTime">
+          <el-table-column align="left" label="申请时间" min-width="180" prop="applicantTime">
             <template #default="scope">
-              {{ scope.row.applicantTime ? formatTimestamp(new Date(scope.row.applicantTime).getTime() / 1000) : '-' }}
+              {{ scope.row.applicantTime ? formatTimestamp(new Date(scope.row.applicantTime)) : '-' }}
             </template>
           </el-table-column>
           <el-table-column align="left" label="审核人" min-width="80" prop="auditorId">
