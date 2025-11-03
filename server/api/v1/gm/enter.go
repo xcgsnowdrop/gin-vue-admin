@@ -5,6 +5,7 @@ import "gmserver/service"
 type ApiGroup struct {
 	UserApi
 	ItemApi
+	EmailAuditApi
 }
 
 var (

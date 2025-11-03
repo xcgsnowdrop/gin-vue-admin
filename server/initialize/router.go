@@ -114,6 +114,7 @@ func Routers() *gin.Engine {
 		// gmRouter.InitUserRouter(PrivateGroup)
 		// gmRouter.InitItemRouter(PrivateGroup)
 		gmRouter.GameApiProxyRouter.InitGameApiProxyRouter(PrivateGroup) // 游戏API代理路由
+		gmRouter.EmailAuditRouter.InitEmailAuditRouter(PrivateGroup)     // 邮件审核路由
 	}
 
 	//插件路由安装
