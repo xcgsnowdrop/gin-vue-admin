@@ -23,7 +23,7 @@ func (s *EmailAuditService) isRootAuthority(authority system.SysAuthority) bool 
 	return *authority.ParentId == 0
 }
 
-// GetAllParentAuthorities 递归获取所有父级角色ID
+// GetAllParentAuthorities 递归获取所有父级角色ID(包含入参角色ID)
 func (s *EmailAuditService) getAllParentAuthorities(authorityId uint) []uint {
 	var authorityIds []uint
 	currentId := authorityId
@@ -48,7 +48,7 @@ func (s *EmailAuditService) getAllParentAuthorities(authorityId uint) []uint {
 	return authorityIds
 }
 
-// GetSameLevelAuthorities 获取同级角色ID（排除指定角色）
+// GetSameLevelAuthorities 获取同级角色ID（排除入参角色ID）
 func (s *EmailAuditService) getSameLevelAuthorities(authorityId uint) []uint {
 	// 获取当前角色的父角色ID
 	var currentAuthority system.SysAuthority
