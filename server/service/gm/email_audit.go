@@ -77,7 +77,9 @@ func (s *EmailAuditService) getSameLevelAuthorities(authorityId uint) []uint {
 	return authorityIds
 }
 
-// GetAuditableAuthorities 获取可以审核指定申请的角色ID列表
+// GetAuditableAuthorities 获取可以审核指定申请人角色的角色ID列表
+// @param applicantAuthorityId 申请人角色ID
+// @return 可以审核的角色ID列表(若是根角色，则返回同级角色；否则返回所有上级角色)
 func (s *EmailAuditService) GetAuditableAuthorities(applicantAuthorityId uint) []uint {
 	var auditableAuthorities []uint
 
@@ -107,6 +109,7 @@ func (s *EmailAuditService) GetAuditableAuthorities(applicantAuthorityId uint) [
 }
 
 // CanUserAudit 判断用户是否可以审核某个申请
+// 注意：基于单角色设计，每个用户只能有一个角色，避免权限绕过风险
 func (s *EmailAuditService) CanUserAudit(userAuthorityId uint, applicationId uint) (bool, error) {
 	// 1. 获取申请
 	var application gm.EmailAuditApplication
@@ -298,28 +301,23 @@ func (s *EmailAuditService) ReviewApplication(req gmReq.ReviewEmailAuditRequest,
 }
 
 // GetApplicationList 获取申请列表（根据用户角色返回不同数据）
+// 注意：基于单角色设计，每个用户只能有一个角色
 func (s *EmailAuditService) GetApplicationList(req gmReq.SearchEmailAuditRequest, userId uint, userAuthorityId uint) ([]gm.EmailAuditApplication, int64, error) {
 	var applications []gm.EmailAuditApplication
 	var total int64
 
 	query := global.GVA_DB.Model(&gm.EmailAuditApplication{})
 
-	// 判断用户角色，返回不同的数据
-	// 这里简化处理：普通用户只能看自己的，管理员可以看到所有
-	// 实际可以根据角色配置更细粒度的权限
-	var isAdmin bool
-	var superAdmin system.SysAuthority
-	if err := global.GVA_DB.Where("authority_id = ?", userAuthorityId).First(&superAdmin).Error; err == nil {
-		// 检查是否是超级管理员（假设 authority_id = 1 或根角色）
-		if s.isRootAuthority(superAdmin.ParentId) || userAuthorityId == 1 {
-			isAdmin = true
-		}
+	var userAuthority system.SysAuthority
+	if err := global.GVA_DB.Where("authority_id = ?", userAuthorityId).First(&userAuthority).Error; err != nil {
+		return nil, 0, errors.New("获取用户角色失败")
 	}
 
-	if !isAdmin {
-		// 普通用户：只能看到自己的申请 + 需要自己审核的申请
-		// 获取所有可以审核的角色列表（反向：哪些角色的申请可以被当前用户审核）
-		// 思路：遍历所有角色，检查当前用户是否可以审核该角色的申请
+	// 检查是否是根角色, 根据用户角色，返回不同的数据
+	isRootAuthority := s.isRootAuthority(userAuthority.ParentId)
+	if !isRootAuthority {
+
+		// 获取所有当前用户可以审核的用户ID列表（反向：哪些用户的申请可以被当前用户审核）
 		var allAuditableApplicantIds []uint
 
 		// 获取所有用户
@@ -330,8 +328,10 @@ func (s *EmailAuditService) GetApplicationList(req gmReq.SearchEmailAuditRequest
 			if user.ID == userId {
 				continue // 跳过自己
 			}
+			// 获取当前用户可以审核的申请人角色ID列表，此处会返回所有上级角色ID列表
 			auditableAuthorities := s.GetAuditableAuthorities(user.AuthorityId)
 			for _, authId := range auditableAuthorities {
+				// 如果当前遍历的user的所有上级角色中，有一个角色ID与当前用户角色ID相同，则将该user.ID添加到可审核用户ID列表中
 				if authId == userAuthorityId {
 					allAuditableApplicantIds = append(allAuditableApplicantIds, user.ID)
 					break
@@ -340,6 +340,7 @@ func (s *EmailAuditService) GetApplicationList(req gmReq.SearchEmailAuditRequest
 		}
 
 		if len(allAuditableApplicantIds) > 0 {
+			// 如果可审核用户ID列表不为空，则查询条件为：申请人ID为当前用户ID，或者状态为待审核且申请人ID在当前用户可审核的用户ID列表中
 			query = query.Where("applicant_id = ? OR (status = ? AND applicant_id IN ?)",
 				userId, gm.EmailAuditStatusPending, allAuditableApplicantIds)
 		} else {
