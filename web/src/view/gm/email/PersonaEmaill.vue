@@ -3,8 +3,39 @@
       <warning-bar title="注：GM管理 - 个人邮件列表" />
       <div class="gva-search-box">
         <el-form ref="searchForm" :inline="true" :model="searchInfo">
-          <el-form-item label="PlayerId">
-            <el-input v-model="searchInfo.player_id" placeholder="PlayerId" />
+          <el-form-item label="PlayerID">
+            <el-input v-model="searchInfo.playerId" placeholder="PlayerID" />
+          </el-form-item>
+          <!-- <el-form-item label="模板ID">
+            <el-input v-model="searchInfo.tplId" placeholder="模板ID" />
+          </el-form-item> -->
+          <el-form-item label="邮件创建开始时间">
+            <el-date-picker
+              v-model="searchInfo.startTime"
+              type="datetime"
+              placeholder="请选择邮件创建开始时间"
+              style="width: 100%"
+              :disabled-date="
+                (time) =>
+                  searchInfo.endTime
+                    ? time.getTime() > searchInfo.endTime.getTime()
+                    : false
+              "
+            />
+          </el-form-item>
+          <el-form-item label="邮件创建结束时间">
+            <el-date-picker
+              v-model="searchInfo.endTime"
+              type="datetime"
+              placeholder="请选择邮件创建结束时间"
+              style="width: 100%"
+              :disabled-date="
+                (time) =>
+                  searchInfo.startTime
+                    ? time.getTime() < searchInfo.startTime.getTime()
+                    : false
+              "
+            />
           </el-form-item>
           <el-form-item>
             <el-button type="primary" icon="search" @click="onSubmit">
@@ -15,16 +46,16 @@
         </el-form>
       </div>
       <div class="gva-table-box">
-        <div class="gva-btn-list">
+        <!-- <div class="gva-btn-list">
           <el-button type="primary" icon="plus" @click="openDialog">
             新增
           </el-button>
-        </div>
+        </div> -->
         <el-table :data="tableData" row-key="email_id" v-loading="loading">
           <el-table-column align="left" label="ID" min-width="80" prop="email_id" />
           <el-table-column
             align="left"
-            label="PlayerId"
+            label="PlayerID"
             min-width="120"
             prop="player_id"
           />

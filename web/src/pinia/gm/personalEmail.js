@@ -5,7 +5,7 @@ import {
   sendGMPersonalEmail,
 } from '@/api/gm_email'
 import { getGMResourceTypeList, getGMResourceList } from '@/api/gm_item'
-
+import { dateToTimestamp } from '@/utils/timestamp'
 
 export const useGMPersonalEmailStore = defineStore('gmPersonalEmail', () => {
   // 状态
@@ -16,9 +16,15 @@ export const useGMPersonalEmailStore = defineStore('gmPersonalEmail', () => {
   const page = ref(1)
   const pageSize = ref(10)
 
-  const searchInfo = ref({
-    player_id: '',
+  // 初始化搜索信息结构
+  const initSearchInfo = () => ({
+    playerId: null, // 玩家ID筛选
+    tplId: null, // 模板ID筛选
+    startTime: null, // 个人邮件创建开始时间
+    endTime: null, // 个人邮件创建结束时间
   })
+
+  const searchInfo = ref(initSearchInfo())
   
   const resourceTypes = ref([])  // 资源类型列表
   const resourceList = ref([])    // 资源列表（根据类型动态获取）
@@ -52,7 +58,10 @@ export const useGMPersonalEmailStore = defineStore('gmPersonalEmail', () => {
       const response = await getGMPersonalEmailList({
         page: page.value,
         pageSize: pageSize.value,
-        ...searchInfo.value,
+        playerId: searchInfo.value.playerId,
+        tplId: searchInfo.value.tplId ? parseInt(searchInfo.value.tplId) : null,
+        startTime: searchInfo.value.startTime ? dateToTimestamp(searchInfo.value.startTime) : null,
+        endTime: searchInfo.value.endTime ? dateToTimestamp(searchInfo.value.endTime) : null,
         ...params
       })
       
@@ -206,9 +215,7 @@ export const useGMPersonalEmailStore = defineStore('gmPersonalEmail', () => {
 
   // 重置搜索条件
   const resetSearchInfo = () => {
-    searchInfo.value = {
-      player_id: '',
-    }
+    searchInfo.value = initSearchInfo()
   }
 
   // 设置分页

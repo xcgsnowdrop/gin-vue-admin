@@ -40,11 +40,11 @@
         </el-form>
       </div>
       <div class="gva-table-box">
-        <div class="gva-btn-list">
+        <!-- <div class="gva-btn-list">
           <el-button type="primary" icon="plus" @click="openDialog">
             新增
           </el-button>
-        </div>
+        </div> -->
         <el-table :data="tableData" row-key="email_id" v-loading="loading">
           <el-table-column align="left" label="ID" min-width="80" prop="email_id" />
           <el-table-column
@@ -136,7 +136,7 @@
             min-width="150"
             prop="max_reg_time_formatted"
           />
-          <el-table-column
+          <!-- <el-table-column
             align="left"
             label="操作"
             fixed="right"
@@ -161,7 +161,7 @@
                 删除
               </el-button>
             </template>
-          </el-table-column>
+          </el-table-column> -->
         </el-table>
         <div class="gva-pagination">
           <el-pagination
