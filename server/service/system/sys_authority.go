@@ -232,10 +232,10 @@ func (authorityService *AuthorityService) GetAuthorityInfoList(authorityID uint)
 }
 
 //@author: [piexlmax](https://github.com/piexlmax)
-//@function: GetAuthorityInfoList
-//@description: 分页获取数据
-//@param: info request.PageInfo
-//@return: list interface{}, total int64, err error
+//@function: GetStructAuthorityList
+//@description: 获取指定角色的所有子孙角色ID，仅根角色包含自己
+//@param: authorityID uint
+//@return: list []uint, err error
 
 func (authorityService *AuthorityService) GetStructAuthorityList(authorityID uint) (list []uint, err error) {
 	var auth system.SysAuthority

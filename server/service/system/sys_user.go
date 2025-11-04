@@ -3,6 +3,7 @@ package system
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"gmserver/model/common"
@@ -194,16 +195,8 @@ func (userService *UserService) SetUserAuthorities(adminAuthorityID, id uint, au
 			}
 
 			// 检查目标用户当前的角色是否在操作者可管理的范围内（即是否是子角色）
-			canManageTargetUser := false
-			for _, manageableID := range manageableAuthIDs {
-				if manageableID == user.AuthorityId {
-					canManageTargetUser = true
-					break
-				}
-			}
-
-			// 如果目标用户的角色不在操作者可管理的范围内，说明目标用户的角色等级 >= 操作者角色等级
-			if !canManageTargetUser {
+			// 如果不在，说明目标用户的角色等级 >= 操作者角色等级，不允许修改
+			if !slices.Contains(manageableAuthIDs, user.AuthorityId) {
 				return errors.New("无权修改该用户的角色（目标用户角色等级高于或等于您的角色等级）")
 			}
 		}
