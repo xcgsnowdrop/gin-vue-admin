@@ -314,8 +314,7 @@ func (s *EmailAuditService) GetApplicationList(req gmReq.SearchEmailAuditRequest
 	}
 
 	// 检查是否是根角色, 根据用户角色，返回不同的数据
-	isRootAuthority := s.isRootAuthority(userAuthority.ParentId)
-	if !isRootAuthority {
+	if !s.isRootAuthority(userAuthority.ParentId) {
 
 		// 获取所有当前用户可以审核的用户ID列表（反向：哪些用户的申请可以被当前用户审核）
 		var allAuditableApplicantIds []uint
