@@ -177,16 +177,56 @@ func (userService *UserService) SetUserAuthorities(adminAuthorityID, id uint, au
 			global.GVA_LOG.Debug(TxErr.Error())
 			return errors.New("查询用户数据失败")
 		}
+
+		// 权限检查1: 检查目标用户当前的角色是否是操作者角色的子角色（或同级/父级则不允许修改）
+		// 只有目标用户的角色是操作者角色的子角色时，才允许修改
+		// 规则：不能修改角色等级比自己高的用户，不能修改角色等级和自己同级的用户，只能修改角色等级比自己低的用户
+		if user.AuthorityId != 0 {
+			// 如果目标用户的角色就是操作者的角色，不允许修改（同级）
+			if user.AuthorityId == adminAuthorityID {
+				return errors.New("无权修改该用户的角色（目标用户角色与您的角色相同）")
+			}
+
+			// 获取操作者可以管理的所有子角色列表（递归获取所有子角色）
+			manageableAuthIDs, err := AuthorityServiceApp.GetStructAuthorityList(adminAuthorityID)
+			if err != nil {
+				return errors.New("获取角色权限列表失败")
+			}
+
+			// 检查目标用户当前的角色是否在操作者可管理的范围内（即是否是子角色）
+			canManageTargetUser := false
+			for _, manageableID := range manageableAuthIDs {
+				if manageableID == user.AuthorityId {
+					canManageTargetUser = true
+					break
+				}
+			}
+
+			// 如果目标用户的角色不在操作者可管理的范围内，说明目标用户的角色等级 >= 操作者角色等级
+			if !canManageTargetUser {
+				return errors.New("无权修改该用户的角色（目标用户角色等级高于或等于您的角色等级）")
+			}
+		}
+
+		// 权限检查2: 检查要设置的新角色是否在操作者角色的管理范围内
+		if len(authorityIds) == 0 {
+			return errors.New("至少需要设置一个角色")
+		}
+
+		// 检查每个要设置的角色
+		for _, v := range authorityIds {
+			e := AuthorityServiceApp.CheckAuthorityIDAuth(adminAuthorityID, v)
+			if e != nil {
+				return e
+			}
+		}
+
 		TxErr = tx.Delete(&[]system.SysUserAuthority{}, "sys_user_id = ?", id).Error
 		if TxErr != nil {
 			return TxErr
 		}
 		var useAuthority []system.SysUserAuthority
 		for _, v := range authorityIds {
-			e := AuthorityServiceApp.CheckAuthorityIDAuth(adminAuthorityID, v)
-			if e != nil {
-				return e
-			}
 			useAuthority = append(useAuthority, system.SysUserAuthority{
 				SysUserId: id, SysAuthorityAuthorityId: v,
 			})
