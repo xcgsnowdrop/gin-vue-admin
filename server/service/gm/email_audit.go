@@ -7,6 +7,7 @@ import (
 	"gmserver/global"
 	"gmserver/model/gm"
 	gmReq "gmserver/model/gm/request"
+	gmResp "gmserver/model/gm/response"
 	"gmserver/model/system"
 
 	"go.uber.org/zap"
@@ -385,8 +386,8 @@ func (s *EmailAuditService) GetApplicationList(req gmReq.SearchEmailAuditRequest
 	}
 	offset := (page - 1) * pageSize
 
-	// 查询列表
-	if err := query.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&applications).Error; err != nil {
+	// 查询列表（预加载关联数据）
+	if err := query.Preload("Applicant").Preload("Auditor").Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&applications).Error; err != nil {
 		global.GVA_LOG.Error("获取申请列表失败", zap.Error(err))
 		return nil, 0, err
 	}
@@ -394,10 +395,19 @@ func (s *EmailAuditService) GetApplicationList(req gmReq.SearchEmailAuditRequest
 	return applications, total, nil
 }
 
+// GetApplicationListResponse 获取申请列表（返回响应 DTO）
+func (s *EmailAuditService) GetApplicationListResponse(req gmReq.SearchEmailAuditRequest, userId uint, userAuthorityId uint) ([]gmResp.EmailAuditApplicationResponse, int64, error) {
+	applications, total, err := s.GetApplicationList(req, userId, userAuthorityId)
+	if err != nil {
+		return nil, 0, err
+	}
+	return gmResp.ToEmailAuditApplicationResponseList(applications), total, nil
+}
+
 // GetApplication 获取申请详情
 func (s *EmailAuditService) GetApplication(id uint, userId uint, userAuthorityId uint) (*gm.EmailAuditApplication, error) {
 	var application gm.EmailAuditApplication
-	if err := global.GVA_DB.First(&application, id).Error; err != nil {
+	if err := global.GVA_DB.Preload("Applicant").Preload("Auditor").First(&application, id).Error; err != nil {
 		return nil, errors.New("申请不存在")
 	}
 
@@ -430,6 +440,15 @@ func (s *EmailAuditService) GetApplication(id uint, userId uint, userAuthorityId
 	}
 
 	return &application, nil
+}
+
+// GetApplicationResponse 获取申请详情（返回响应 DTO）
+func (s *EmailAuditService) GetApplicationResponse(id uint, userId uint, userAuthorityId uint) (*gmResp.EmailAuditApplicationResponse, error) {
+	application, err := s.GetApplication(id, userId, userAuthorityId)
+	if err != nil {
+		return nil, err
+	}
+	return gmResp.ToEmailAuditApplicationResponse(application), nil
 }
 
 // convertMapToJSONMap 转换 map[string]string 为 JSONMap

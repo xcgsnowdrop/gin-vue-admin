@@ -175,7 +175,7 @@ func (e *EmailAuditApi) GetApplicationList(c *gin.Context) {
 	}
 
 	emailAuditService := gm.EmailAuditService{}
-	list, total, err := emailAuditService.GetApplicationList(req, userId, userAuthorityId)
+	list, total, err := emailAuditService.GetApplicationListResponse(req, userId, userAuthorityId)
 	if err != nil {
 		global.GVA_LOG.Error("获取申请列表失败", zap.Error(err))
 		response.FailWithMessage(err.Error(), c)
@@ -216,7 +216,7 @@ func (e *EmailAuditApi) GetApplication(c *gin.Context) {
 	}
 
 	emailAuditService := gm.EmailAuditService{}
-	application, err := emailAuditService.GetApplication(uint(id), userId, userAuthorityId)
+	application, err := emailAuditService.GetApplicationResponse(uint(id), userId, userAuthorityId)
 	if err != nil {
 		global.GVA_LOG.Error("获取申请详情失败", zap.Error(err))
 		response.FailWithMessage(err.Error(), c)

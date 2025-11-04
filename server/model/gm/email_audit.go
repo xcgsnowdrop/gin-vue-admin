@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"gmserver/model/system"
+
 	"gorm.io/gorm"
 )
 
@@ -22,8 +24,10 @@ const (
 type EmailAuditApplication struct {
 	ID               uint             `json:"id" gorm:"primarykey"`                                                  // 主键ID
 	ApplicantId      uint             `json:"applicantId" gorm:"not null;index;comment:申请人ID"`                       // 申请人ID（关联sys_users.id）
+	Applicant        system.SysUser   `json:"-" gorm:"foreignKey:ApplicantId;references:ID;comment:申请人"`             // 申请人（关联SysUser，不直接暴露给前端）
 	ApplicantTime    time.Time        `json:"applicantTime" gorm:"not null;comment:申请时间"`                            // 申请时间
 	AuditorId        *uint            `json:"auditorId" gorm:"index;comment:审核人ID"`                                  // 审核人ID（可为空，审核时填入）
+	Auditor          *system.SysUser  `json:"-" gorm:"foreignKey:AuditorId;references:ID;comment:审核人"`               // 审核人（关联SysUser，可为空，不直接暴露给前端）
 	AuditTime        *time.Time       `json:"auditTime" gorm:"comment:审核时间"`                                         // 审核时间（可为空）
 	AuditComment     string           `json:"auditComment" gorm:"type:text;comment:审核说明"`                            // 审核说明
 	Status           EmailAuditStatus `json:"status" gorm:"type:tinyint;default:1;comment:状态：1-待审核，2-通过，3-拒绝，4-待修改"` // 状态

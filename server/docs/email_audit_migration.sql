@@ -25,6 +25,16 @@ CREATE TABLE IF NOT EXISTS `email_audit_applications` (
   KEY `idx_auditor_id` (`auditor_id`),
   KEY `idx_status` (`status`),
   KEY `idx_applicant_time` (`applicant_time`),
-  KEY `idx_deleted_at` (`deleted_at`)
+  KEY `idx_deleted_at` (`deleted_at`),
+  -- 外键约束：applicant_id 引用 sys_users.id
+  CONSTRAINT `fk_email_audit_applicant` FOREIGN KEY (`applicant_id`) 
+    REFERENCES `sys_users` (`id`) 
+    ON DELETE RESTRICT 
+    ON UPDATE CASCADE,
+  -- 外键约束：auditor_id 引用 sys_users.id
+  CONSTRAINT `fk_email_audit_auditor` FOREIGN KEY (`auditor_id`) 
+    REFERENCES `sys_users` (`id`) 
+    ON DELETE SET NULL 
+    ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='邮件审核申请表';
 
