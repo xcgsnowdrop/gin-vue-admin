@@ -419,7 +419,7 @@ func (s *EmailAuditService) GetApplication(id uint, userId uint, userAuthorityId
 		if err := global.GVA_DB.First(&user, userId).Error; err == nil {
 			var authority system.SysAuthority
 			if err := global.GVA_DB.First(&authority, user.AuthorityId).Error; err == nil {
-				if s.isRootAuthority(authority.ParentId) || authority.AuthorityId == 1 {
+				if s.isRootAuthority(authority.ParentId) {
 					canView = true
 				}
 			}
