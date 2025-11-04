@@ -21,7 +21,11 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
   const pageSize = ref(10)
 
   const searchInfo = ref({
-    player_id: '',
+    applicantId: '', // 申请人ID
+    auditorId: '', // 审核人ID
+    startTime: '', // 申请开始时间
+    endTime: '', // 申请结束时间
+    status: '', // 状态筛选
   })
   
   const resourceTypes = ref([])  // 资源类型列表
@@ -54,7 +58,11 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
       const response = await getGMSystemEmailAuditList({
         page: page.value,
         pageSize: pageSize.value,
-        ...searchInfo.value,
+        applicantId: searchInfo.value.applicantId ? parseInt(searchInfo.value.applicantId) : null,
+        auditorId: searchInfo.value.auditorId ? parseInt(searchInfo.value.auditorId) : null,
+        startTime: searchInfo.value.startTime ? dateToTimestamp(searchInfo.value.startTime) : null,
+        endTime: searchInfo.value.endTime ? dateToTimestamp(searchInfo.value.endTime) : null,
+        status: searchInfo.value.status ? parseInt(searchInfo.value.status) : null,
         ...params
       })
       
@@ -259,7 +267,11 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
   // 重置搜索条件
   const resetSearchInfo = () => {
     searchInfo.value = {
-      player_id: '',
+      applicantId: '',
+      auditorId: '',
+      startTime: '',
+      endTime: '',
+      status: '',
     }
   }
 

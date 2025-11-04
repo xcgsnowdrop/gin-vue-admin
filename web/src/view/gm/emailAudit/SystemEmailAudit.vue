@@ -3,8 +3,47 @@
       <warning-bar title="注：GM管理 - 系统邮件列表" />
       <div class="gva-search-box">
         <el-form ref="searchForm" :inline="true" :model="searchInfo">
-          <el-form-item label="PlayerId">
-            <el-input v-model="searchInfo.player_id" placeholder="PlayerId" />
+          <el-form-item label="申请人ID">
+            <el-input v-model="searchInfo.applicantId" placeholder="申请人ID" />
+          </el-form-item>
+          <el-form-item label="审核人ID">
+            <el-input v-model="searchInfo.auditorId" placeholder="审核人ID" />
+          </el-form-item>
+          <el-form-item label="状态">
+            <el-select v-model="searchInfo.status" placeholder="请选择状态">
+              <el-option label="待审核" value="1" />
+              <el-option label="通过" value="2" />
+              <el-option label="拒绝" value="3" />
+              <el-option label="待修改" value="4" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="申请开始时间">
+            <el-date-picker
+              v-model="searchInfo.startTime"
+              type="datetime"
+              placeholder="请选择申请开始时间"
+              style="width: 100%"
+              :disabled-date="
+                (time) =>
+                  searchInfo.endTime
+                    ? time.getTime() > searchInfo.endTime.getTime()
+                    : false
+              "
+            />
+          </el-form-item>
+          <el-form-item label="申请结束时间">
+            <el-date-picker
+              v-model="searchInfo.endTime"
+              type="datetime"
+              placeholder="请选择申请结束时间"
+              style="width: 100%"
+              :disabled-date="
+                (time) =>
+                  searchInfo.startTime
+                    ? time.getTime() < searchInfo.startTime.getTime()
+                    : false
+              "
+            />
           </el-form-item>
           <el-form-item>
             <el-button type="primary" icon="search" @click="onSubmit">
