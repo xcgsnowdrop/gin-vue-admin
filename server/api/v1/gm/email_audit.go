@@ -141,13 +141,20 @@ func (e *EmailAuditApi) ReviewApplication(c *gin.Context) {
 	}
 
 	emailAuditService := gm.EmailAuditService{}
-	if err := emailAuditService.ReviewApplication(req, auditorId, auditorAuthorityId); err != nil {
+	result, err := emailAuditService.ReviewApplication(req, auditorId, auditorAuthorityId)
+	if err != nil {
 		global.GVA_LOG.Error("审核邮件申请失败", zap.Error(err))
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
-	response.OkWithMessage("审核成功", c)
+	// 构建返回消息
+	msg := result.ReviewMessage
+	if result.EmailSentMsg != "" {
+		msg += "，" + result.EmailSentMsg
+	}
+
+	response.OkWithDetailed(result, msg, c)
 }
 
 // GetApplicationList 获取申请列表

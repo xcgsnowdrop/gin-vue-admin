@@ -2,6 +2,9 @@ package gm
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"gmserver/global"
@@ -9,6 +12,7 @@ import (
 	gmReq "gmserver/model/gm/request"
 	gmResp "gmserver/model/gm/response"
 	"gmserver/model/system"
+	"gmserver/utils"
 
 	"go.uber.org/zap"
 )
@@ -259,31 +263,42 @@ func (s *EmailAuditService) WithdrawApplication(applicationId uint, applicantId 
 	return nil
 }
 
+// ReviewApplicationResult 审核结果
+type ReviewApplicationResult struct {
+	Success       bool   `json:"success"`       // 审核是否成功
+	EmailSent     bool   `json:"emailSent"`     // 邮件是否发送成功（仅当审核通过时有效）
+	EmailSentMsg  string `json:"emailSentMsg"`  // 邮件发送结果消息（仅当审核通过时有效）
+	ReviewMessage string `json:"reviewMessage"` // 审核结果消息
+}
+
 // ReviewApplication 审核邮件申请
-func (s *EmailAuditService) ReviewApplication(req gmReq.ReviewEmailAuditRequest, auditorId uint, auditorAuthorityId uint) error {
+func (s *EmailAuditService) ReviewApplication(req gmReq.ReviewEmailAuditRequest, auditorId uint, auditorAuthorityId uint) (*ReviewApplicationResult, error) {
+	result := &ReviewApplicationResult{
+		Success: true,
+	}
 	var application gm.EmailAuditApplication
 	if err := global.GVA_DB.First(&application, req.ID).Error; err != nil {
-		return errors.New("申请不存在")
+		return nil, errors.New("申请不存在")
 	}
 
 	// 检查权限
 	canAudit, err := s.CanUserAudit(auditorAuthorityId, req.ID)
 	if err != nil {
-		return err
+		return nil, errors.New("无权审核此申请")
 	}
 	if !canAudit {
-		return errors.New("无权审核此申请")
+		return nil, errors.New("无权审核此申请")
 	}
 
 	// 只能审核待审核状态的申请
 	if application.Status != gm.EmailAuditStatusPending {
-		return errors.New("只能审核待审核状态的申请")
+		return nil, errors.New("只能审核待审核状态的申请")
 	}
 
 	// 验证状态值
 	status := gm.EmailAuditStatus(req.Status)
 	if status != gm.EmailAuditStatusApproved && status != gm.EmailAuditStatusRejected && status != gm.EmailAuditStatusRevision {
-		return errors.New("无效的审核状态")
+		return nil, errors.New("无效的审核状态")
 	}
 
 	// 更新审核信息
@@ -295,10 +310,129 @@ func (s *EmailAuditService) ReviewApplication(req gmReq.ReviewEmailAuditRequest,
 
 	if err := global.GVA_DB.Save(&application).Error; err != nil {
 		global.GVA_LOG.Error("审核邮件申请失败", zap.Error(err))
-		return err
+		return nil, err
 	}
 
+	// 设置审核结果消息
+	switch status {
+	case gm.EmailAuditStatusApproved:
+		result.ReviewMessage = "审核通过"
+	case gm.EmailAuditStatusRejected:
+		result.ReviewMessage = "审核拒绝"
+	case gm.EmailAuditStatusRevision:
+		result.ReviewMessage = "需要修改"
+	}
+
+	// 如果审核通过，调用游戏API发送邮件
+	if status == gm.EmailAuditStatusApproved {
+		if err := s.sendEmailToGame(application); err != nil {
+			result.EmailSent = false
+			result.EmailSentMsg = fmt.Sprintf("邮件发送失败: %v", err)
+			global.GVA_LOG.Error("发送邮件到游戏服务器失败", zap.Error(err))
+		} else {
+			result.EmailSent = true
+			result.EmailSentMsg = "邮件发送成功"
+		}
+	}
+
+	return result, nil
+}
+
+// sendEmailToGame 发送邮件到游戏服务器
+func (s *EmailAuditService) sendEmailToGame(application gm.EmailAuditApplication) error {
+	// 构建游戏API请求数据
+	gameEmailReq := s.buildGameEmailRequest(application)
+
+	// 调用游戏API
+	apiResp, err := utils.CallGameAPIPOST("/email/system/send", gameEmailReq)
+	if err != nil {
+		return fmt.Errorf("调用游戏API失败: %v", err)
+	}
+
+	// 检查返回的code是否为0
+	if apiResp.Code != 0 {
+		return fmt.Errorf("游戏API返回错误: code=%d, msg=%s", apiResp.Code, apiResp.Msg)
+	}
+
+	global.GVA_LOG.Info("邮件发送到游戏服务器成功",
+		zap.Uint("application_id", application.ID),
+		zap.Int("game_api_code", apiResp.Code))
+
 	return nil
+}
+
+// buildGameEmailRequest 构建游戏API请求数据
+func (s *EmailAuditService) buildGameEmailRequest(application gm.EmailAuditApplication) map[string]interface{} {
+	// 转换附件格式
+	var attachments []map[string]interface{}
+	if application.EmailAttachments != nil {
+		for _, att := range application.EmailAttachments {
+			if attMap, ok := att.(map[string]interface{}); ok {
+				// 确保类型正确（JSON解析时数字可能是float64）
+				attachment := make(map[string]interface{})
+				if id, ok := attMap["id"].(float64); ok {
+					attachment["id"] = int(id)
+				} else if id, ok := attMap["id"].(int); ok {
+					attachment["id"] = id
+				}
+				if typ, ok := attMap["type"].(float64); ok {
+					attachment["type"] = int(typ)
+				} else if typ, ok := attMap["type"].(int); ok {
+					attachment["type"] = typ
+				}
+				if num, ok := attMap["num"].(float64); ok {
+					attachment["num"] = int(num)
+				} else if num, ok := attMap["num"].(int); ok {
+					attachment["num"] = num
+				}
+				attachments = append(attachments, attachment)
+			}
+		}
+	}
+
+	// 转换区服ID列表（从逗号分隔的字符串转为数组）
+	var areaIds []int
+	if application.AreaIds != "" {
+		areaIdsStr := strings.Split(application.AreaIds, ",")
+		for _, idStr := range areaIdsStr {
+			idStr = strings.TrimSpace(idStr)
+			if idStr != "" {
+				if id, err := strconv.Atoi(idStr); err == nil {
+					areaIds = append(areaIds, id)
+				}
+			}
+		}
+	}
+
+	// 构建请求数据
+	req := map[string]interface{}{
+		"type": application.EmailType,
+		"senderI18n": map[string]string{
+			"en":    "GM System Administrator",
+			"zh-TW": "GM系統管理員",
+			"ja":    "GMシステム管理者",
+			"ko":    "GM 시스템 관리자",
+		},
+		"titleI18n":   application.EmailTitle,
+		"contentI18n": application.EmailContent,
+		"attachments": attachments,
+		"remark":      application.EmailRemark,
+		"startTime":   nil,
+		"areaIds":     areaIds,
+		"maxRegTime":  nil,
+	}
+
+	// 设置开始时间
+	if application.StartTime != nil {
+		req["startTime"] = *application.StartTime
+	}
+
+	// 设置最大注册时间
+	if application.MaxRegTime != nil {
+		req["maxRegTime"] = *application.MaxRegTime
+	}
+
+	return req
 }
 
 // GetApplicationList 获取申请列表（根据用户角色返回不同数据）
