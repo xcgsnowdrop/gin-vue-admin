@@ -1,6 +1,8 @@
 package gm
 
 import (
+	"strconv"
+
 	"gmserver/global"
 	"gmserver/model/common/response"
 	gmReq "gmserver/model/gm/request"
@@ -90,8 +92,9 @@ func (e *EmailAuditApi) UpdateApplication(c *gin.Context) {
 // @Success 200 {object} response.Response{msg=string} "撤回成功"
 // @Router /gm/email/audit/:id [delete]
 func (e *EmailAuditApi) WithdrawApplication(c *gin.Context) {
-	var id uint
-	if err := c.ShouldBindUri(&id); err != nil {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
 		response.FailWithMessage("无效的申请ID", c)
 		return
 	}
@@ -104,7 +107,7 @@ func (e *EmailAuditApi) WithdrawApplication(c *gin.Context) {
 	}
 
 	emailAuditService := gm.EmailAuditService{}
-	if err := emailAuditService.WithdrawApplication(id, applicantId); err != nil {
+	if err := emailAuditService.WithdrawApplication(uint(id), applicantId); err != nil {
 		global.GVA_LOG.Error("撤回邮件审核申请失败", zap.Error(err))
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -197,8 +200,9 @@ func (e *EmailAuditApi) GetApplicationList(c *gin.Context) {
 // @Success 200 {object} response.Response{data=gm.EmailAuditApplication,msg=string} "获取成功"
 // @Router /gm/email/audit/:id [get]
 func (e *EmailAuditApi) GetApplication(c *gin.Context) {
-	var id uint
-	if err := c.ShouldBindUri(&id); err != nil {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
 		response.FailWithMessage("无效的申请ID", c)
 		return
 	}
@@ -212,7 +216,7 @@ func (e *EmailAuditApi) GetApplication(c *gin.Context) {
 	}
 
 	emailAuditService := gm.EmailAuditService{}
-	application, err := emailAuditService.GetApplication(id, userId, userAuthorityId)
+	application, err := emailAuditService.GetApplication(uint(id), userId, userAuthorityId)
 	if err != nil {
 		global.GVA_LOG.Error("获取申请详情失败", zap.Error(err))
 		response.FailWithMessage(err.Error(), c)
