@@ -39,14 +39,7 @@ export const useGMPersonalEmailStore = defineStore('gmPersonalEmail', () => {
     const submitData = { ...data }
     
     // 转换时间戳：将 Date 对象转换为时间戳（秒）
-    if (submitData.startTime instanceof Date) {
-      submitData.startTime = Math.floor(submitData.startTime.getTime() / 1000)
-    } else if (submitData.startTime) {
-      const date = new Date(submitData.startTime)
-      if (!isNaN(date.getTime())) {
-        submitData.startTime = Math.floor(date.getTime() / 1000)
-      }
-    }
+    submitData.startTime = dateToTimestamp(submitData.startTime)
     
     return submitData
   }
@@ -80,13 +73,6 @@ export const useGMPersonalEmailStore = defineStore('gmPersonalEmail', () => {
         if (allAttachments.length > 0) {
           await loadResourcesForAttachments(allAttachments)
         }
-
-        // 预处理数据，转换时间戳为日期时间对象
-        list.forEach(item => {
-          item.create_time_formatted = item.create_time ? new Date(item.create_time * 1000).toLocaleString() : '-'
-          item.start_time_formatted = item.start_time ? new Date(item.start_time * 1000).toLocaleString() : '-'
-          item.end_time_formatted = item.end_time ? new Date(item.end_time * 1000).toLocaleString() : '-'
-        })
 
         personalEmailList.value = list
         total.value = response.data.total || 0

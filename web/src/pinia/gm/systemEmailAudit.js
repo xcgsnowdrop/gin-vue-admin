@@ -44,10 +44,6 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
     submitData.startTime = dateToTimestamp(submitData.startTime)
     submitData.maxRegTime = dateToTimestamp(submitData.maxRegTime)
 
-    // if (submitData.areaIds) {
-    //   submitData.areaIds = submitData.areaIds.split(',').map(id => parseInt(id))
-    // }
-
     return submitData
   }
 

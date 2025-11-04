@@ -91,24 +91,21 @@
               <span v-else>-</span>
             </template>
           </el-table-column>
-          <el-table-column
-            align="left"
-            label="创建时间"
-            min-width="180"
-            prop="create_time_formatted"
-          />
-          <el-table-column
-            align="left"
-            label="开始生效时间"
-            min-width="180"
-            prop="start_time_formatted"
-          />
-          <el-table-column
-            align="left"
-            label="结束生效时间"
-            min-width="180"
-            prop="end_time_formatted"
-          />
+          <el-table-column align="left" label="创建时间" min-width="180">
+            <template #default="scope">
+              {{ formatTimestamp(scope.row.create_time) }}
+            </template>
+          </el-table-column>
+          <el-table-column align="left" label="开始生效时间" min-width="180">
+            <template #default="scope">
+              {{ formatTimestamp(scope.row.start_time) }}
+            </template>
+          </el-table-column>
+          <el-table-column align="left" label="结束生效时间" min-width="180">
+            <template #default="scope">
+              {{ formatTimestamp(scope.row.end_time) }}
+            </template>
+          </el-table-column>
           <el-table-column
             align="left"
             label="附件"
@@ -323,7 +320,8 @@
   import { storeToRefs } from 'pinia'
   import { ElMessage } from 'element-plus'
   import { initMultilingualData, initSenderI18nDefault, useMultilingual } from '@/composables/useMultilingual'
-  
+  import { formatTimestamp } from '@/utils/timestamp'
+
   defineOptions({
     name: 'GmPersonalEmail'
   })

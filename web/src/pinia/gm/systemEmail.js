@@ -40,24 +40,8 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
     const submitData = { ...data }
     
     // 转换时间戳：将 Date 对象转换为时间戳（秒）
-    if (submitData.startTime instanceof Date) {
-      submitData.startTime = Math.floor(submitData.startTime.getTime() / 1000)
-    } else if (submitData.startTime) {
-      const date = new Date(submitData.startTime)
-      if (!isNaN(date.getTime())) {
-        submitData.startTime = Math.floor(date.getTime() / 1000)
-      }
-    }
-
-    if (submitData.maxRegTime instanceof Date) {
-      submitData.maxRegTime = Math.floor(submitData.maxRegTime.getTime() / 1000)
-    } else if (submitData.maxRegTime) {
-      const date = new Date(submitData.maxRegTime)
-      if (!isNaN(date.getTime())) {
-        submitData.maxRegTime = Math.floor(date.getTime() / 1000)
-      }
-    }
-
+    submitData.startTime = dateToTimestamp(submitData.startTime)
+    submitData.maxRegTime = dateToTimestamp(submitData.maxRegTime)
     if (submitData.areaIds) {
       submitData.areaIds = submitData.areaIds.split(',').map(id => parseInt(id))
     }
