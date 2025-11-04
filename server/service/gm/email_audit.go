@@ -15,12 +15,12 @@ import (
 type EmailAuditService struct{}
 
 // isRootAuthority 判断是否是根角色（没有父角色）
-// parentId 为 nil 或指向 0 时，表示根角色
-func (s *EmailAuditService) isRootAuthority(parentId *uint) bool {
-	if parentId == nil {
+// authority.ParentId 为 nil 或指向 0 时，表示根角色
+func (s *EmailAuditService) isRootAuthority(authority system.SysAuthority) bool {
+	if authority.ParentId == nil {
 		return true
 	}
-	return *parentId == 0
+	return *authority.ParentId == 0
 }
 
 // GetAllParentAuthorities 递归获取所有父级角色ID
@@ -38,7 +38,7 @@ func (s *EmailAuditService) getAllParentAuthorities(authorityId uint) []uint {
 		authorityIds = append(authorityIds, authority.AuthorityId)
 
 		// 如果是根角色（没有父角色或父角色ID为0），结束递归
-		if s.isRootAuthority(authority.ParentId) {
+		if s.isRootAuthority(authority) {
 			break
 		}
 
@@ -61,7 +61,7 @@ func (s *EmailAuditService) getSameLevelAuthorities(authorityId uint) []uint {
 	query := global.GVA_DB.Where("authority_id != ?", authorityId)
 
 	// 如果是根角色，查询所有顶级角色（parent_id IS NULL 或 parent_id = 0）
-	if s.isRootAuthority(currentAuthority.ParentId) {
+	if s.isRootAuthority(currentAuthority) {
 		query = query.Where("(parent_id IS NULL OR parent_id = 0)")
 	} else {
 		// 有父角色，查询相同父角色的同级角色
@@ -90,7 +90,7 @@ func (s *EmailAuditService) GetAuditableAuthorities(applicantAuthorityId uint) [
 	}
 
 	// 2. 如果有父角色（且父角色ID不为0），父角色及其所有上级可以审核
-	if !s.isRootAuthority(applicantAuthority.ParentId) {
+	if !s.isRootAuthority(applicantAuthority) {
 		auditableAuthorities = s.getAllParentAuthorities(*applicantAuthority.ParentId)
 	} else {
 		// 3. 如果是根角色（没有父角色或父角色ID为0），同级角色可以审核
@@ -314,7 +314,7 @@ func (s *EmailAuditService) GetApplicationList(req gmReq.SearchEmailAuditRequest
 	}
 
 	// 检查是否是根角色, 根据用户角色，返回不同的数据
-	if !s.isRootAuthority(userAuthority.ParentId) {
+	if !s.isRootAuthority(userAuthority) {
 
 		// 获取所有当前用户可以审核的用户ID列表（反向：哪些用户的申请可以被当前用户审核）
 		var allAuditableApplicantIds []uint
@@ -418,7 +418,7 @@ func (s *EmailAuditService) GetApplication(id uint, userId uint, userAuthorityId
 		if err := global.GVA_DB.First(&user, userId).Error; err == nil {
 			var authority system.SysAuthority
 			if err := global.GVA_DB.First(&authority, user.AuthorityId).Error; err == nil {
-				if s.isRootAuthority(authority.ParentId) {
+				if s.isRootAuthority(authority) {
 					canView = true
 				}
 			}
