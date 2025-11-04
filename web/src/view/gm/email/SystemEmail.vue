@@ -53,24 +53,22 @@
             min-width="100"
             prop="type"
           />
-          <el-table-column
-            align="left"
-            label="创建时间"
-            min-width="180"
-            prop="create_time_formatted"
-          />
-          <el-table-column
-            align="left"
-            label="开始生效时间"
-            min-width="180"
-            prop="start_time_formatted"
-          />
-          <el-table-column
-            align="left"
-            label="结束生效时间"
-            min-width="180"
-            prop="end_time_formatted"
-          />
+          <el-table-column 
+            align="left" label="创建时间" min-width="180">
+            <template #default="scope">
+              {{ formatTimestamp(scope.row.create_time) }}
+            </template>
+          </el-table-column>
+          <el-table-column align="left" label="开始生效时间" min-width="180">
+            <template #default="scope">
+              {{ formatTimestamp(scope.row.start_time) }}
+            </template>
+          </el-table-column>
+          <el-table-column align="left" label="结束生效时间" min-width="180">
+            <template #default="scope">
+              {{ formatTimestamp(scope.row.end_time) }}
+            </template>
+          </el-table-column>
           <el-table-column
             align="left"
             label="附件"
@@ -130,12 +128,12 @@
             min-width="150"
             prop="area_ids"
           />
-          <el-table-column
-            align="left"
-            label="最大注册时间"
-            min-width="150"
-            prop="max_reg_time_formatted"
-          />
+          <el-table-column 
+            align="left" label="最大注册时间" min-width="180">
+            <template #default="scope">
+              {{ formatTimestamp(scope.row.max_reg_time) }}
+            </template>
+          </el-table-column>
           <!-- <el-table-column
             align="left"
             label="操作"
@@ -331,7 +329,8 @@
   import { storeToRefs } from 'pinia'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import { languageOptions, initMultilingualData, initSenderI18nDefault, useMultilingual } from '@/composables/useMultilingual'
-  
+  import { formatTimestamp } from '@/utils/timestamp'
+
   defineOptions({
     name: 'GmSystemEmail'
   })

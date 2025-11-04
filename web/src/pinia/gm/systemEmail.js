@@ -87,21 +87,10 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
           await loadResourcesForAttachments(allAttachments)
         }
 
-        // 预处理数据，转换时间戳为日期时间对象
-        list.forEach(item => {
-          item.create_time_formatted = item.create_time ? new Date(item.create_time * 1000).toLocaleString() : '-'
-          item.start_time_formatted = item.start_time ? new Date(item.start_time * 1000).toLocaleString() : '-'
-          item.end_time_formatted = item.end_time ? new Date(item.end_time * 1000).toLocaleString() : '-'
-          item.max_reg_time_formatted = item.max_reg_time ? new Date(item.max_reg_time * 1000).toLocaleString() : '-'
-        })
-
         systemEmailList.value = list
         total.value = response.data.total || 0
         page.value = response.data.page || 1
         pageSize.value = response.data.pageSize || 10
-        
-        // console.log('Pinia store - itemList.value 已更新:', itemList.value)
-        // console.log('Pinia store - 数据长度:', itemList.value.length)
       } else {
         throw new Error(response.msg || '获取道具流水列表失败')
       }
