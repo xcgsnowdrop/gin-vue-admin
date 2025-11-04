@@ -3,8 +3,33 @@
       <warning-bar title="注：GM管理 - 系统邮件列表" />
       <div class="gva-search-box">
         <el-form ref="searchForm" :inline="true" :model="searchInfo">
-          <el-form-item label="PlayerId">
-            <el-input v-model="searchInfo.player_id" placeholder="PlayerId" />
+          <el-form-item label="邮件创建开始时间">
+            <el-date-picker
+              v-model="searchInfo.startTime"
+              type="datetime"
+              placeholder="请选择邮件创建开始时间"
+              style="width: 100%"
+              :disabled-date="
+                (time) =>
+                  searchInfo.endTime
+                    ? time.getTime() > searchInfo.endTime.getTime()
+                    : false
+              "
+            />
+          </el-form-item>
+          <el-form-item label="邮件创建结束时间">
+            <el-date-picker
+              v-model="searchInfo.endTime"
+              type="datetime"
+              placeholder="请选择邮件创建结束时间"
+              style="width: 100%"
+              :disabled-date="
+                (time) =>
+                  searchInfo.startTime
+                    ? time.getTime() < searchInfo.startTime.getTime()
+                    : false
+              "
+            />
           </el-form-item>
           <el-form-item>
             <el-button type="primary" icon="search" @click="onSubmit">

@@ -7,6 +7,7 @@ import {
   updateGMSystemEmail,
 } from '@/api/gm_email'
 import { getGMResourceTypeList, getGMResourceList } from '@/api/gm_item'
+import { dateToTimestamp } from '@/utils/timestamp'
 
 
 export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
@@ -18,9 +19,13 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
   const page = ref(1)
   const pageSize = ref(10)
 
-  const searchInfo = ref({
-    player_id: '',
+  // 初始化搜索信息结构
+  const initSearchInfo = () => ({
+    startTime: null, // 邮件创建开始时间
+    endTime: null, // 邮件创建结束时间
   })
+
+  const searchInfo = ref(initSearchInfo())
   
   const resourceTypes = ref([])  // 资源类型列表
   const resourceList = ref([])    // 资源列表（根据类型动态获取）
@@ -64,12 +69,23 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
   const fetchSystemEmailList = async (params = {}) => {
     loading.value = true
     try {
-      const response = await getGMSystemEmailList({
+      // 构建查询参数，处理时间字段
+      const queryParams = {
         page: page.value,
         pageSize: pageSize.value,
-        ...searchInfo.value,
         ...params
-      })
+      }
+      
+      // 处理时间字段（转换为时间戳）
+      if (searchInfo.value.startTime) {
+        queryParams.startTime = dateToTimestamp(searchInfo.value.startTime)
+      }
+      
+      if (searchInfo.value.endTime) {
+        queryParams.endTime = dateToTimestamp(searchInfo.value.endTime)
+      }
+
+      const response = await getGMSystemEmailList(queryParams)
       
       if (response.code === 0) {
         const list = response.data.list || []
@@ -253,9 +269,7 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
 
   // 重置搜索条件
   const resetSearchInfo = () => {
-    searchInfo.value = {
-      player_id: '',
-    }
+    searchInfo.value = initSearchInfo()
   }
 
   // 设置分页

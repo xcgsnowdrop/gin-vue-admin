@@ -21,11 +21,11 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
   const pageSize = ref(10)
 
   const searchInfo = ref({
-    applicantId: '', // 申请人ID
-    auditorId: '', // 审核人ID
-    startTime: '', // 申请开始时间
-    endTime: '', // 申请结束时间
-    status: '', // 状态筛选
+    applicantId: null, // 申请人ID
+    auditorId: null, // 审核人ID
+    startTime: null, // 申请开始时间
+    endTime: null, // 申请结束时间
+    status: null, // 状态筛选
   })
   
   const resourceTypes = ref([])  // 资源类型列表
