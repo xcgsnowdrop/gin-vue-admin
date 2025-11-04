@@ -61,9 +61,12 @@
         </div>
         <el-table :data="tableData" row-key="id" v-loading="loading">
           <el-table-column align="left" label="ID" min-width="80" prop="id" />
-          <el-table-column align="left" label="申请人" min-width="80">
+          <el-table-column align="left" label="申请人" min-width="120">
             <template #default="scope">
-              {{ scope.row.applicant?.nickName || scope.row.applicantId || '-' }}
+              <span v-if="scope.row.applicantId">
+                {{ (scope.row.applicant?.nickName || '未知') + ' [' + scope.row.applicantId + ']' }}
+              </span>
+              <span v-else>-</span>
             </template>
           </el-table-column>
           <el-table-column align="left" label="申请时间" min-width="180" prop="applicantTime">
@@ -71,9 +74,12 @@
               {{ scope.row.applicantTime ? formatTimestamp(new Date(scope.row.applicantTime)) : '-' }}
             </template>
           </el-table-column>
-          <el-table-column align="left" label="审核人" min-width="80">
+          <el-table-column align="left" label="审核人" min-width="120">
             <template #default="scope">
-              {{ scope.row.auditor?.nickName || scope.row.auditorId || '-' }}
+              <span v-if="scope.row.auditorId">
+                {{ (scope.row.auditor?.nickName || '未知') + ' [' + scope.row.auditorId + ']' }}
+              </span>
+              <span v-else>-</span>
             </template>
           </el-table-column>
           <el-table-column align="left" label="审核说明" min-width="180" prop="auditComment">
