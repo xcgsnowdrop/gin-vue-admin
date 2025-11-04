@@ -63,12 +63,11 @@
         <el-table-column align="left" label="用户角色" min-width="200">
           <template #default="scope">
             <el-cascader
-              v-model="scope.row.authorityIds"
+              v-model="scope.row.authorityId"
               :options="authOptions"
               :show-all-levels="false"
-              collapse-tags
               :props="{
-                multiple: true,
+                multiple: false,
                 checkStrictly: true,
                 label: 'authorityName',
                 value: 'authorityId',
@@ -76,14 +75,9 @@
                 emitPath: false
               }"
               :clearable="false"
-              @visible-change="
-                (flag) => {
-                  changeAuthority(scope.row, flag, 0)
-                }
-              "
-              @remove-tag="
-                (removeAuth) => {
-                  changeAuthority(scope.row, false, removeAuth)
+              @change="
+                (val) => {
+                  changeAuthority(scope.row, val)
                 }
               "
             />
@@ -221,12 +215,12 @@
         </el-form-item>
         <el-form-item label="用户角色" prop="authorityId">
           <el-cascader
-            v-model="userInfo.authorityIds"
+            v-model="userInfo.authorityId"
             style="width: 100%"
             :options="authOptions"
             :show-all-levels="false"
             :props="{
-              multiple: true,
+              multiple: false,
               checkStrictly: true,
               label: 'authorityName',
               value: 'authorityId',
@@ -442,11 +436,14 @@
   const setAuthorityIds = () => {
     tableData.value &&
       tableData.value.forEach((user) => {
-        user.authorityIds =
-          user.authorities &&
-          user.authorities.map((i) => {
-            return i.authorityId
-          })
+        // 单角色：优先从 authorities 数组取第一个角色ID，如果没有则使用已有的 authorityId
+        if (user.authorities && user.authorities.length > 0) {
+          user.authorityId = user.authorities[0].authorityId
+        } else if (user.authorityId === undefined || user.authorityId === null) {
+          // 如果没有 authorities 数组且 authorityId 也未设置，保持为 null
+          user.authorityId = null
+        }
+        // 如果已有 authorityId，保持不变
       })
   }
 
@@ -476,8 +473,7 @@
     password: '',
     nickName: '',
     headerImg: '',
-    authorityId: '',
-    authorityIds: [],
+    authorityId: null,
     enable: 1
   })
 
@@ -511,7 +507,6 @@
   })
   const userForm = ref(null)
   const enterAddUserDialog = async () => {
-    userInfo.value.authorityId = userInfo.value.authorityIds[0]
     userForm.value.validate(async (valid) => {
       if (valid) {
         const req = {
@@ -541,7 +536,7 @@
   const closeAddUserDialog = () => {
     userForm.value.resetFields()
     userInfo.value.headerImg = ''
-    userInfo.value.authorityIds = []
+    userInfo.value.authorityId = null
     addUserDialog.value = false
   }
 
@@ -552,28 +547,22 @@
     addUserDialog.value = true
   }
 
-  const tempAuth = {}
-  const changeAuthority = async (row, flag, removeAuth) => {
-    if (flag) {
-      if (!removeAuth) {
-        tempAuth[row.ID] = [...row.authorityIds]
-      }
-      return
-    }
+  const changeAuthority = async (row, newAuthorityId) => {
+    // 保存旧值，用于失败时回滚
+    const oldAuthorityId = row.authorityId
+    row.authorityId = newAuthorityId
+    
     await nextTick()
     const res = await setUserAuthorities({
       ID: row.ID,
-      authorityIds: row.authorityIds
+      authorityIds: newAuthorityId ? [newAuthorityId] : []
     })
     if (res.code === 0) {
       ElMessage({ type: 'success', message: '角色设置成功' })
     } else {
-      if (!removeAuth) {
-        row.authorityIds = [...tempAuth[row.ID]]
-        delete tempAuth[row.ID]
-      } else {
-        row.authorityIds = [removeAuth, ...row.authorityIds]
-      }
+      // 失败时回滚
+      row.authorityId = oldAuthorityId
+      ElMessage({ type: 'error', message: '角色设置失败' })
     }
   }
 
@@ -597,7 +586,7 @@
       })
       await getTableData()
       userInfo.value.headerImg = ''
-      userInfo.value.authorityIds = []
+      userInfo.value.authorityId = null
     }
   }
 </script>
