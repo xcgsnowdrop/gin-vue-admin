@@ -214,10 +214,12 @@ func (b *BaseApi) GetUserList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	list, total, err := userService.GetUserInfoList(pageInfo)
+	// 获取当前用户角色ID，用于权限过滤
+	currentUserAuthorityId := utils.GetUserAuthorityId(c)
+	list, total, err := userService.GetUserInfoList(pageInfo, currentUserAuthorityId)
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
-		response.FailWithMessage("获取失败", c)
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithDetailed(response.PageResult{
@@ -289,7 +291,7 @@ func (b *BaseApi) SetUserAuthorities(c *gin.Context) {
 	err = userService.SetUserAuthorities(authorityID, sua.ID, sua.AuthorityIds)
 	if err != nil {
 		global.GVA_LOG.Error("修改失败!", zap.Error(err))
-		response.FailWithMessage("修改失败", c)
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithMessage("修改成功", c)
@@ -321,10 +323,11 @@ func (b *BaseApi) DeleteUser(c *gin.Context) {
 		response.FailWithMessage("删除失败, 无法删除自己。", c)
 		return
 	}
-	err = userService.DeleteUser(reqId.ID)
+	authorityID := utils.GetUserAuthorityId(c)
+	err = userService.DeleteUser(authorityID, reqId.ID)
 	if err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Error(err))
-		response.FailWithMessage("删除失败", c)
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithMessage("删除成功", c)
@@ -351,16 +354,16 @@ func (b *BaseApi) SetUserInfo(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
+	authorityID := utils.GetUserAuthorityId(c)
 	if len(user.AuthorityIds) != 0 {
-		authorityID := utils.GetUserAuthorityId(c)
 		err = userService.SetUserAuthorities(authorityID, user.ID, user.AuthorityIds)
 		if err != nil {
 			global.GVA_LOG.Error("设置失败!", zap.Error(err))
-			response.FailWithMessage("设置失败", c)
+			response.FailWithMessage(err.Error(), c)
 			return
 		}
 	}
-	err = userService.SetUserInfo(system.SysUser{
+	err = userService.SetUserInfo(authorityID, system.SysUser{
 		GVA_MODEL: global.GVA_MODEL{
 			ID: user.ID,
 		},
@@ -372,7 +375,7 @@ func (b *BaseApi) SetUserInfo(c *gin.Context) {
 	})
 	if err != nil {
 		global.GVA_LOG.Error("设置失败!", zap.Error(err))
-		response.FailWithMessage("设置失败", c)
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithMessage("设置成功", c)
@@ -473,10 +476,11 @@ func (b *BaseApi) ResetPassword(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err = userService.ResetPassword(rps.ID, rps.Password)
+	authorityID := utils.GetUserAuthorityId(c)
+	err = userService.ResetPassword(authorityID, rps.ID, rps.Password)
 	if err != nil {
 		global.GVA_LOG.Error("重置失败!", zap.Error(err))
-		response.FailWithMessage("重置失败"+err.Error(), c)
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 	response.OkWithMessage("重置成功", c)

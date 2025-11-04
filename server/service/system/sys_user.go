@@ -88,7 +88,7 @@ func (userService *UserService) ChangePassword(u *system.SysUser, newPassword st
 //@param: info request.PageInfo
 //@return: err error, list interface{}, total int64
 
-func (userService *UserService) GetUserInfoList(info systemReq.GetUserList) (list interface{}, total int64, err error) {
+func (userService *UserService) GetUserInfoList(info systemReq.GetUserList, currentUserAuthorityId uint) (list interface{}, total int64, err error) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Model(&system.SysUser{})
@@ -105,6 +105,22 @@ func (userService *UserService) GetUserInfoList(info systemReq.GetUserList) (lis
 	}
 	if info.Email != "" {
 		db = db.Where("email LIKE ?", "%"+info.Email+"%")
+	}
+
+	// 权限过滤：只返回当前用户可以管理的用户（角色等级低于当前用户的用户）
+	// 获取当前用户可以管理的所有子角色列表
+	manageableAuthIDs, err := AuthorityServiceApp.GetStructAuthorityList(currentUserAuthorityId)
+	if err != nil {
+		return nil, 0, errors.New("获取角色权限列表失败")
+	}
+
+	// 如果可管理的角色列表为空，则不能查看任何其他用户（只能查看自己）
+	if len(manageableAuthIDs) == 0 {
+		// 只允许查看自己（通过其他方式过滤，这里不返回任何用户）
+		db = db.Where("1 = 0") // 不返回任何结果
+	} else {
+		// 只返回角色在可管理范围内的用户
+		db = db.Where("authority_id IN ?", manageableAuthIDs)
 	}
 
 	err = db.Count(&total).Error
@@ -243,12 +259,36 @@ func (userService *UserService) SetUserAuthorities(adminAuthorityID, id uint, au
 //@param: id float64
 //@return: err error
 
-func (userService *UserService) DeleteUser(id int) (err error) {
+func (userService *UserService) DeleteUser(adminAuthorityID uint, targetUserID int) (err error) {
 	return global.GVA_DB.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("id = ?", id).Delete(&system.SysUser{}).Error; err != nil {
+		var targetUser system.SysUser
+		if err := tx.Where("id = ?", targetUserID).First(&targetUser).Error; err != nil {
+			return errors.New("用户不存在")
+		}
+
+		// 权限检查：只能删除角色等级比自己低的用户
+		if targetUser.AuthorityId != 0 {
+			// 如果目标用户的角色就是操作者的角色，不允许删除（同级）
+			if targetUser.AuthorityId == adminAuthorityID {
+				return errors.New("无权删除该用户（目标用户角色与您的角色相同）")
+			}
+
+			// 获取操作者可以管理的所有子角色列表
+			manageableAuthIDs, err := AuthorityServiceApp.GetStructAuthorityList(adminAuthorityID)
+			if err != nil {
+				return errors.New("获取角色权限列表失败")
+			}
+
+			// 检查目标用户的角色是否在操作者可管理的范围内
+			if !slices.Contains(manageableAuthIDs, targetUser.AuthorityId) {
+				return errors.New("无权删除该用户（目标用户角色等级高于或等于您的角色等级）")
+			}
+		}
+
+		if err := tx.Where("id = ?", targetUserID).Delete(&system.SysUser{}).Error; err != nil {
 			return err
 		}
-		if err := tx.Delete(&[]system.SysUserAuthority{}, "sys_user_id = ?", id).Error; err != nil {
+		if err := tx.Delete(&[]system.SysUserAuthority{}, "sys_user_id = ?", targetUserID).Error; err != nil {
 			return err
 		}
 		return nil
@@ -261,7 +301,31 @@ func (userService *UserService) DeleteUser(id int) (err error) {
 //@param: reqUser model.SysUser
 //@return: err error, user model.SysUser
 
-func (userService *UserService) SetUserInfo(req system.SysUser) error {
+func (userService *UserService) SetUserInfo(adminAuthorityID uint, req system.SysUser) error {
+	// 权限检查：只能修改角色等级比自己低的用户
+	var targetUser system.SysUser
+	if err := global.GVA_DB.Where("id = ?", req.ID).First(&targetUser).Error; err != nil {
+		return errors.New("用户不存在")
+	}
+
+	if targetUser.AuthorityId != 0 {
+		// 如果目标用户的角色就是操作者的角色，不允许修改（同级）
+		if targetUser.AuthorityId == adminAuthorityID {
+			return errors.New("无权修改该用户（目标用户角色与您的角色相同）")
+		}
+
+		// 获取操作者可以管理的所有子角色列表
+		manageableAuthIDs, err := AuthorityServiceApp.GetStructAuthorityList(adminAuthorityID)
+		if err != nil {
+			return errors.New("获取角色权限列表失败")
+		}
+
+		// 检查目标用户的角色是否在操作者可管理的范围内
+		if !slices.Contains(manageableAuthIDs, targetUser.AuthorityId) {
+			return errors.New("无权修改该用户（目标用户角色等级高于或等于您的角色等级）")
+		}
+	}
+
 	return global.GVA_DB.Model(&system.SysUser{}).
 		Select("updated_at", "nick_name", "header_img", "phone", "email", "enable").
 		Where("id=?", req.ID).
@@ -346,7 +410,31 @@ func (userService *UserService) FindUserByUuid(uuid string) (user *system.SysUse
 //@param: ID uint
 //@return: err error
 
-func (userService *UserService) ResetPassword(ID uint, password string) (err error) {
-	err = global.GVA_DB.Model(&system.SysUser{}).Where("id = ?", ID).Update("password", utils.BcryptHash(password)).Error
+func (userService *UserService) ResetPassword(adminAuthorityID uint, targetUserID uint, password string) (err error) {
+	// 权限检查：只能重置角色等级比自己低的用户的密码
+	var targetUser system.SysUser
+	if err := global.GVA_DB.Where("id = ?", targetUserID).First(&targetUser).Error; err != nil {
+		return errors.New("用户不存在")
+	}
+
+	if targetUser.AuthorityId != 0 {
+		// 如果目标用户的角色就是操作者的角色，不允许重置（同级）
+		if targetUser.AuthorityId == adminAuthorityID {
+			return errors.New("无权重置该用户的密码（目标用户角色与您的角色相同）")
+		}
+
+		// 获取操作者可以管理的所有子角色列表
+		manageableAuthIDs, err := AuthorityServiceApp.GetStructAuthorityList(adminAuthorityID)
+		if err != nil {
+			return errors.New("获取角色权限列表失败")
+		}
+
+		// 检查目标用户的角色是否在操作者可管理的范围内
+		if !slices.Contains(manageableAuthIDs, targetUser.AuthorityId) {
+			return errors.New("无权重置该用户的密码（目标用户角色等级高于或等于您的角色等级）")
+		}
+	}
+
+	err = global.GVA_DB.Model(&system.SysUser{}).Where("id = ?", targetUserID).Update("password", utils.BcryptHash(password)).Error
 	return err
 }
