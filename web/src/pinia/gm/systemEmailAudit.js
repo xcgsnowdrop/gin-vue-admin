@@ -68,8 +68,8 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
         // 收集所有附件中的资源类型
         const allAttachments = []
         list.forEach(item => {
-          if (item.attachments && Array.isArray(item.attachments)) {
-            allAttachments.push(...item.attachments)
+          if (item.emailAttachments && Array.isArray(item.emailAttachments)) {
+            allAttachments.push(...item.emailAttachments)
           }
         })
 
