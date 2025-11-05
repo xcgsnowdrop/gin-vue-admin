@@ -8,7 +8,7 @@ import {
   reviewGMSystemEmailAudit, // 使用相同的审核接口
 } from '@/api/gm_email_audit'
 import { dateToTimestamp } from '@/utils/timestamp'
-import { useEmailResource } from '@/composables/useEmailResource'
+import { useResource } from '@/composables/useResource'
 
 
 export const useGMPersonalEmailAuditStore = defineStore('gmPersonalEmailAudit', () => {
@@ -38,7 +38,7 @@ export const useGMPersonalEmailAuditStore = defineStore('gmPersonalEmailAudit', 
     fetchResourceList,
     preloadAllResources,
     formatAttachment
-  } = useEmailResource()
+  } = useResource()
 
   // 计算属性
   const hasItems = computed(() => personalEmailAuditList.value.length > 0)

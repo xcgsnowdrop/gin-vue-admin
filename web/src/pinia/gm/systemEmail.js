@@ -7,7 +7,7 @@ import {
   updateGMSystemEmail,
 } from '@/api/gm_email'
 import { dateToTimestamp } from '@/utils/timestamp'
-import { useEmailResource } from '@/composables/useEmailResource'
+import { useResource } from '@/composables/useResource'
 
 
 export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
@@ -36,7 +36,7 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
     fetchResourceList,
     preloadAllResources,
     formatAttachment
-  } = useEmailResource()
+  } = useResource()
 
   // 计算属性
   const hasItems = computed(() => systemEmailList.value.length > 0)

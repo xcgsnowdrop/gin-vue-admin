@@ -5,7 +5,7 @@ import {
   sendGMPersonalEmail,
 } from '@/api/gm_email'
 import { dateToTimestamp } from '@/utils/timestamp'
-import { useEmailResource } from '@/composables/useEmailResource'
+import { useResource } from '@/composables/useResource'
 
 export const useGMPersonalEmailStore = defineStore('gmPersonalEmail', () => {
   // 状态
@@ -35,7 +35,7 @@ export const useGMPersonalEmailStore = defineStore('gmPersonalEmail', () => {
     fetchResourceList,
     preloadAllResources,
     formatAttachment
-  } = useEmailResource()
+  } = useResource()
 
   // 计算属性
   const hasItems = computed(() => personalEmailList.value.length > 0)
