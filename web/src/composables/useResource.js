@@ -62,6 +62,7 @@ export function useResource() {
    * 批量加载附件所需的资源信息
    * 优化：使用批量接口，避免多次 HTTP 请求
    * 进一步优化：如果资源已经预加载，避免重复请求
+   * 已弃用，页面已经调用preloadAllResources 代替
    */
   const loadResourcesForAttachments = async (attachments) => {
     if (!attachments || attachments.length === 0) return

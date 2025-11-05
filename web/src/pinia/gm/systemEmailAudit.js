@@ -35,7 +35,6 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
     resourceMap,
     fetchResourceTypes,
     fetchResourceList,
-    loadAttachmentsFromEmailList,
     preloadAllResources,
     formatAttachment
   } = useEmailResource()
@@ -73,16 +72,8 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
       if (response.code === 0) {
         const list = response.data.list || []
 
-        // 批量加载附件所需的资源信息
-        await loadAttachmentsFromEmailList(list, 'emailAttachments')
-
-        // 预处理数据，转换时间戳为日期时间对象
-        // list.forEach(item => {
-        //   item.create_time_formatted = item.create_time ? new Date(item.create_time * 1000).toLocaleString() : '-'
-        //   item.start_time_formatted = item.start_time ? new Date(item.start_time * 1000).toLocaleString() : '-'
-        //   item.end_time_formatted = item.end_time ? new Date(item.end_time * 1000).toLocaleString() : '-'
-        //   item.max_reg_time_formatted = item.max_reg_time ? new Date(item.max_reg_time * 1000).toLocaleString() : '-'
-        // })
+        // 注意：不需要调用 loadAttachmentsFromEmailList，因为 preloadAllResources 已经预加载了所有资源
+        // 附件显示时，formatAttachment 会直接从 resourceMap 中获取资源名称
 
         systemEmailAuditList.value = list
         total.value = response.data.total || 0
