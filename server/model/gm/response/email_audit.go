@@ -31,6 +31,7 @@ type EmailAuditApplicationResponse struct {
 	StartTime        *int64              `json:"startTime"`        // 开始生效时间（时间戳秒）
 	AreaIds          string              `json:"areaIds"`          // 生效区服列表（逗号分隔）
 	MaxRegTime       *int64              `json:"maxRegTime"`       // 最大注册时间（时间戳秒）
+	PlayerId         string              `json:"playerId"`         // 目标玩家ID（私人邮件专用）
 	CreatedAt        time.Time           `json:"createdAt"`        // 创建时间
 	UpdatedAt        time.Time           `json:"updatedAt"`        // 更新时间
 }
@@ -57,6 +58,7 @@ func ToEmailAuditApplicationResponse(app *gm.EmailAuditApplication) *EmailAuditA
 		StartTime:        app.StartTime,
 		AreaIds:          app.AreaIds,
 		MaxRegTime:       app.MaxRegTime,
+		PlayerId:         app.PlayerId,
 		CreatedAt:        app.CreatedAt,
 		UpdatedAt:        app.UpdatedAt,
 	}

@@ -37,8 +37,9 @@ type EmailAuditApplication struct {
 	EmailAttachments JSONArray        `json:"emailAttachments" gorm:"type:json;comment:邮件附件"`                        // 邮件附件（JSON数组）
 	EmailRemark      string           `json:"emailRemark" gorm:"type:varchar(500);comment:邮件备注"`                     // 邮件备注
 	StartTime        *int64           `json:"startTime" gorm:"comment:开始生效时间（时间戳秒）"`                                 // 开始生效时间
-	AreaIds          string           `json:"areaIds" gorm:"type:varchar(500);comment:生效区服列表（逗号分隔）"`                 // 生效区服列表
-	MaxRegTime       *int64           `json:"maxRegTime" gorm:"comment:最大注册时间（时间戳秒）"`                                // 最大注册时间
+	AreaIds          string           `json:"areaIds" gorm:"type:varchar(500);comment:生效区服列表（逗号分隔，系统邮件专用）"`          // 生效区服列表（系统邮件专用）
+	MaxRegTime       *int64           `json:"maxRegTime" gorm:"comment:最大注册时间（时间戳秒，系统邮件专用）"`                         // 最大注册时间（系统邮件专用）
+	PlayerId         string           `json:"playerId" gorm:"type:varchar(100);index;comment:私人邮件目标玩家ID（私人邮件专用）"`    // 私人邮件目标玩家ID（私人邮件专用）
 	CreatedAt        time.Time        `json:"createdAt"`                                                             // 创建时间
 	UpdatedAt        time.Time        `json:"updatedAt"`                                                             // 更新时间
 	DeletedAt        gorm.DeletedAt   `json:"-" gorm:"index"`                                                        // 删除时间

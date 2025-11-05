@@ -1,20 +1,14 @@
 import service from '@/utils/request'
 
-// 获取个人邮件列表
+// 获取私人邮件审核申请列表
 export const getGMPersonalEmailAuditList = (data) => {
   return service({
-    url: '/email/audit/personal/list',
+    url: '/email/audit/list',
     method: 'post',
-    data
-  })
-}
-
-// 发送个人邮件
-export const sendGMPersonalEmailAudit = (data) => {
-  return service({
-    url: '/email/audit/personal/send',
-    method: 'post',
-    data
+    data: {
+      ...data,
+      isSystem: false // 只获取私人邮件
+    }
   })
 }
 
@@ -23,11 +17,14 @@ export const getGMSystemEmailAuditList = (data) => {
   return service({
     url: '/email/audit/list',
     method: 'post',
-    data
+    data: {
+      ...data,
+      isSystem: true // 只获取系统邮件
+    }
   })
 }
 
-// 发送系统邮件审核申请
+// 创建邮件审核申请（系统/私人邮件通用）
 export const sendGMSystemEmailAudit = (data) => {
   return service({
     url: '/email/audit/apply',
@@ -36,7 +33,7 @@ export const sendGMSystemEmailAudit = (data) => {
   })
 }
 
-// 撤回系统邮件审核申请
+// 撤回邮件审核申请（系统/私人邮件通用）
 export const deleteGMSystemEmailAudit = (id) => {
   return service({
     url: `/email/audit/${id}`,
@@ -44,7 +41,7 @@ export const deleteGMSystemEmailAudit = (id) => {
   })
 }
 
-// 更新系统邮件
+// 更新邮件审核申请（系统/私人邮件通用）
 export const updateGMSystemEmailAudit = (data) => {
   return service({
     url: '/email/audit/apply',
@@ -53,7 +50,7 @@ export const updateGMSystemEmailAudit = (data) => {
   })
 }
 
-// 审核系统邮件申请
+// 审核邮件申请（系统/私人邮件通用）
 export const reviewGMSystemEmailAudit = (data) => {
   return service({
     url: '/email/audit/review',

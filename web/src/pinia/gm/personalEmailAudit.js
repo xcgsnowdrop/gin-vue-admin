@@ -1,19 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import {
-  getGMSystemEmailAuditList,
+  getGMPersonalEmailAuditList,
   sendGMSystemEmailAudit,
-  deleteGMSystemEmailAudit,
+  deleteGMSystemEmailAudit, // 使用相同的删除接口
   updateGMSystemEmailAudit,
-  reviewGMSystemEmailAudit,
+  reviewGMSystemEmailAudit, // 使用相同的审核接口
 } from '@/api/gm_email_audit'
 import { getGMResourceTypeList, getGMResourceList } from '@/api/gm_item'
 import { dateToTimestamp } from '@/utils/timestamp'
 
 
-export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () => {
+export const useGMPersonalEmailAuditStore = defineStore('gmPersonalEmailAudit', () => {
   // 状态
-  const systemEmailAuditList = ref([])
+  const personalEmailAuditList = ref([])
 
   const loading = ref(false)
   const total = ref(0)
@@ -23,6 +23,7 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
   const searchInfo = ref({
     applicantId: null, // 申请人ID
     auditorId: null, // 审核人ID
+    playerId: '', // 玩家ID
     startTime: null, // 申请开始时间
     endTime: null, // 申请结束时间
     status: null, // 状态筛选
@@ -33,7 +34,7 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
   const resourceMap = ref({})      // 资源映射 { type: { id: name } }，用于快速查找资源名称
 
   // 计算属性
-  const hasItems = computed(() => systemEmailAuditList.value.length > 0)
+  const hasItems = computed(() => personalEmailAuditList.value.length > 0)
   const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 
   // 准备提交数据：转换时间戳格式
@@ -42,20 +43,21 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
     
     // 转换时间戳：将 Date 对象转换为时间戳（秒）
     submitData.startTime = dateToTimestamp(submitData.startTime)
-    submitData.maxRegTime = dateToTimestamp(submitData.maxRegTime)
+    // 私人邮件不需要maxRegTime，需要playerId
 
     return submitData
   }
 
-  // 获取系统邮件审核申请列表
-  const fetchSystemEmailAuditList = async (params = {}) => {
+  // 获取私人邮件审核申请列表
+  const fetchPersonalEmailAuditList = async (params = {}) => {
     loading.value = true
     try {
-      const response = await getGMSystemEmailAuditList({
+      const response = await getGMPersonalEmailAuditList({
         page: page.value,
         pageSize: pageSize.value,
         applicantId: searchInfo.value.applicantId ? parseInt(searchInfo.value.applicantId) : null,
         auditorId: searchInfo.value.auditorId ? parseInt(searchInfo.value.auditorId) : null,
+        playerId: searchInfo.value.playerId || '',
         startTime: searchInfo.value.startTime ? dateToTimestamp(searchInfo.value.startTime) : null,
         endTime: searchInfo.value.endTime ? dateToTimestamp(searchInfo.value.endTime) : null,
         status: searchInfo.value.status ? parseInt(searchInfo.value.status) : null,
@@ -68,8 +70,8 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
         // 收集所有附件中的资源类型
         const allAttachments = []
         list.forEach(item => {
-          if (item.attachments && Array.isArray(item.attachments)) {
-            allAttachments.push(...item.attachments)
+          if (item.emailAttachments && Array.isArray(item.emailAttachments)) {
+            allAttachments.push(...item.emailAttachments)
           }
         })
 
@@ -78,27 +80,16 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
           await loadResourcesForAttachments(allAttachments)
         }
 
-        // 预处理数据，转换时间戳为日期时间对象
-        // list.forEach(item => {
-        //   item.create_time_formatted = item.create_time ? new Date(item.create_time * 1000).toLocaleString() : '-'
-        //   item.start_time_formatted = item.start_time ? new Date(item.start_time * 1000).toLocaleString() : '-'
-        //   item.end_time_formatted = item.end_time ? new Date(item.end_time * 1000).toLocaleString() : '-'
-        //   item.max_reg_time_formatted = item.max_reg_time ? new Date(item.max_reg_time * 1000).toLocaleString() : '-'
-        // })
-
-        systemEmailAuditList.value = list
+        personalEmailAuditList.value = list
         total.value = response.data.total || 0
         page.value = response.data.page || 1
         pageSize.value = response.data.pageSize || 10
-        
-        // console.log('Pinia store - itemList.value 已更新:', itemList.value)
-        // console.log('Pinia store - 数据长度:', itemList.value.length)
       } else {
-        throw new Error(response.msg || '获取系统邮件审核申请列表失败')
+        throw new Error(response.msg || '获取私人邮件审核申请列表失败')
       }
     } catch (error) {
-      console.error('获取系统邮件审核申请列表失败:', error)
-      systemEmailAuditList.value = []
+      console.error('获取私人邮件审核申请列表失败:', error)
+      personalEmailAuditList.value = []
       total.value = 0
     } finally {
       loading.value = false
@@ -189,68 +180,68 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
     return `资源${id}`
   }
 
-  // 发送系统邮件审核申请
-  const sendSystemEmailAudit = async (data) => {
+  // 发送私人邮件审核申请
+  const sendPersonalEmailAudit = async (data) => {
     try {
       const processedData = prepareSubmitData(data)
       const response = await sendGMSystemEmailAudit(processedData)
       if (response.code === 0) {
-        await fetchSystemEmailAuditList()
+        await fetchPersonalEmailAuditList()
         return true
       } else {
-        throw new Error(response.msg || '发送系统邮件审核申请失败')
+        throw new Error(response.msg || '发送私人邮件审核申请失败')
       }
     } catch (error) {
-      console.error('发送系统邮件审核申请失败:', error)
+      console.error('发送私人邮件审核申请失败:', error)
       throw error
     }
   }
 
-  // 更新系统邮件审核申请
-  const updateSystemEmailAudit = async (data) => {
+  // 更新私人邮件审核申请
+  const updatePersonalEmailAudit = async (data) => {
     try {
       const processedData = prepareSubmitData(data)
       const response = await updateGMSystemEmailAudit(processedData)
       if (response.code === 0) {
-        await fetchSystemEmailAuditList()
+        await fetchPersonalEmailAuditList()
         return true
       } else {
-        throw new Error(response.msg || '更新系统邮件审核申请失败')
+        throw new Error(response.msg || '更新私人邮件审核申请失败')
       }
     } catch (error) {
-      console.error('更新系统邮件审核申请失败:', error)
+      console.error('更新私人邮件审核申请失败:', error)
       throw error
     }
   }
 
-  // 撤回系统邮件审核申请
-  const deleteSystemEmailAudit = async (email_id) => {
+  // 撤回私人邮件审核申请
+  const deletePersonalEmailAudit = async (email_id) => {
     try {
       const response = await deleteGMSystemEmailAudit(email_id)
       if (response.code === 0) {
-        await fetchSystemEmailAuditList()
+        await fetchPersonalEmailAuditList()
         return true
       } else {
-        throw new Error(response.msg || '撤回系统邮件审核申请失败')
+        throw new Error(response.msg || '撤回私人邮件审核申请失败')
       }
     } catch (error) {
-      console.error('撤回系统邮件审核申请失败:', error)
+      console.error('撤回私人邮件审核申请失败:', error)
       throw error
     }
   }
 
-  // 审核系统邮件申请
-  const reviewSystemEmailAudit = async (data) => {
+  // 审核私人邮件申请
+  const reviewPersonalEmailAudit = async (data) => {
     try {
       const response = await reviewGMSystemEmailAudit(data)
       if (response.code === 0) {
-        await fetchSystemEmailAuditList()
+        await fetchPersonalEmailAuditList()
         return true
       } else {
-        throw new Error(response.msg || '审核系统邮件申请失败')
+        throw new Error(response.msg || '审核私人邮件申请失败')
       }
     } catch (error) {
-      console.error('审核系统邮件申请失败:', error)
+      console.error('审核私人邮件申请失败:', error)
       throw error
     }
   }
@@ -263,11 +254,12 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
   // 重置搜索条件
   const resetSearchInfo = () => {
     searchInfo.value = {
-      applicantId: '',
-      auditorId: '',
-      startTime: '',
-      endTime: '',
-      status: '',
+      applicantId: null,
+      auditorId: null,
+      playerId: '',
+      startTime: null,
+      endTime: null,
+      status: null,
     }
   }
 
@@ -283,7 +275,7 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
 
   return {
     // 状态
-    systemEmailAuditList,
+    personalEmailAuditList,
     loading,
     total,
     page,
@@ -298,8 +290,8 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
     totalPages,
     
     // 方法
-    fetchSystemEmailAuditList,
-    sendSystemEmailAudit,
+    fetchPersonalEmailAuditList,
+    sendPersonalEmailAudit,
     fetchResourceTypes,
     fetchResourceList,
     loadResourcesForAttachments,
@@ -309,8 +301,9 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
     resetSearchInfo,
     setPage,
     setPageSize,
-    deleteSystemEmailAudit,
-    updateSystemEmailAudit,
-    reviewSystemEmailAudit,
+    deletePersonalEmailAudit,
+    updatePersonalEmailAudit,
+    reviewPersonalEmailAudit,
   }
 })
+

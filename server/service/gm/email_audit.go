@@ -141,7 +141,8 @@ func (s *EmailAuditService) CanUserAudit(userAuthorityId uint, applicationId uin
 	return false, nil
 }
 
-// CreateApplication 创建邮件审核申请
+// CreateApplication 创建邮件审核申请（统一处理系统邮件和私人邮件）
+// 通过 PlayerId 字段区分：PlayerId 为空为系统邮件，PlayerId 有值为私人邮件
 func (s *EmailAuditService) CreateApplication(req gmReq.CreateEmailAuditRequest, applicantId uint) (*gm.EmailAuditApplication, error) {
 	// 转换附件数据
 	var attachments gm.JSONArray
@@ -151,6 +152,9 @@ func (s *EmailAuditService) CreateApplication(req gmReq.CreateEmailAuditRequest,
 			attachments[i] = att
 		}
 	}
+
+	// 根据 PlayerId 判断是系统邮件还是私人邮件
+	isPersonalEmail := req.PlayerId != ""
 
 	application := &gm.EmailAuditApplication{
 		ApplicantId:      applicantId,
@@ -162,8 +166,18 @@ func (s *EmailAuditService) CreateApplication(req gmReq.CreateEmailAuditRequest,
 		EmailAttachments: attachments,
 		EmailRemark:      req.EmailRemark,
 		StartTime:        req.StartTime,
-		AreaIds:          req.AreaIds,
-		MaxRegTime:       req.MaxRegTime,
+	}
+
+	if isPersonalEmail {
+		// 私人邮件：设置 PlayerId，清空 AreaIds 和 MaxRegTime
+		application.PlayerId = req.PlayerId
+		application.AreaIds = ""
+		application.MaxRegTime = nil
+	} else {
+		// 系统邮件：设置 AreaIds 和 MaxRegTime，清空 PlayerId
+		application.PlayerId = ""
+		application.AreaIds = req.AreaIds
+		application.MaxRegTime = req.MaxRegTime
 	}
 
 	if err := global.GVA_DB.Create(application).Error; err != nil {
@@ -174,7 +188,8 @@ func (s *EmailAuditService) CreateApplication(req gmReq.CreateEmailAuditRequest,
 	return application, nil
 }
 
-// UpdateApplication 更新邮件审核申请（只能更新自己的申请，且状态为待审核或待修改）
+// UpdateApplication 更新邮件审核申请（统一处理系统邮件和私人邮件，只能更新自己的申请，且状态为待审核或待修改）
+// 通过 PlayerId 字段区分：PlayerId 为空为系统邮件，PlayerId 有值为私人邮件
 func (s *EmailAuditService) UpdateApplication(req gmReq.UpdateEmailAuditRequest, applicantId uint) error {
 	var application gm.EmailAuditApplication
 	if err := global.GVA_DB.First(&application, req.ID).Error; err != nil {
@@ -189,6 +204,19 @@ func (s *EmailAuditService) UpdateApplication(req gmReq.UpdateEmailAuditRequest,
 	// 只能更新待审核或待修改状态的申请
 	if application.Status != gm.EmailAuditStatusPending && application.Status != gm.EmailAuditStatusRevision {
 		return errors.New("只能更新待审核或待修改状态的申请")
+	}
+
+	// 根据请求和现有数据判断邮件类型
+	isPersonalEmail := req.PlayerId != ""
+	existingIsPersonal := application.PlayerId != ""
+
+	// 验证邮件类型一致性：不能将系统邮件改为私人邮件，反之亦然
+	if isPersonalEmail != existingIsPersonal {
+		if isPersonalEmail {
+			return errors.New("不能将系统邮件更新为私人邮件")
+		} else {
+			return errors.New("不能将私人邮件更新为系统邮件")
+		}
 	}
 
 	// 更新字段
@@ -214,11 +242,23 @@ func (s *EmailAuditService) UpdateApplication(req gmReq.UpdateEmailAuditRequest,
 	if req.StartTime != nil {
 		application.StartTime = req.StartTime
 	}
-	if req.AreaIds != "" {
-		application.AreaIds = req.AreaIds
-	}
-	if req.MaxRegTime != nil {
-		application.MaxRegTime = req.MaxRegTime
+
+	if isPersonalEmail {
+		// 私人邮件：更新 PlayerId，清空 AreaIds 和 MaxRegTime
+		if req.PlayerId != "" {
+			application.PlayerId = req.PlayerId
+		}
+		application.AreaIds = ""
+		application.MaxRegTime = nil
+	} else {
+		// 系统邮件：更新 AreaIds 和 MaxRegTime，清空 PlayerId
+		application.PlayerId = ""
+		if req.AreaIds != "" {
+			application.AreaIds = req.AreaIds
+		}
+		if req.MaxRegTime != nil {
+			application.MaxRegTime = req.MaxRegTime
+		}
 	}
 
 	// 如果状态是待修改，更新后改为待审核
@@ -343,8 +383,18 @@ func (s *EmailAuditService) sendEmailToGame(application gm.EmailAuditApplication
 	// 构建游戏API请求数据
 	gameEmailReq := s.buildGameEmailRequest(application)
 
+	// 根据邮件类型选择不同的API端点
+	var apiPath string
+	if application.PlayerId != "" {
+		// 私人邮件
+		apiPath = "/email/personal/send"
+	} else {
+		// 系统邮件
+		apiPath = "/email/system/send"
+	}
+
 	// 调用游戏API
-	apiResp, err := utils.CallGameAPIPOST("/email/system/send", gameEmailReq)
+	apiResp, err := utils.CallGameAPIPOST(apiPath, gameEmailReq)
 	if err != nil {
 		return fmt.Errorf("调用游戏API失败: %v", err)
 	}
@@ -356,6 +406,7 @@ func (s *EmailAuditService) sendEmailToGame(application gm.EmailAuditApplication
 
 	global.GVA_LOG.Info("邮件发送到游戏服务器成功",
 		zap.Uint("application_id", application.ID),
+		zap.String("api_path", apiPath),
 		zap.Int("game_api_code", apiResp.Code))
 
 	return nil
@@ -390,20 +441,6 @@ func (s *EmailAuditService) buildGameEmailRequest(application gm.EmailAuditAppli
 		}
 	}
 
-	// 转换区服ID列表（从逗号分隔的字符串转为数组）
-	var areaIds []int
-	if application.AreaIds != "" {
-		areaIdsStr := strings.Split(application.AreaIds, ",")
-		for _, idStr := range areaIdsStr {
-			idStr = strings.TrimSpace(idStr)
-			if idStr != "" {
-				if id, err := strconv.Atoi(idStr); err == nil {
-					areaIds = append(areaIds, id)
-				}
-			}
-		}
-	}
-
 	// 构建请求数据
 	req := map[string]interface{}{
 		"type": application.EmailType,
@@ -418,8 +455,6 @@ func (s *EmailAuditService) buildGameEmailRequest(application gm.EmailAuditAppli
 		"attachments": attachments,
 		"remark":      application.EmailRemark,
 		"startTime":   nil,
-		"areaIds":     areaIds,
-		"maxRegTime":  nil,
 	}
 
 	// 设置开始时间
@@ -427,9 +462,31 @@ func (s *EmailAuditService) buildGameEmailRequest(application gm.EmailAuditAppli
 		req["startTime"] = *application.StartTime
 	}
 
-	// 设置最大注册时间
-	if application.MaxRegTime != nil {
-		req["maxRegTime"] = *application.MaxRegTime
+	// 根据邮件类型设置不同的字段
+	if application.PlayerId != "" {
+		// 私人邮件：需要playerId，不需要areaIds和maxRegTime
+		req["playerId"] = application.PlayerId
+	} else {
+		// 系统邮件：需要areaIds和maxRegTime，不需要playerId
+		// 转换区服ID列表（从逗号分隔的字符串转为数组）
+		var areaIds []int
+		if application.AreaIds != "" {
+			areaIdsStr := strings.Split(application.AreaIds, ",")
+			for _, idStr := range areaIdsStr {
+				idStr = strings.TrimSpace(idStr)
+				if idStr != "" {
+					if id, err := strconv.Atoi(idStr); err == nil {
+						areaIds = append(areaIds, id)
+					}
+				}
+			}
+		}
+		req["areaIds"] = areaIds
+		req["maxRegTime"] = nil
+		// 设置最大注册时间
+		if application.MaxRegTime != nil {
+			req["maxRegTime"] = *application.MaxRegTime
+		}
 	}
 
 	return req
@@ -496,6 +553,22 @@ func (s *EmailAuditService) GetApplicationList(req gmReq.SearchEmailAuditRequest
 	// 审核人筛选
 	if req.AuditorId != nil {
 		query = query.Where("auditor_id = ?", *req.AuditorId)
+	}
+
+	// 玩家ID筛选（私人邮件专用）
+	if req.PlayerId != "" {
+		query = query.Where("player_id = ?", req.PlayerId)
+	}
+
+	// 系统/私人邮件筛选
+	if req.IsSystem != nil {
+		if *req.IsSystem {
+			// 系统邮件：player_id为空
+			query = query.Where("player_id = '' OR player_id IS NULL")
+		} else {
+			// 私人邮件：player_id不为空
+			query = query.Where("player_id != '' AND player_id IS NOT NULL")
+		}
 	}
 
 	// 时间范围筛选

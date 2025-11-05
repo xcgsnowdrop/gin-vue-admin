@@ -15,13 +15,14 @@ import (
 
 type EmailAuditApi struct{}
 
-// CreateApplication 创建邮件审核申请
+// CreateApplication 创建邮件审核申请（统一处理系统邮件和私人邮件）
+// 通过 PlayerId 字段区分：PlayerId 为空为系统邮件，PlayerId 有值为私人邮件
 // @Tags EmailAudit
 // @Summary 创建邮件审核申请
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body gmReq.CreateEmailAuditRequest true "创建邮件审核申请"
+// @Param data body gmReq.CreateEmailAuditRequest true "创建邮件审核申请（PlayerId为空为系统邮件，有值为私人邮件）"
 // @Success 200 {object} response.Response{data=gm.EmailAuditApplication,msg=string} "创建成功"
 // @Router /gm/email/audit/apply [post]
 func (e *EmailAuditApi) CreateApplication(c *gin.Context) {
@@ -49,13 +50,14 @@ func (e *EmailAuditApi) CreateApplication(c *gin.Context) {
 	response.OkWithData(application, c)
 }
 
-// UpdateApplication 更新邮件审核申请
+// UpdateApplication 更新邮件审核申请（统一处理系统邮件和私人邮件）
+// 通过 PlayerId 字段区分：PlayerId 为空为系统邮件，PlayerId 有值为私人邮件
 // @Tags EmailAudit
 // @Summary 更新邮件审核申请
 // @Security ApiKeyAuth
 // @accept application/json
 // @Produce application/json
-// @Param data body gmReq.UpdateEmailAuditRequest true "更新邮件审核申请"
+// @Param data body gmReq.UpdateEmailAuditRequest true "更新邮件审核申请（PlayerId为空为系统邮件，有值为私人邮件）"
 // @Success 200 {object} response.Response{msg=string} "更新成功"
 // @Router /gm/email/audit/apply [put]
 func (e *EmailAuditApi) UpdateApplication(c *gin.Context) {

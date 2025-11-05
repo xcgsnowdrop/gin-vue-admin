@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `email_audit_applications` (
   `start_time` bigint DEFAULT NULL COMMENT '开始生效时间（时间戳秒）',
   `area_ids` varchar(500) DEFAULT NULL COMMENT '生效区服列表（逗号分隔）',
   `max_reg_time` bigint DEFAULT NULL COMMENT '最大注册时间（时间戳秒）',
+  `player_id` varchar(100) DEFAULT NULL COMMENT '私人邮件目标玩家ID（系统邮件为空）',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `deleted_at` datetime DEFAULT NULL COMMENT '删除时间',
@@ -38,3 +39,8 @@ CREATE TABLE IF NOT EXISTS `email_audit_applications` (
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='邮件审核申请表';
 
+-- 添加 player_id 字段（用于私人邮件目标玩家ID）
+-- 执行此SQL为已存在的表添加 player_id 字段
+ALTER TABLE `email_audit_applications`
+ADD COLUMN `player_id` varchar(100) DEFAULT NULL COMMENT '私人邮件目标玩家ID（系统邮件为空）' AFTER `max_reg_time`,
+ADD INDEX `idx_player_id` (`player_id`);
