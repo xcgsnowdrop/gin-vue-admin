@@ -36,6 +36,7 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
     fetchResourceTypes,
     fetchResourceList,
     loadAttachmentsFromEmailList,
+    preloadAllResources,
     formatAttachment
   } = useEmailResource()
 
@@ -217,6 +218,7 @@ export const useGMSystemEmailAuditStore = defineStore('gmSystemEmailAudit', () =
     sendSystemEmailAudit,
     fetchResourceTypes,
     fetchResourceList,
+    preloadAllResources,
     setSearchInfo,
     resetSearchInfo,
     setPage,

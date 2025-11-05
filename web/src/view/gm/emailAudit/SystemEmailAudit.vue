@@ -380,8 +380,7 @@
     deleteSystemEmailAudit,
     updateSystemEmailAudit,
     reviewSystemEmailAudit,
-    fetchResourceTypes,
-    fetchResourceList,
+    preloadAllResources,
     formatAttachment
   } = gmSystemEmailAuditStore
 
@@ -538,15 +537,16 @@
     // 更新行
     const updateRow = async (row) => {
         type.value = 'update'
-        // 确保资源类型已加载（如果还没有加载）
-        if (!resourceTypes.value || resourceTypes.value.length === 0) {
+        // 确保资源列表已预加载（如果还没有加载）
+        // 注意：preloadAllResources 内部已经会调用 fetchResourceTypes，无需重复调用
+        if (!resourceTypes.value || resourceTypes.value.length === 0 || Object.keys(resourceMap.value).length === 0) {
           try {
-            await fetchResourceTypes()
+            await preloadAllResources()
           } catch (error) {
-            console.error('加载资源类型失败:', error)
+            console.error('加载资源失败:', error)
             ElMessage({
               type: 'warning',
-              message: '加载资源类型失败，附件功能可能无法正常使用'
+              message: '加载资源失败，附件功能可能无法正常使用'
             })
           }
         }
@@ -687,28 +687,35 @@
   // 打开弹窗
   const openDialog = async () => {
     type.value = 'create'
-    // 确保资源类型已加载（如果还没有加载）
-    if (!resourceTypes.value || resourceTypes.value.length === 0) {
+    // 确保资源列表已预加载（如果还没有加载）
+    // 注意：preloadAllResources 内部已经会调用 fetchResourceTypes，无需重复调用
+    if (!resourceTypes.value || resourceTypes.value.length === 0 || Object.keys(resourceMap.value).length === 0) {
       try {
-        await fetchResourceTypes()
+        await preloadAllResources()
       } catch (error) {
-        console.error('加载资源类型失败:', error)
+        console.error('加载资源失败:', error)
         ElMessage({
           type: 'warning',
-          message: '加载资源类型失败，附件功能可能无法正常使用'
+          message: '加载资源失败，附件功能可能无法正常使用'
         })
       }
     }
     dialogFormVisible.value = true
   }
 
-  // 处理附件资源列表获取
+  // 处理附件资源列表获取（已优化：预加载后不再需要）
+  // 保留此方法以兼容 AttachmentForm 组件，但实际上不会触发请求
   const handleFetchResourceList = async (type, callback) => {
-    try {
-      await fetchResourceList(type)
-      callback(resourceList.value)
-    } catch (error) {
-      console.error(`加载资源类型 ${type} 失败:`, error)
+    // 由于已经预加载了所有资源，直接从 resourceMap 中获取
+    const resourceMapValue = resourceMap.value || {}
+    if (resourceMapValue[type]) {
+      const list = Object.keys(resourceMapValue[type]).map(id => ({
+        id: parseInt(id),
+        name: resourceMapValue[type][id],
+        type: type
+      }))
+      callback(list)
+    } else {
       callback([])
     }
   }
@@ -785,9 +792,10 @@
   // 初始化
   onMounted(async () => {
     try {
-      // 并行获取资源类型和道具列表
+      // 并行预加载所有资源（内部会先获取资源类型）和邮件审核列表
+      // 注意：preloadAllResources 内部已经会调用 fetchResourceTypes，无需重复调用
       await Promise.all([
-        fetchResourceTypes(),
+        preloadAllResources(),
         fetchSystemEmailAuditList()
       ])
     } catch (error) {

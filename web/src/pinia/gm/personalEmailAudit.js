@@ -37,6 +37,7 @@ export const useGMPersonalEmailAuditStore = defineStore('gmPersonalEmailAudit', 
     fetchResourceTypes,
     fetchResourceList,
     loadAttachmentsFromEmailList,
+    preloadAllResources,
     formatAttachment
   } = useEmailResource()
 
@@ -209,6 +210,7 @@ export const useGMPersonalEmailAuditStore = defineStore('gmPersonalEmailAudit', 
     sendPersonalEmailAudit,
     fetchResourceTypes,
     fetchResourceList,
+    preloadAllResources,
     setSearchInfo,
     resetSearchInfo,
     setPage,

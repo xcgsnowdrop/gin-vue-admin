@@ -35,6 +35,7 @@ export const useGMPersonalEmailStore = defineStore('gmPersonalEmail', () => {
     fetchResourceList,
     loadResourcesForAttachments,
     loadAttachmentsFromEmailList,
+    preloadAllResources,
     formatAttachment
   } = useEmailResource()
 
@@ -151,6 +152,7 @@ export const useGMPersonalEmailStore = defineStore('gmPersonalEmail', () => {
     sendPersonalEmail,
     fetchResourceTypes,
     fetchResourceList,
+    preloadAllResources,
     setSearchInfo,
     resetSearchInfo,
     setPage,

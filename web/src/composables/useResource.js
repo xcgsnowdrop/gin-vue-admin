@@ -162,6 +162,60 @@ export function useResource() {
     return `${typeName} - ${resourceName} × ${attachment.num}`
   }
 
+  /**
+   * 预加载所有资源类型的资源列表
+   * 优化：一次性加载所有资源类型，避免后续多次请求
+   */
+  const preloadAllResources = async () => {
+    try {
+      // 先确保资源类型列表已加载
+      if (resourceTypes.value.length === 0) {
+        await fetchResourceTypes()
+      }
+
+      // 如果没有资源类型，直接返回
+      if (resourceTypes.value.length === 0) {
+        return
+      }
+
+      // 收集所有资源类型的 type 值
+      const allResourceTypes = resourceTypes.value.map(rt => rt.type).filter(type => type != null)
+
+      // 如果没有资源类型，直接返回
+      if (allResourceTypes.length === 0) {
+        return
+      }
+
+      // 使用批量接口一次性加载所有资源类型
+      const response = await getGMResourceListBatch({ resourceTypes: allResourceTypes })
+
+      if (response.code === 0 && response.data) {
+        const batchData = response.data
+
+        // 遍历返回的数据，更新 resourceMap
+        Object.keys(batchData).forEach(typeStr => {
+          const type = parseInt(typeStr)
+          const typeResourceList = batchData[typeStr] || []
+
+          // 更新 resourceMap
+          if (!resourceMap.value[type]) {
+            resourceMap.value[type] = {}
+          }
+          typeResourceList.forEach(item => {
+            if (item && item.id !== undefined && item.name) {
+              resourceMap.value[type][item.id] = item.name
+            }
+          })
+        })
+      } else {
+        throw new Error(response.msg || '批量获取资源列表失败')
+      }
+    } catch (error) {
+      console.error('预加载所有资源失败:', error)
+      throw error
+    }
+  }
+
   return {
     // 状态
     resourceTypes,
@@ -173,6 +227,7 @@ export function useResource() {
     fetchResourceTypes,
     fetchResourceList,
     loadResourcesForAttachments,
+    preloadAllResources,
     getResourceListByType,
     getResourceTypeName,
     getResourceName,

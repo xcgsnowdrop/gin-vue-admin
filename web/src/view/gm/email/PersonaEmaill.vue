@@ -288,8 +288,7 @@
     resetSearchInfo,
     setPage,
     setPageSize,
-    fetchResourceTypes,
-    fetchResourceList,
+    preloadAllResources,
     formatAttachment
   } = gmPersonalEmailStore
 
@@ -444,13 +443,19 @@
     dialogFormVisible.value = true
   }
 
-  // 处理附件资源列表获取
+  // 处理附件资源列表获取（已优化：预加载后不再需要）
+  // 保留此方法以兼容 AttachmentForm 组件，但实际上不会触发请求
   const handleFetchResourceList = async (type, callback) => {
-    try {
-      await fetchResourceList(type)
-      callback(resourceList.value)
-    } catch (error) {
-      console.error(`加载资源类型 ${type} 失败:`, error)
+    // 由于已经预加载了所有资源，直接从 resourceMap 中获取
+    const resourceMapValue = resourceMap.value || {}
+    if (resourceMapValue[type]) {
+      const list = Object.keys(resourceMapValue[type]).map(id => ({
+        id: parseInt(id),
+        name: resourceMapValue[type][id],
+        type: type
+      }))
+      callback(list)
+    } else {
       callback([])
     }
   }
@@ -529,9 +534,10 @@
   // 初始化
   onMounted(async () => {
     try {
-      // 并行获取资源类型和道具列表
+      // 并行预加载所有资源（内部会先获取资源类型）和邮件列表
+      // 注意：preloadAllResources 内部已经会调用 fetchResourceTypes，无需重复调用
       await Promise.all([
-        fetchResourceTypes(),
+        preloadAllResources(),
         fetchPersonalEmailList()
       ])
     } catch (error) {

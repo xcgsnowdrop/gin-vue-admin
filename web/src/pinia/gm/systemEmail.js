@@ -36,6 +36,7 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
     fetchResourceList,
     loadResourcesForAttachments,
     loadAttachmentsFromEmailList,
+    preloadAllResources,
     formatAttachment
   } = useEmailResource()
 
@@ -192,6 +193,7 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
     sendSystemEmail,
     fetchResourceTypes,
     fetchResourceList,
+    preloadAllResources,
     setSearchInfo,
     resetSearchInfo,
     setPage,

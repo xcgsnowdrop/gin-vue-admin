@@ -143,8 +143,17 @@ const handleAttachmentTypeChange = async (index, type) => {
   emit('update:modelValue', newAttachments)
   
   if (type) {
-    // 如果该类型的资源列表还未加载，则触发加载事件
-    if (!attachmentResourceLists.value[type]) {
+    // 优化：优先从 resourceMap 中获取（已预加载）
+    const resourceMapValue = props.resourceMap || {}
+    if (resourceMapValue[type] && !attachmentResourceLists.value[type]) {
+      // 如果 resourceMap 中有数据，直接构建缓存
+      attachmentResourceLists.value[type] = Object.keys(resourceMapValue[type]).map(id => ({
+        id: parseInt(id),
+        name: resourceMapValue[type][id],
+        type: type
+      }))
+    } else if (!attachmentResourceLists.value[type]) {
+      // 如果 resourceMap 中也没有，才触发加载事件（降级方案）
       emit('fetch-resource-list', type, (list) => {
         attachmentResourceLists.value[type] = list
       })
