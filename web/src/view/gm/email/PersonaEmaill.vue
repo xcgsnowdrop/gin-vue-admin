@@ -534,12 +534,12 @@
   // 初始化
   onMounted(async () => {
     try {
-      // 并行预加载所有资源（内部会先获取资源类型）和邮件列表
+      // 先预加载所有资源（确保资源已加载），然后再获取邮件列表
       // 注意：preloadAllResources 内部已经会调用 fetchResourceTypes，无需重复调用
-      await Promise.all([
-        preloadAllResources(),
-        fetchPersonalEmailList()
-      ])
+      // 顺序执行而不是并行，避免 loadResourcesForAttachments 重复请求
+      await preloadAllResources()
+      // 预加载完成后，再获取邮件列表（此时 loadResourcesForAttachments 会检查并跳过已加载的资源）
+      await fetchPersonalEmailList()
     } catch (error) {
       console.error('初始化失败:', error)
     }

@@ -61,6 +61,7 @@ export function useResource() {
   /**
    * 批量加载附件所需的资源信息
    * 优化：使用批量接口，避免多次 HTTP 请求
+   * 进一步优化：如果资源已经预加载，避免重复请求
    */
   const loadResourcesForAttachments = async (attachments) => {
     if (!attachments || attachments.length === 0) return
@@ -75,10 +76,20 @@ export function useResource() {
 
     if (types.size === 0) return
 
-    // 多个资源类型时，使用批量接口
+    // 检查哪些资源类型已经存在于 resourceMap 中
+    const missingTypes = Array.from(types).filter(type => {
+      // 如果 resourceMap 中没有该类型，或者该类型为空对象，则需要加载
+      return !resourceMap.value[type] || Object.keys(resourceMap.value[type]).length === 0
+    })
+
+    // 如果所有资源类型都已经预加载，直接返回，无需请求
+    if (missingTypes.length === 0) {
+      return
+    }
+
+    // 只请求缺失的资源类型
     try {
-      const resourceTypesArray = Array.from(types)
-      const response = await getGMResourceListBatch({ resourceTypes: resourceTypesArray })
+      const response = await getGMResourceListBatch({ resourceTypes: missingTypes })
       
       if (response.code === 0 && response.data) {
         // 处理批量返回的数据，更新 resourceMap
