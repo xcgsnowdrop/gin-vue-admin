@@ -59,73 +59,6 @@ export function useResource() {
   }
 
   /**
-   * 批量加载附件所需的资源信息
-   * 优化：使用批量接口，避免多次 HTTP 请求
-   * 进一步优化：如果资源已经预加载，避免重复请求
-   * 已弃用，页面已经调用preloadAllResources 代替
-   */
-  const loadResourcesForAttachments = async (attachments) => {
-    if (!attachments || attachments.length === 0) return
-
-    // 收集所有唯一的资源类型
-    const types = new Set()
-    attachments.forEach(att => {
-      if (att && att.type) {
-        types.add(att.type)
-      }
-    })
-
-    if (types.size === 0) return
-
-    // 检查哪些资源类型已经存在于 resourceMap 中
-    const missingTypes = Array.from(types).filter(type => {
-      // 如果 resourceMap 中没有该类型，或者该类型为空对象，则需要加载
-      return !resourceMap.value[type] || Object.keys(resourceMap.value[type]).length === 0
-    })
-
-    // 如果所有资源类型都已经预加载，直接返回，无需请求
-    if (missingTypes.length === 0) {
-      return
-    }
-
-    // 只请求缺失的资源类型
-    try {
-      const response = await getGMResourceListBatch({ resourceTypes: missingTypes })
-      
-      if (response.code === 0 && response.data) {
-        // 处理批量返回的数据，更新 resourceMap
-        // 注意：resourceList 是单类型的当前列表，批量加载时不应该更新它
-        // 批量加载的目的是预加载多个类型的资源到 resourceMap，供后续使用
-        const batchData = response.data
-        
-        // 遍历返回的数据，更新 resourceMap
-        Object.keys(batchData).forEach(typeStr => {
-          const type = parseInt(typeStr)
-          const typeResourceList = batchData[typeStr] || []
-          
-          // 更新 resourceMap（这是批量加载的主要目的）
-          if (!resourceMap.value[type]) {
-            resourceMap.value[type] = {}
-          }
-          typeResourceList.forEach(item => {
-            if (item && item.id !== undefined && item.name) {
-              resourceMap.value[type][item.id] = item.name
-            }
-          })
-        })
-      } else {
-        throw new Error(response.msg || '批量获取资源列表失败')
-      }
-    } catch (error) {
-      console.error('批量加载资源列表失败:', error)
-      throw error
-      // 如果批量请求失败，回退到原来的并行单个请求方式
-      // const promises = Array.from(types).map(type => fetchResourceList(type))
-      // await Promise.all(promises)
-    }
-  }
-
-  /**
    * 根据资源类型获取资源列表（从缓存或 resourceMap）
    */
   const getResourceListByType = (type, attachmentResourceLists = {}) => {
@@ -238,7 +171,6 @@ export function useResource() {
     // 方法
     fetchResourceTypes,
     fetchResourceList,
-    loadResourcesForAttachments,
     preloadAllResources,
     getResourceListByType,
     getResourceTypeName,

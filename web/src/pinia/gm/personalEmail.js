@@ -68,9 +68,6 @@ export const useGMPersonalEmailStore = defineStore('gmPersonalEmail', () => {
       if (response.code === 0) {
         const list = response.data.list || []
 
-        // 注意：不需要调用 loadAttachmentsFromEmailList，因为 preloadAllResources 已经预加载了所有资源
-        // 附件显示时，formatAttachment 会直接从 resourceMap 中获取资源名称
-
         personalEmailList.value = list
         total.value = response.data.total || 0
         page.value = response.data.page || 1

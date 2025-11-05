@@ -11,8 +11,6 @@ export function useEmailStoreResource() {
     resourceMap,
     fetchResourceTypes,
     fetchResourceList,
-    loadResourcesForAttachments,
-    loadAttachmentsFromEmailList,
     getResourceTypeName,
     getResourceName,
     formatAttachment
@@ -27,8 +25,6 @@ export function useEmailStoreResource() {
     // 方法
     fetchResourceTypes,
     fetchResourceList,
-    loadResourcesForAttachments,
-    loadAttachmentsFromEmailList,
     getResourceTypeName,
     getResourceName,
     formatAttachment

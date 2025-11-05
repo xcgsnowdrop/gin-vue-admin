@@ -12,36 +12,12 @@ export function useEmailResource() {
     attachmentResourceLists,
     fetchResourceTypes,
     fetchResourceList,
-    loadResourcesForAttachments,
     preloadAllResources,
     getResourceListByType,
     getResourceTypeName,
     getResourceName,
     formatAttachment
   } = useResource()
-
-  /**
-   * 批量加载邮件列表中的附件资源
-   * @param {Array} emailList - 邮件列表
-   * @param {string} attachmentField - 附件字段名，默认为 'emailAttachments' 或 'attachments'
-   */
-  const loadAttachmentsFromEmailList = async (emailList, attachmentField = 'emailAttachments') => {
-    if (!emailList || emailList.length === 0) return
-
-    // 收集所有附件中的资源类型
-    const allAttachments = []
-    emailList.forEach(item => {
-      const attachments = item[attachmentField] || item.attachments
-      if (attachments && Array.isArray(attachments)) {
-        allAttachments.push(...attachments)
-      }
-    })
-
-    // 批量加载附件所需的资源信息
-    if (allAttachments.length > 0) {
-      await loadResourcesForAttachments(allAttachments)
-    }
-  }
 
   return {
     // 状态
@@ -53,8 +29,6 @@ export function useEmailResource() {
     // 方法
     fetchResourceTypes,
     fetchResourceList,
-    loadResourcesForAttachments,
-    loadAttachmentsFromEmailList,
     preloadAllResources,
     getResourceListByType,
     getResourceTypeName,
