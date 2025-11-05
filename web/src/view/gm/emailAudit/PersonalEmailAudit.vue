@@ -119,18 +119,7 @@
             min-width="300"
           >
             <template #default="scope">
-              <div v-if="scope.row.emailAttachments && scope.row.emailAttachments.length > 0" class="attachments-list">
-                <el-tag
-                  v-for="(attachment, index) in scope.row.emailAttachments"
-                  :key="index"
-                  size="small"
-                  type="success"
-                  class="attachment-tag"
-                >
-                  {{ formatAttachment(attachment) }}
-                </el-tag>
-              </div>
-              <span v-else>-</span>
+              <AttachmentList :attachments="scope.row.emailAttachments" :format-attachment="formatAttachment" />
             </template>
           </el-table-column>
           <el-table-column
@@ -260,64 +249,13 @@
             v-model:active-tab="activeContentTab"
           />
           <el-form-item label="邮件附件:" prop="emailAttachments">
-            <div class="attachments-form">
-              <div
-                v-for="(attachment, index) in formData.emailAttachments"
-                :key="index"
-                class="attachment-item"
-              >
-                <el-select
-                  v-model="attachment.type"
-                  placeholder="选择资源类型"
-                  style="width: 30%"
-                  clearable
-                  @change="handleAttachmentTypeChange(index, $event)"
-                >
-                  <el-option
-                    v-for="resType in resourceTypes"
-                    :key="resType.type"
-                    :label="resType.name"
-                    :value="resType.type"
-                  />
-                </el-select>
-                <el-select
-                  v-model="attachment.id"
-                  placeholder="选择资源"
-                  style="width: 30%; margin-left: 10px"
-                  clearable
-                  :disabled="!attachment.type"
-                >
-                  <el-option
-                    v-for="resource in getResourceListByType(attachment.type)"
-                    :key="resource.id"
-                    :label="resource.name"
-                    :value="resource.id"
-                  />
-                </el-select>
-                <el-input-number
-                  v-model="attachment.num"
-                  :min="1"
-                  placeholder="数量"
-                  style="width: 25%; margin-left: 10px"
-                  controls-position="right"
-                />
-                <el-button
-                  type="danger"
-                  icon="delete"
-                  circle
-                  style="margin-left: 10px"
-                  @click="removeAttachment(index)"
-                />
-              </div>
-              <el-button
-                type="primary"
-                icon="plus"
-                style="width: 100%; margin-top: 10px"
-                @click="addAttachment"
-              >
-                添加附件
-              </el-button>
-            </div>
+            <AttachmentForm
+              v-model="formData.emailAttachments"
+              :resource-types="resourceTypes || []"
+              :resource-list="resourceList || []"
+              :resource-map="resourceMap || {}"
+              @fetch-resource-list="handleFetchResourceList"
+            />
           </el-form-item>
           <el-form-item label="邮件备注:" prop="emailRemark">
             <el-input v-model="formData.emailRemark" placeholder="请输入邮件备注" />
@@ -382,6 +320,9 @@
   import MultilingualCell from '@/components/multilingual/MultilingualCell.vue'
   import MultilingualInput from '@/components/multilingual/MultilingualInput.vue'
   import MultilingualRichEdit from '@/components/multilingual/MultilingualRichEdit.vue'
+  import AttachmentList from '@/components/attachment/AttachmentList.vue'
+  import AttachmentForm from '@/components/attachment/AttachmentForm.vue'
+  import { filterValidAttachments } from '@/utils/attachmentUtils'
   import { useGMPersonalEmailAuditStore } from '@/pinia/gm/personalEmailAudit'
   import { useUserStore } from '@/pinia/modules/user'
   import { storeToRefs } from 'pinia'
@@ -414,16 +355,15 @@
   const {
     fetchPersonalEmailAuditList,
     sendPersonalEmailAudit,
-    fetchResourceTypes,
-    fetchResourceList,
-    getResourceTypeName,
-    getResourceName,
     resetSearchInfo,
     setPage,
     setPageSize,
     deletePersonalEmailAudit,
     updatePersonalEmailAudit,
     reviewPersonalEmailAudit,
+    fetchResourceTypes,
+    fetchResourceList,
+    formatAttachment
   } = gmPersonalEmailAuditStore
 
   // 获取当前用户ID
@@ -478,14 +418,6 @@
     // 只能审核待审核状态的申请
     return row.status === 1
   }
-  
-  // 格式化附件显示
-  const formatAttachment = (attachment) => {
-    if (!attachment) return ''
-    const typeName = getResourceTypeName(attachment.type)
-    const resourceName = getResourceName(attachment.type, attachment.id)
-    return `${typeName} - ${resourceName} × ${attachment.num}`
-  }
 
   
   // 查询数据
@@ -523,9 +455,6 @@
 
     // 使用多语言 Composable
     const { activeTitleTab, activeContentTab, resetActiveTabs, setActiveTabsFromData } = useMultilingual()
-
-    // 附件资源列表缓存（每个类型对应一个资源列表）
-    const attachmentResourceLists = ref({})
 
     // 验证规则
     const rule = reactive({
@@ -725,57 +654,15 @@
     dialogFormVisible.value = true
   }
 
-  
-  // 添加附件
-  const addAttachment = () => {
-    formData.value.emailAttachments.push({
-      id: null,
-      type: null,
-      num: 1
-    })
-  }
-
-  // 删除附件
-  const removeAttachment = (index) => {
-    formData.value.emailAttachments.splice(index, 1)
-  }
-
-  // 处理附件资源类型变化
-  const handleAttachmentTypeChange = async (index, type) => {
-    const attachment = formData.value.emailAttachments[index]
-    // 清空资源ID选择
-    attachment.id = null
-    
-    if (type) {
-      // 如果该类型的资源列表还未加载，则加载
-      if (!attachmentResourceLists.value[type]) {
-        try {
-          await fetchResourceList(type)
-          // 从 resourceMap 中获取资源列表
-          attachmentResourceLists.value[type] = resourceList.value
-        } catch (error) {
-          console.error(`加载资源类型 ${type} 失败:`, error)
-          attachmentResourceLists.value[type] = []
-        }
-      }
+  // 处理附件资源列表获取
+  const handleFetchResourceList = async (type, callback) => {
+    try {
+      await fetchResourceList(type)
+      callback(resourceList.value)
+    } catch (error) {
+      console.error(`加载资源类型 ${type} 失败:`, error)
+      callback([])
     }
-  }
-
-  // 根据资源类型获取资源列表
-  const getResourceListByType = (type) => {
-    if (!type) return []
-    // 优先从缓存中获取
-    if (attachmentResourceLists.value[type]) {
-      return attachmentResourceLists.value[type]
-    }
-    // 如果缓存中没有，从 store 的 resourceMap 中构建
-    if (resourceMap.value[type]) {
-      return Object.keys(resourceMap.value[type]).map(id => ({
-        id: parseInt(id),
-        name: resourceMap.value[type][id]
-      }))
-    }
-    return []
   }
 
   // 关闭弹窗
@@ -791,7 +678,6 @@
       startTime: null,
       playerId: '', // 目标玩家ID
     }
-    attachmentResourceLists.value = {}
     resetActiveTabs()
   }
   // 弹窗确定
@@ -801,9 +687,7 @@
       
       try {
         // 过滤掉无效的附件（只保留 type、id、num 都有效的附件）
-        const validAttachments = formData.value.emailAttachments.filter(
-          att => att.type !== null && att.id !== null && att.num > 0
-        )
+        const validAttachments = filterValidAttachments(formData.value.emailAttachments)
         
         // 构建提交数据
         const submitData = {
@@ -872,45 +756,6 @@
     color: #dc2626;
   }
 
-  /* 附件列表样式 */
-  .attachments-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .attachment-tag {
-    margin: 0;
-  }
-
-  /* 模板参数列表样式 */
-  .template-params-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .param-tag {
-    margin: 0;
-  }
-
-  /* 附件表单样式 */
-  .attachments-form {
-    width: 100%;
-  }
-
-  .attachment-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 10px;
-    background-color: #f5f7fa;
-    border-radius: 4px;
-  }
-
-  .attachment-item:last-of-type {
-    margin-bottom: 0;
-  }
   </style>
   
 

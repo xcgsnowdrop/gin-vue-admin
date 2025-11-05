@@ -7,8 +7,8 @@ import {
   updateGMSystemEmailAudit,
   reviewGMSystemEmailAudit, // 使用相同的审核接口
 } from '@/api/gm_email_audit'
-import { getGMResourceTypeList, getGMResourceList } from '@/api/gm_item'
 import { dateToTimestamp } from '@/utils/timestamp'
+import { useEmailResource } from '@/composables/useEmailResource'
 
 
 export const useGMPersonalEmailAuditStore = defineStore('gmPersonalEmailAudit', () => {
@@ -29,9 +29,16 @@ export const useGMPersonalEmailAuditStore = defineStore('gmPersonalEmailAudit', 
     status: null, // 状态筛选
   })
   
-  const resourceTypes = ref([])  // 资源类型列表
-  const resourceList = ref([])    // 资源列表（根据类型动态获取）
-  const resourceMap = ref({})      // 资源映射 { type: { id: name } }，用于快速查找资源名称
+  // 使用资源管理 composable
+  const {
+    resourceTypes,
+    resourceList,
+    resourceMap,
+    fetchResourceTypes,
+    fetchResourceList,
+    loadAttachmentsFromEmailList,
+    formatAttachment
+  } = useEmailResource()
 
   // 计算属性
   const hasItems = computed(() => personalEmailAuditList.value.length > 0)
@@ -67,18 +74,8 @@ export const useGMPersonalEmailAuditStore = defineStore('gmPersonalEmailAudit', 
       if (response.code === 0) {
         const list = response.data.list || []
 
-        // 收集所有附件中的资源类型
-        const allAttachments = []
-        list.forEach(item => {
-          if (item.emailAttachments && Array.isArray(item.emailAttachments)) {
-            allAttachments.push(...item.emailAttachments)
-          }
-        })
-
         // 批量加载附件所需的资源信息
-        if (allAttachments.length > 0) {
-          await loadResourcesForAttachments(allAttachments)
-        }
+        await loadAttachmentsFromEmailList(list, 'emailAttachments')
 
         personalEmailAuditList.value = list
         total.value = response.data.total || 0
@@ -96,89 +93,6 @@ export const useGMPersonalEmailAuditStore = defineStore('gmPersonalEmailAudit', 
     }
   }
 
-  // 获取资源类型列表
-  const fetchResourceTypes = async () => {
-    try {
-      const response = await getGMResourceTypeList()
-      if (response.code === 0) {
-        resourceTypes.value = response.data.list || []
-      } else {
-        throw new Error(response.msg || '获取资源类型失败')
-      }
-    } catch (error) {
-      console.error('获取资源类型失败:', error)
-      throw error
-    }
-  }
-
-  // 根据资源类型获取资源列表
-  const fetchResourceList = async (resType) => {
-    try {
-      if (!resType) {
-        resourceList.value = []
-        return []
-      }
-      
-      const response = await getGMResourceList(resType)
-      if (response.code === 0) {
-        const list = response.data.list || []
-        resourceList.value = list
-        
-        // 更新资源映射，方便快速查找
-        if (!resourceMap.value[resType]) {
-          resourceMap.value[resType] = {}
-        }
-        list.forEach(resource => {
-          resourceMap.value[resType][resource.id] = resource.name
-        })
-        
-        return list
-      } else {
-        throw new Error(response.msg || '获取资源列表失败')
-      }
-    } catch (error) {
-      console.error('获取资源列表失败:', error)
-      resourceList.value = []
-      throw error
-    }
-  }
-
-  // 批量加载资源列表（用于附件展示）
-  const loadResourcesForAttachments = async (attachments) => {
-    if (!attachments || !Array.isArray(attachments) || attachments.length === 0) {
-      return
-    }
-    
-    // 收集所有需要的资源类型
-    const typesNeeded = [...new Set(attachments.map(att => att.type))]
-    
-    // 并行加载所有需要的资源类型
-    const loadPromises = typesNeeded.map(type => {
-      // 如果已经加载过，跳过
-      if (resourceMap.value[type]) {
-        return Promise.resolve()
-      }
-      return fetchResourceList(type).catch(err => {
-        console.error(`加载资源类型 ${type} 失败:`, err)
-      })
-    })
-    
-    await Promise.all(loadPromises)
-  }
-
-  // 获取资源类型名称
-  const getResourceTypeName = (type) => {
-    const resourceType = resourceTypes.value.find(rt => rt.type === type)
-    return resourceType ? resourceType.name : `类型${type}`
-  }
-
-  // 获取资源名称
-  const getResourceName = (type, id) => {
-    if (resourceMap.value[type] && resourceMap.value[type][id]) {
-      return resourceMap.value[type][id]
-    }
-    return `资源${id}`
-  }
 
   // 发送私人邮件审核申请
   const sendPersonalEmailAudit = async (data) => {
@@ -284,6 +198,7 @@ export const useGMPersonalEmailAuditStore = defineStore('gmPersonalEmailAudit', 
     resourceTypes,
     resourceList,
     resourceMap,
+    formatAttachment,
     
     // 计算属性
     hasItems,
@@ -294,9 +209,6 @@ export const useGMPersonalEmailAuditStore = defineStore('gmPersonalEmailAudit', 
     sendPersonalEmailAudit,
     fetchResourceTypes,
     fetchResourceList,
-    loadResourcesForAttachments,
-    getResourceTypeName,
-    getResourceName,
     setSearchInfo,
     resetSearchInfo,
     setPage,
