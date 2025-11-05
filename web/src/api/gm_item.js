@@ -63,3 +63,14 @@ export const getGMResourceList = (resType) => {
     method: 'get'
   })
 }
+
+// 批量获取资源列表
+// 参数：data: 资源类型列表，格式为：{"resourceTypes":[1,2,3]}
+// 返回：资源列表，格式为：{"code":0,"data":{"1":[{"id":1,"name":"resourceName1"},{"id":2,"name":"resourceName2"}],"2":[{"id":3,"name":"resourceName3"},{"id":4,"name":"resourceName4"}],"3":[{"id":5,"name":"resourceName5"},{"id":6,"name":"resourceName6"}]}}
+export const getGMResourceListBatch = (data) => {
+  return service({
+    url: '/gm/resource/batch/list',
+    method: 'post',
+    data
+  })
+}

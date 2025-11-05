@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { getGMResourceTypeList, getGMResourceList } from '@/api/gm_item'
+import { getGMResourceTypeList, getGMResourceList, getGMResourceListBatch } from '@/api/gm_item'
 
 /**
  * 资源管理 Composable
@@ -60,6 +60,7 @@ export function useResource() {
 
   /**
    * 批量加载附件所需的资源信息
+   * 优化：使用批量接口，避免多次 HTTP 请求
    */
   const loadResourcesForAttachments = async (attachments) => {
     if (!attachments || attachments.length === 0) return
@@ -72,9 +73,46 @@ export function useResource() {
       }
     })
 
-    // 并行加载所有类型的资源列表
-    const promises = Array.from(types).map(type => fetchResourceList(type))
-    await Promise.all(promises)
+    if (types.size === 0) return
+
+    // 多个资源类型时，使用批量接口
+    try {
+      const resourceTypesArray = Array.from(types)
+      const response = await getGMResourceListBatch({ resourceTypes: resourceTypesArray })
+      
+      if (response.code === 0 && response.data) {
+        // 处理批量返回的数据，更新 resourceMap 和 resourceList
+        const batchData = response.data
+        
+        // 遍历返回的数据，更新 resourceMap
+        Object.keys(batchData).forEach(typeStr => {
+          const type = parseInt(typeStr)
+          const resourceList = batchData[typeStr] || []
+          
+          // 更新 resourceMap
+          if (!resourceMap.value[type]) {
+            resourceMap.value[type] = {}
+          }
+          resourceList.forEach(item => {
+            if (item && item.id !== undefined && item.name) {
+              resourceMap.value[type][item.id] = item.name
+            }
+          })
+          
+          // 更新缓存（如果当前 resourceList 正好是这个类型）
+          // 注意：批量接口返回多个类型，我们只更新当前 resourceList 对应的类型（如果有的话）
+          // 实际上批量加载时，我们主要更新 resourceMap，resourceList 会在需要时从 resourceMap 构建
+        })
+      } else {
+        throw new Error(response.msg || '批量获取资源列表失败')
+      }
+    } catch (error) {
+      console.error('批量加载资源列表失败:', error)
+      throw error
+      // 如果批量请求失败，回退到原来的并行单个请求方式
+      // const promises = Array.from(types).map(type => fetchResourceList(type))
+      // await Promise.all(promises)
+    }
   }
 
   /**
