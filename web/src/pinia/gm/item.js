@@ -9,12 +9,6 @@ import {
 import { dateToTimestamp } from '@/utils/timestamp'
 
 export const useGMItemStore = defineStore('gmItem', () => {
-  // 状态
-  const itemList = ref([])
-  const loading = ref(false)
-  const total = ref(0)
-  const page = ref(1)
-  const pageSize = ref(10)
   // 获取当前月份，格式为YYYYMM
   const getCurrentMonth = () => {
     const now = new Date()
@@ -23,7 +17,8 @@ export const useGMItemStore = defineStore('gmItem', () => {
     return `${year}${month}`
   }
 
-  const searchInfo = ref({
+  // 初始化搜索信息结构
+  const initSearchInfo = () => ({
     player_id: '',
     res_type: '',
     res_id: '',
@@ -31,6 +26,13 @@ export const useGMItemStore = defineStore('gmItem', () => {
     log_time_range: []
   })
 
+  // 状态
+  const itemList = ref([])
+  const loading = ref(false)
+  const total = ref(0)
+  const page = ref(1)
+  const pageSize = ref(10)
+  const searchInfo = ref(initSearchInfo())
   const resourceTypes = ref([])  // 资源类型列表
   const resourceList = ref([])    // 资源列表（根据类型动态获取）
 
@@ -141,14 +143,7 @@ export const useGMItemStore = defineStore('gmItem', () => {
 
   // 重置搜索条件
   const resetSearchInfo = () => {
-    searchInfo.value = {
-      player_id: '',
-      res_type: '',
-      res_id: '',
-      // operation_type: '',
-      month: getCurrentMonth(), // 重置为当前月份
-      log_time_range: []
-    }
+    searchInfo.value = initSearchInfo()
   }
 
   // 设置分页

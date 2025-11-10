@@ -36,14 +36,6 @@
             />
           </el-select>
         </el-form-item>
-        <!-- <el-form-item label="操作类型">
-          <el-select v-model="searchInfo.operation_type" placeholder="请选择操作类型" clearable>
-            <el-option label="获得" value="gain" />
-            <el-option label="消耗" value="consume" />
-            <el-option label="交易" value="trade" />
-            <el-option label="系统" value="system" />
-          </el-select>
-        </el-form-item> -->
         <el-form-item label="查询月份">
           <template #label>
             <span>查询月份</span>
