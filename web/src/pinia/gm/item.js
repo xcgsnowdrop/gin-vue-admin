@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import {
   getGMResourceLogList,
   exportGMItem,
-  getGMItemOperationTypes,
   getGMResourceTypeList,
   getGMResourceList
 } from '@/api/gm_item'
@@ -31,15 +30,7 @@ export const useGMItemStore = defineStore('gmItem', () => {
     month: getCurrentMonth(), // 默认当前月份
     log_time_range: []
   })
-  const itemStats = ref({
-    totalRecords: 0,
-    gainRecords: 0,
-    consumeRecords: 0,
-    tradeRecords: 0,
-    systemRecords: 0
-  })
-  const itemTypes = ref([])
-  const operationTypes = ref([])
+
   const resourceTypes = ref([])  // 资源类型列表
   const resourceList = ref([])    // 资源列表（根据类型动态获取）
 
@@ -103,22 +94,6 @@ export const useGMItemStore = defineStore('gmItem', () => {
       return response
     } catch (error) {
       console.error('导出道具流水数据失败:', error)
-      throw error
-    }
-  }
-
-  // 获取操作类型列表
-  const fetchOperationTypes = async () => {
-    try {
-      const response = await getGMItemOperationTypes()
-      if (response.code === 0) {
-        operationTypes.value = response.data
-        return response.data
-      } else {
-        throw new Error(response.msg || '获取操作类型失败')
-      }
-    } catch (error) {
-      console.error('获取操作类型失败:', error)
       throw error
     }
   }
@@ -202,9 +177,6 @@ export const useGMItemStore = defineStore('gmItem', () => {
     page,
     pageSize,
     searchInfo,
-    itemStats,
-    itemTypes,
-    operationTypes,
     resourceTypes,
     resourceList,
     
@@ -215,7 +187,6 @@ export const useGMItemStore = defineStore('gmItem', () => {
     // 方法
     fetchResourceLogList,
     exportItems,
-    fetchOperationTypes,
     fetchResourceTypes,
     fetchResourceList,
     setSearchInfo,

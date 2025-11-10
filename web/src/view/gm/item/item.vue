@@ -248,8 +248,6 @@ const {
   fetchResourceLogList,
   fetchResourceTypes,
   fetchResourceList,
-  // exportItems,
-  // cleanupOldData,
   resetSearchInfo,
   setPage,
   setPageSize

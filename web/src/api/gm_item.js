@@ -31,14 +31,6 @@ export const exportGMItem = (data) => {
   })
 }
 
-// 获取操作类型列表
-export const getGMItemOperationTypes = () => {
-  return service({
-    url: '/gm/item/operationTypes',
-    method: 'get'
-  })
-}
-
 // 获取资源类型列表
 export const getGMResourceTypeList = () => {
   return service({
