@@ -46,8 +46,9 @@ type Server struct {
 
 // GameAPI 游戏API配置
 type GameAPI struct {
-	Host       string        `mapstructure:"host" json:"host" yaml:"host"`
-	Port       int           `mapstructure:"port" json:"port" yaml:"port"`
-	Timeout    time.Duration `mapstructure:"timeout" json:"timeout" yaml:"timeout"`
-	RetryCount int           `mapstructure:"retry-count" json:"retry-count" yaml:"retry-count"`
+	Host          string        `mapstructure:"host" json:"host" yaml:"host"`
+	Port          int           `mapstructure:"port" json:"port" yaml:"port"`
+	Timeout       time.Duration `mapstructure:"timeout" json:"timeout" yaml:"timeout"`
+	RetryCount    int           `mapstructure:"retry-count" json:"retry-count" yaml:"retry-count"`
+	Authorization string        `mapstructure:"authorization" json:"authorization" yaml:"authorization"`
 }

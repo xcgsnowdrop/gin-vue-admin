@@ -39,6 +39,10 @@ func CallGameAPI(path string, method string, payload interface{}) (*GameAPIRespo
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}
+	// 添加Authorization请求头（如果配置中存在）
+	if global.GVA_CONFIG.GameAPI.Authorization != "" {
+		headers["Authorization"] = global.GVA_CONFIG.GameAPI.Authorization
+	}
 
 	var resp *resty.Response
 	var err error

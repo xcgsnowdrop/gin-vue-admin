@@ -56,6 +56,11 @@ func (s *GameApiProxyRouter) gameApiProxy(c *gin.Context) {
 		}
 	}
 
+	// 手动设置游戏API所需的Authorization请求头（从配置中读取）
+	if global.GVA_CONFIG.GameAPI.Authorization != "" {
+		headers["Authorization"] = global.GVA_CONFIG.GameAPI.Authorization
+	}
+
 	// 转换查询参数
 	queryParams := make(map[string]string)
 	for key, values := range c.Request.URL.Query() {
