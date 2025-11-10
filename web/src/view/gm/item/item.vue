@@ -95,9 +95,6 @@
         <el-button type="success" icon="download" @click="exportData">
           导出数据
         </el-button>
-        <el-button type="warning" icon="delete" @click="clearOldData">
-          清理旧数据
-        </el-button>
       </div> -->
       <el-table :data="tableData" row-key="ID" v-loading="loading">
         <el-table-column align="left" label="ID" min-width="120" prop="_id" />
@@ -334,24 +331,6 @@ const handleSizeChange = (val) => {
 //     ElMessage.success('导出成功')
 //   } catch (error) {
 //     ElMessage.error(error.message || '导出失败')
-//   }
-// }
-
-// // 清理旧数据
-// const clearOldData = async () => {
-//   try {
-//     await ElMessageBox.confirm('确定要清理30天前的旧数据吗？此操作不可恢复！', '警告', {
-//       confirmButtonText: '确定',
-//       cancelButtonText: '取消',
-//       type: 'warning'
-//     })
-    
-//     await cleanupOldData(30)
-//     ElMessage.success('清理完成')
-//   } catch (error) {
-//     if (error !== 'cancel') {
-//       ElMessage.error(error.message || '清理失败')
-//     }
 //   }
 // }
 

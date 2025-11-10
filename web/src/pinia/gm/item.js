@@ -3,17 +3,15 @@ import { ref, computed } from 'vue'
 import {
   getGMResourceLogList,
   exportGMItem,
-  cleanupGMItem,
   getGMItemOperationTypes,
   getGMResourceTypeList,
   getGMResourceList
 } from '@/api/gm_item'
-import { timestampToDate, dateToTimestamp } from '@/utils/timestamp'
+import { dateToTimestamp } from '@/utils/timestamp'
 
 export const useGMItemStore = defineStore('gmItem', () => {
   // 状态
   const itemList = ref([])
-  const currentItem = ref(null)
   const loading = ref(false)
   const total = ref(0)
   const page = ref(1)
@@ -30,7 +28,6 @@ export const useGMItemStore = defineStore('gmItem', () => {
     player_id: '',
     res_type: '',
     res_id: '',
-    // operation_type: '',
     month: getCurrentMonth(), // 默认当前月份
     log_time_range: []
   })
@@ -106,23 +103,6 @@ export const useGMItemStore = defineStore('gmItem', () => {
       return response
     } catch (error) {
       console.error('导出道具流水数据失败:', error)
-      throw error
-    }
-  }
-
-  // 清理旧数据
-  const cleanupOldData = async (days = 30) => {
-    try {
-      const response = await cleanupGMItem({ days })
-      if (response.code === 0) {
-        // 刷新列表
-        await fetchResourceLogList()
-        return true
-      } else {
-        throw new Error(response.msg || '清理旧数据失败')
-      }
-    } catch (error) {
-      console.error('清理旧数据失败:', error)
       throw error
     }
   }
@@ -209,7 +189,6 @@ export const useGMItemStore = defineStore('gmItem', () => {
   // 清空状态
   const clearState = () => {
     itemList.value = []
-    currentItem.value = null
     total.value = 0
     page.value = 1
     resetSearchInfo()
@@ -218,7 +197,6 @@ export const useGMItemStore = defineStore('gmItem', () => {
   return {
     // 状态
     itemList,
-    currentItem,
     loading,
     total,
     page,
@@ -237,7 +215,6 @@ export const useGMItemStore = defineStore('gmItem', () => {
     // 方法
     fetchResourceLogList,
     exportItems,
-    cleanupOldData,
     fetchOperationTypes,
     fetchResourceTypes,
     fetchResourceList,

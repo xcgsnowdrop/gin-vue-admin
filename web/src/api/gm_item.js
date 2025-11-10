@@ -31,15 +31,6 @@ export const exportGMItem = (data) => {
   })
 }
 
-// 清理旧数据
-export const cleanupGMItem = (data) => {
-  return service({
-    url: '/gm/item/cleanup',
-    method: 'post',
-    data
-  })
-}
-
 // 获取操作类型列表
 export const getGMItemOperationTypes = () => {
   return service({
