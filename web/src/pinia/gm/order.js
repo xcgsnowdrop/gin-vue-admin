@@ -15,8 +15,8 @@ export const useGMOrderStore = defineStore('gmOrder', () => {
   // 初始化搜索信息结构
   const initSearchInfo = () => ({
     player_id: '',
-    area_id: '',
-    recharge_id: '',
+    area_ids: '',
+    recharge_ids: '',
     pay_start_time: null,
     pay_end_time: null,
   })
@@ -54,6 +54,21 @@ export const useGMOrderStore = defineStore('gmOrder', () => {
     page.value = 1
   }
 
+  // 将逗号分隔的字符串转换为整数数组
+  // 例如: "1,2,3" => [1, 2, 3]
+  // 空字符串或无效值返回空数组
+  const stringToIntArray = (str) => {
+    if (!str || typeof str !== 'string' || str.trim() === '') {
+      return []
+    }
+    return str
+      .split(',')
+      .map(item => item.trim())
+      .filter(item => item !== '')
+      .map(item => parseInt(item, 10))
+      .filter(item => !isNaN(item))
+  }
+
   const fetchOrderList = async (params = {}) => {
     loading.value = true
     try {
@@ -61,8 +76,8 @@ export const useGMOrderStore = defineStore('gmOrder', () => {
         page: page.value,
         pageSize: pageSize.value,
         player_id: searchInfo.value.player_id,
-        area_id: searchInfo.value.area_id,
-        recharge_id: searchInfo.value.recharge_id,
+        area_ids: stringToIntArray(searchInfo.value.area_ids),
+        recharge_ids: stringToIntArray(searchInfo.value.recharge_ids),
         pay_start_time: dateToTimestamp(searchInfo.value.pay_start_time),
         pay_end_time: dateToTimestamp(searchInfo.value.pay_end_time),
         ...params

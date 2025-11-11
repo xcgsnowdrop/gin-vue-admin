@@ -7,17 +7,17 @@
             <el-input v-model="searchInfo.player_id" placeholder="PlayerId" />
           </el-form-item>
           <el-form-item label="AreaId">
-            <el-input v-model="searchInfo.area_id" placeholder="AreaId" />
+            <el-input v-model="searchInfo.area_ids" placeholder="区服ID,多个用英文逗号分隔" />
           </el-form-item>
           <el-form-item label="RechargeId">
-            <el-input v-model="searchInfo.recharge_id" placeholder="RechargeId" />
+            <el-input v-model="searchInfo.recharge_ids" placeholder="商品ID,多个用英文逗号分隔" />
           </el-form-item>
           
           <el-form-item label="下单开始时间">
             <el-date-picker
-              v-model="searchInfo.startTime"
+              v-model="searchInfo.pay_start_time"
               type="datetime"
-              placeholder="请选择邮件创建开始时间"
+              placeholder="请选择下单开始时间"
               style="width: 100%"
               :disabled-date="
                 (time) =>
@@ -29,9 +29,9 @@
           </el-form-item>
           <el-form-item label="下单结束时间">
             <el-date-picker
-              v-model="searchInfo.endTime"
+              v-model="searchInfo.pay_end_time"
               type="datetime"
-              placeholder="请选择邮件创建结束时间"
+              placeholder="请选择下单结束时间"
               style="width: 100%"
               :disabled-date="
                 (time) =>
