@@ -8,6 +8,7 @@ import {
 } from '@/api/gm_email'
 import { dateToTimestamp } from '@/utils/timestamp'
 import { useResource } from '@/composables/useResource'
+import { stringToIntArray } from '@/utils/stringFun'
 
 
 export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
@@ -50,7 +51,7 @@ export const useGMSystemEmailStore = defineStore('gmSystemEmail', () => {
     submitData.startTime = dateToTimestamp(submitData.startTime)
     submitData.maxRegTime = dateToTimestamp(submitData.maxRegTime)
     if (submitData.areaIds) {
-      submitData.areaIds = submitData.areaIds.split(',').map(id => parseInt(id))
+      submitData.areaIds = stringToIntArray(submitData.areaIds)
     }
 
     return submitData

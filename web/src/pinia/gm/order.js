@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { getGMOrderList, getGMRechargeList } from '@/api/gm_order'
 import { dateToTimestamp } from '@/utils/timestamp'
+import { stringToIntArray } from '@/utils/stringFun'
 
 export const useGMOrderStore = defineStore('gmOrder', () => {
   // 状态
@@ -52,21 +53,6 @@ export const useGMOrderStore = defineStore('gmOrder', () => {
   const setPageSize = (newPageSize) => {
     pageSize.value = newPageSize
     page.value = 1
-  }
-
-  // 将逗号分隔的字符串转换为整数数组
-  // 例如: "1,2,3" => [1, 2, 3]
-  // 空字符串或无效值返回空数组
-  const stringToIntArray = (str) => {
-    if (!str || typeof str !== 'string' || str.trim() === '') {
-      return []
-    }
-    return str
-      .split(',')
-      .map(item => item.trim())
-      .filter(item => item !== '')
-      .map(item => parseInt(item, 10))
-      .filter(item => !isNaN(item))
   }
 
   const fetchOrderList = async (params = {}) => {
