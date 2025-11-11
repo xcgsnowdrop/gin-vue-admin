@@ -78,6 +78,16 @@
           />
           <el-table-column
             align="left"
+            label="商品名称"
+            min-width="150"
+            prop="recharge_name"
+          >
+            <template #default="scope">
+              {{ getRechargeName(scope.row.recharge_id) }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            align="left"
             label="价格"
             min-width="150"
             prop="price"
@@ -152,13 +162,15 @@
     page, 
     pageSize, 
     searchInfo,
+    rechargeMap
   } = storeToRefs(gmOrderStore)
   
   const {
     fetchOrderList,
     resetSearchInfo,
     setPage,
-    setPageSize
+    setPageSize,
+    fetchRechargeList
   } = gmOrderStore
   
   // 获取操作类型标签样式
@@ -181,6 +193,10 @@
     return textMap[status] || status
   }
   
+  // 根据充值商品ID获取商品名称
+  const getRechargeName = (rechargeId) => {
+    return rechargeMap.value[rechargeId] || '-'
+  }
   
   // 查询数据
   const onSubmit = () => {
@@ -257,8 +273,11 @@
   // 初始化
   onMounted(async () => {
     try {
-      // 并行获取资源类型和道具列表
-      await fetchOrderList()
+      // 并行获取充值商品列表和订单列表
+      await Promise.all([
+        fetchRechargeList(),
+        fetchOrderList()
+      ])
     } catch (error) {
       console.error('初始化失败:', error)
     }

@@ -8,3 +8,11 @@ export const getGMOrderList = (data) => {
     data: data
   })
 }
+
+// 获取充值商品名称列表
+export const getGMRechargeList = () => {
+  return service({
+    url: '/gm/recharge/list',
+    method: 'get',
+  })
+}

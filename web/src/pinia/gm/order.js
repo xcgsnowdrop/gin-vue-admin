@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getGMOrderList } from '@/api/gm_order'
+import { getGMOrderList, getGMRechargeList } from '@/api/gm_order'
 import { dateToTimestamp } from '@/utils/timestamp'
 
 export const useGMOrderStore = defineStore('gmOrder', () => {
@@ -10,6 +10,7 @@ export const useGMOrderStore = defineStore('gmOrder', () => {
   const total = ref(0)
   const page = ref(1)
   const pageSize = ref(10)
+  const rechargeList = ref([]) // 充值商品列表
 
   // 初始化搜索信息结构
   const initSearchInfo = () => ({
@@ -25,6 +26,14 @@ export const useGMOrderStore = defineStore('gmOrder', () => {
   // 计算属性
   const hasOrders = computed(() => orderList.value.length > 0)
   const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
+  // 充值商品映射表，用于根据 id 快速查找商品名称
+  const rechargeMap = computed(() => {
+    const map = {}
+    rechargeList.value.forEach(item => {
+      map[item.id] = item.name
+    })
+    return map
+  })
 
 
   // 方法
@@ -76,6 +85,21 @@ export const useGMOrderStore = defineStore('gmOrder', () => {
     }
   }
 
+  // 获取充值商品列表
+  const fetchRechargeList = async () => {
+    try {
+      const response = await getGMRechargeList()
+      if (response.code === 0) {
+        rechargeList.value = response.data.list || []
+      } else {
+        throw new Error(response.msg || '获取充值商品列表失败')
+      }
+    } catch (error) {
+      console.error('获取充值商品列表失败:', error)
+      rechargeList.value = []
+    }
+  }
+
   return {
     // 状态
     orderList,
@@ -84,10 +108,12 @@ export const useGMOrderStore = defineStore('gmOrder', () => {
     page,
     pageSize,
     searchInfo,
+    rechargeList,
 
     // 计算属性
     hasOrders,
     totalPages,
+    rechargeMap,
     
     // 方法
     setSearchInfo,
@@ -95,5 +121,6 @@ export const useGMOrderStore = defineStore('gmOrder', () => {
     setPage,
     setPageSize,
     fetchOrderList,
+    fetchRechargeList,
   }
 })
