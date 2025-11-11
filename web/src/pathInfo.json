@@ -25,6 +25,7 @@
   "/src/view/gm/emailAudit/SystemEmailAudit.vue": "GmSystemEmailAudit",
   "/src/view/gm/index.vue": "GmIndex",
   "/src/view/gm/item/item.vue": "GmItem",
+  "/src/view/gm/order/order.vue": "GmOrder",
   "/src/view/gm/user/components/PlayerDetail.vue": "GmPlayerDetail",
   "/src/view/gm/user/user.vue": "GmUser",
   "/src/view/init/index.vue": "Init",

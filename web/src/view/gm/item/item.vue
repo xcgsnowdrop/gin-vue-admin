@@ -88,7 +88,7 @@
           导出数据
         </el-button>
       </div> -->
-      <el-table :data="tableData" row-key="ID" v-loading="loading">
+      <el-table :data="tableData" row-key="_id" v-loading="loading">
         <el-table-column align="left" label="ID" min-width="120" prop="_id" />
         <el-table-column
           align="left"
