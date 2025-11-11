@@ -8,7 +8,7 @@ import {
   batchOperateGMUser,
   exportGMUser,
 } from '@/api/gm_user'
-import { timestampToDate } from '@/utils/timestamp'
+import { dateToTimestamp } from '@/utils/timestamp'
 
 export const useGMUserStore = defineStore('gmUser', () => {
   // 状态
@@ -50,12 +50,8 @@ export const useGMUserStore = defineStore('gmUser', () => {
         uniqueId: searchInfo.value.uniqueId,
         nickname: searchInfo.value.nickname,
         // 将 Date 对象转换为时间戳（秒）
-        startLoginTime: searchInfo.value.startLoginTime 
-          ? Math.floor(new Date(searchInfo.value.startLoginTime).getTime() / 1000) 
-          : null,
-        endLoginTime: searchInfo.value.endLoginTime 
-          ? Math.floor(new Date(searchInfo.value.endLoginTime).getTime() / 1000) 
-          : null,
+        startLoginTime: searchInfo.value.startLoginTime ? dateToTimestamp(searchInfo.value.startLoginTime) : null,
+        endLoginTime: searchInfo.value.endLoginTime ? dateToTimestamp(searchInfo.value.endLoginTime) : null,
         ...params
       }
       
@@ -64,18 +60,10 @@ export const useGMUserStore = defineStore('gmUser', () => {
       if (response.code === 0) {
         const playerList = response.data.player_list || response.data.list || []
 
-        // 预处理数据，转换时间戳为日期时间对象
-        // playerList.forEach(user => {
-        //   user.register_time = timestampToDate(user.register_time)
-        //   user.login_time = timestampToDate(user.login_time)
-        // })
-
         userList.value = playerList
         total.value = response.data.total || 0
         page.value = response.data.page || 1
         pageSize.value = response.data.pageSize || 10
-        
-        // console.log('🔍 Updated userList.value:', userList.value)
       } else {
         throw new Error(response.msg || '获取用户列表失败')
       }
