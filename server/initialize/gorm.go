@@ -34,10 +34,16 @@ func Gorm() *gorm.DB {
 	}
 }
 
+// RegisterTables 用于在应用启动时自动创建或更新数据库表结构，确保数据库表结构与Go模型定义一致
 func RegisterTables() {
 	db := global.GVA_DB
-	err := db.AutoMigrate(
 
+	// AutoMigrate 是GORM的自动迁移方法，用于：
+	// 1. 自动创建表：模型对应的表不存在时创建
+	// 2. 自动更新表结构：根据模型变更添加缺失的列
+	// 3. 自动创建索引：根据模型标签创建索引
+	// 4. 不会删除列或索引：只增不减，避免数据丢失
+	err := db.AutoMigrate(
 		system.SysApi{},
 		system.SysIgnoreApi{},
 		system.SysUser{},
@@ -69,7 +75,7 @@ func RegisterTables() {
 		os.Exit(0)
 	}
 
-	err = bizModel()
+	err = bizModel() // 调用bizModel函数，处理业务相关的表的迁移
 
 	if err != nil {
 		global.GVA_LOG.Error("register biz_table failed", zap.Error(err))
